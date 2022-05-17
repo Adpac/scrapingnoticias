@@ -58,10 +58,13 @@ def home():
 	ayer=hoy-timedelta(days=1)
 	portada=list(noticias.find({'estiular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("fechaasig",-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
-	Noticiascat=list(noticias.find({"categoriaprin":"627e8a1d0a280f75ee4c73b8"}).sort("fechaasig",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fechaasig",-1).limit(20))
 	noticiaspagina=[]
 	if len(listapaginanoticias)>0:
-		noticiaspagina=list(noticias.find({"urlfuente":listapaginanoticias[0]["URLPrincipal"]}).sort("fechaasig",-1).limit(20))
+		urlfuente=listapaginanoticias[0]["URLPrincipal"]
+		if urlfuente[-1:]=="/":
+			urlfuente=urlfuente[0:-1]
+		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fechaasig",-1).limit(20))
 	print(noticiaspagina)
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
@@ -252,7 +255,8 @@ def formpart4():
 	xpathnoticia=request.cookies.get("Xpathtitular")
 	print(urlp)
 	print(xpathsiguiente)
-	urlnoticia,textourl=scr.consultarxpathselenium(urlp,xpathnoticia)
+	#urlnoticia,textourl=scr.consultarxpa(urlp,xpathnoticia)
+	urlnoticia=scr.obtenerenlaces(urlp,xpathnoticia)
 	print("34234234")
 	print(xpathnoticia)
 	print(urlnoticia)
@@ -568,7 +572,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	}
 	return json.dumps(response)
 if __name__ == '__main__':
-	app.run()
+	app.run(debug=True)
 	socketio.run(app,port=5004)
 
 	
