@@ -568,7 +568,6 @@ def ajaxbuscarnoticiasrelacionadas():
 	}
 	return json.dumps(response)
 if __name__ == '__main__':
-	
 	socketio.run(app)
 
-app.run()	
+	
