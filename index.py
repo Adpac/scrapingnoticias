@@ -569,6 +569,6 @@ def ajaxbuscarnoticiasrelacionadas():
 	return json.dumps(response)
 if __name__ == '__main__':
 	app.run()
-	socketio.run(app, debug=True, port=5004)
+	socketio.run(app,port=5004)
 
 	
