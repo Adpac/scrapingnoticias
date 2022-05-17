@@ -1,0 +1,19 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+{% block titulo1 %}
+Acerca de
+
+{% endblock %}
+{%block carrousel%}
+
+{% endblock %}
+{% block content %}
+
+<h1>Acerca de</h1>
+<p>Creado por: Adel Paco</p>
+{% endblock %}

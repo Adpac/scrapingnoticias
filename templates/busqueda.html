@@ -1,0 +1,87 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+{% block titulo1 %}
+Buscar
+{% endblock %}
+{% block content %}
+
+<div style="height: 100px;">
+  
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<form action="{{url_for('buscarnoticia')}}" method="post">
+<div class="input-group rounded">
+    <input type="search" class="form-control rounded" placeholder="Buscar" name="buscar" value="{{consulta}}" aria-label="Search" aria-describedby="search-addon" />
+    <span class="icon-input-btn">
+		<input type="submit" class="btn btn-secondary" value="Buscar">
+	</span>
+  </div>
+</form>
+
+  <div id="busquedanoticias">
+    <div id="resultadosbusqueda">
+    {% for n in Noticia %} 
+    <article class="row bg-dark text-white ml-1 py-3 border">
+    <div class="col-md-3">
+    {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
+    <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
+    {% else %}
+    <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+    {% endif %}
+    </div>
+    <div class="col">
+    <h5>{{n['titular']}}</h5>
+    <strong>Fuente: </strong><a href="{{n['urlfuente']}}" target="_blank">{{n['urlfuente']}}</a><br>
+    <strong>Fecha: </strong> {{n['fecha']}} <br>
+    <p>{{n['parrafos'][0:300]}}...</p>
+    <a href="{{ n['urlnoticia'] }}" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a>
+    </div>
+    </article>
+    {% endfor %}
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="ajaxcargarmasbusquedas('{{consulta}}')">Cargar mas Resultados de busqueda</button>
+    </div>
+<script>
+  numpagina=1
+  function ajaxcargarmasbusquedas(consulta){
+    $("#busquedanoticias").append(
+                '<div class="text-center" id="loading">'+
+                '<div class="spinner-border"   role="status">'+
+                '<span class="sr-only">Loading...</span>'+
+                '</div></div>'
+            );
+    $.ajax({
+        url:'/ajaxcargarmasbusquedas',
+        data: {numpagina:numpagina,
+              consulta:consulta},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response);
+            Noticias=JSON.parse(respuesta["Noticias"]) ;   
+            $("#busquedanoticias > #loading ").remove();    
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                console.log(Not['titular']);
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#resultadosbusqueda").append('<article class="row bg-dark text-white ml-1 py-3 border"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <h5>'+Not['titular']+'</h5> <strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br> <p>'+Not['parrafos'].substring(0,300)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div></article>')
+            }
+            numpagina++;
+            
+        },
+        error: function(error){
+            console.log(error)
+        }
+    });
+  }
+</script>
+{% endblock %}

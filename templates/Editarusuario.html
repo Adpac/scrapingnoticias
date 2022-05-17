@@ -1,0 +1,66 @@
+{%extends "layout.html"%}
+{% block titulo1 %}
+Pagina principal
+{% endblock %}
+{% block content %}
+    <div id="register">
+        <div class="container">
+            <div id="register-row" class="row justify-content-center align-items-center">
+                <div id="register-column" class="col-md-6">
+                    <div id="register-box" class="col-md-12">
+                        <form id="register-form" class="form" action="{{url_for('mensajederegistro')}}" method="post">
+                            <h3 class="text-center text-info">Registrar Usuario</h3>
+                            <div class="form-group">
+                                <label for="username" class="text-info">CI (Sin extencion):</label><br>
+                                <input type="text" name="username" id="username" class="form-control" pattern="\d+"
+                                required oninvalid="setCustomValidity('Se requiere solo numeros')" oninput="setCustomValidity('')">
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Usuario:</label><br>
+                                <input type="text" name="username" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Nombres:</label><br>
+                                <input type="text" name="nombre" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Apellidos:</label><br>
+                                <input type="text" name="apellidos" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword" class="text-info">Contraseña:</label><br>
+                                <input type="password"   name="password" id="password" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword" class="text-info">Vuelva a escribir su contraseña:</label><br>
+                                <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var password = document.getElementById("password"), confirm_password = document.getElementById("confirm_password");
+        
+        function validatePassword(){
+          console.log("Cambiando contraseña");
+          if(password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Las contraseñas no coinciden");
+          } else {
+            confirm_password.setCustomValidity('');
+          }
+        }
+        
+        password.onchange = validatePassword;
+        confirm_password.onkeyup = validatePassword;    
+        </script>
+{% endblock %}
+

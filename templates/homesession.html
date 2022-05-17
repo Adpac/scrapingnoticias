@@ -1,0 +1,196 @@
+{%extends "layoutusuario.html"%}
+{% block titulo1 %}
+Pagina principal
+{% endblock %}
+{%block carrousel%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+<div style="height: 500px;">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<div id="carouselExampleControls" class="container-fluid  text-center">
+    <h4 class="mt-2 font-weight-bold">Noticias de Portada</h4>
+    <div class="owl-carousel owl-theme">
+        <div class="item first prev">
+            <div class="card border-3 ">
+                <div class="row justify-content-center"> <img src="{{portada[0]['urlimagen']}}"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> </div>
+                <div class="Textoencima">
+                    <h5 class=""><a href="{{portada[0]['urlnoticia']}}" class="link-light">{{portada[0]['titular']}}</a></h5>
+                    <p class="content ">{{portada[0]['parrafos'][0:200]}}</p>
+                </div>
+
+            </div>
+        </div>
+        <div class="item show">
+            <div class="card border-0 ">
+                <div class="row justify-content-center mx-auto"> <img src="{{portada[1]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3 "> </div>
+                <div class="Textoencima">
+                    <h5 class=""><a href="{{portada[1]['urlnoticia']}}" class="link-light">{{portada[1]['titular']}}</a></h5>
+                    <p class="content ">{{portada[1]['parrafos'][0:200]}}</p>
+                </div>
+
+            </div>
+        </div>
+        {% for i in range(2,portada|length-1) %}
+        <div class="item next">
+            <div class="card border-0 ">
+                <div class="row justify-content-center"> <img src="{{portada[i]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> </div>
+                <div class="Textoencima">
+                    <h5 class=""><a href="{{portada[i]['urlnoticia']}}" class="link-light">{{portada[i]['titular']}}</a></h5>
+                    <p class="content">{{portada[i]['parrafos'][0:200]}}</p>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+        <div class="item last">
+            <div class="card border-0 ">
+                <div class="row justify-content-center"> <img src="{{portada[portada|length-1]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> </div>
+                <div class="Textoencima">
+                    <h5 class=""><a href="{{portada[portada|length-1]['urlnoticia']}}" class="link-light">{{portada[portada|length-1]['titular']}}</a></h5>
+                    <p class="content">{{portada[portada|length-1]['parrafos'][0:200]}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+  $(document).ready(function() {
+  // you can remove this if you want, it will stop the carousel transtioning automatically. 
+  $('#myCarousel').carousel({
+    interval: 10000
+  });
+});
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+{%endblock%}
+{% block content %}
+
+<h3>Nuevas Noticias</h3>
+<form>
+    <p>
+        Buscar Noticias <input type="search"> <input type="submit" value="Buscar">
+    </p>
+</form>
+<div class="table-responsive">
+<table class="table table-striped table-dark">
+{% for n in Noticia %} 
+<tr>
+<td>
+{% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
+<img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
+{% else %}
+<img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+{% endif %}
+</td>
+<td>
+<h4>{{n['titular']}}</h4>
+<strong>Fuente: </strong><a href="{{n['urlfuente']}}" target="_blank">{{n['urlfuente']}}</a><br>
+<strong>Fecha: </strong> {{n['fecha']}} <br>
+<p>{{n['parrafos'][0:300]}}...</p>
+<a href="{{ n['urlnoticia'] }}" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+<button class="btn btn-primary btn-sm" >Mostrar mas noticias</button>
+
+
+<form id="demo_form">
+	Cuadro de entrada: <input type="text" name="nick_name" />
+	<input type="submit" value="solicitud ajax"/>
+</form>
+
+<script type="text/javascript">
+// Primero es necesario deshabilitar el envío automático de la acción del formulario
+$("#demo_form").submit(function(e){
+	e.preventDefault();
+
+    $.ajax({
+        url:"/demo",
+        type:'POST',
+        data: $(this).serialize(),   // Este pase de serialización es importante
+        headers:{
+            "X-CSRF-Token": getCookie('csrf_token')
+        },
+        success:function (resp) {
+            // window.location.href = "/admin/page";
+            if(resp.error){
+                console.log(resp.errmsg);
+            }
+        }
+    })
+});
+</script>
+<script>
+  $(document).ready(function() {
+
+$('.owl-carousel').owlCarousel({
+mouseDrag:false,
+loop:true,
+margin:2,
+nav:true,
+responsive:{
+0:{
+items:1
+},
+600:{
+items:1
+},
+1000:{
+items:3
+}
+}
+});
+
+$('.owl-prev').click(function() {
+$active = $('.owl-item .item.show');
+$('.owl-item .item.show').removeClass('show');
+$('.owl-item .item').removeClass('next');
+$('.owl-item .item').removeClass('prev');
+$active.addClass('next');
+if($active.is('.first')) {
+$('.owl-item .last').addClass('show');
+$('.first').addClass('next');
+$('.owl-item .last').parent().prev().children('.item').addClass('prev');
+}
+else {
+$active.parent().prev().children('.item').addClass('show');
+if($active.parent().prev().children('.item').is('.first')) {
+$('.owl-item .last').addClass('prev');
+}
+else {
+$('.owl-item .show').parent().prev().children('.item').addClass('prev');
+}
+}
+});
+
+$('.owl-next').click(function() {
+$active = $('.owl-item .item.show');
+$('.owl-item .item.show').removeClass('show');
+$('.owl-item .item').removeClass('next');
+$('.owl-item .item').removeClass('prev');
+$active.addClass('prev');
+if($active.is('.last')) {
+$('.owl-item .first').addClass('show');
+$('.owl-item .first').parent().next().children('.item').addClass('prev');
+}
+else {
+$active.parent().next().children('.item').addClass('show');
+if($active.parent().next().children('.item').is('.last')) {
+$('.owl-item .first').addClass('next');
+}
+else {
+$('.owl-item .show').parent().next().children('.item').addClass('next');
+}
+}
+});
+
+});
+</script>
+{% endblock %}

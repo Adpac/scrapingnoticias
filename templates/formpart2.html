@@ -1,0 +1,114 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+{% block titulo1 %}
+Añadir Pagina web
+{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/@jarstone/dselect/dist/css/dselect.css">
+<script src="https://unpkg.com/@jarstone/dselect/dist/js/dselect.js"></script>
+<div style="height: 50px;"></div>
+<h4>Agregar una nueva pagina web</h4>
+<p>URL: {{urlprincipal}}</p>
+
+<div class="input-group rounded">
+    <input id="inputcategoria" type="search" class="form-control rounded" placeholder="Agregar nueva categoria" name="Addcat"  />
+    <button onclick="ajaxagregarcategoria()">Agregar Categoria</button>
+</div>
+<p>Elimine las Urls de las categorias que no sean de su interes</p>
+<form name="enviarurl" id="formlista" method="post" action="{{url_for('formpart3')}}">
+<input type="hidden" id="cont" name="numurls" value="{{lista|length}}">
+<div id="tabla">
+    <table>
+        <thead></thead>
+        <tbody>
+            {% for urlsec in lista %}
+            <tr id="fila{{loop.index}}">
+                <td>
+
+                        <select id="cat{{loop.index}}" name="cat{{loop.index}}" name="select_box" class="form-select">
+                            <option value="">Selecciona una categoria</option>
+                            {% for categoria in listacategorias %}
+                            <option value="{{categoria['_id']}}" data-tokens="{{categoria['cat']}}">{{categoria['cat']}}</option>
+                            {% endfor%}
+                        </select>
+                </td>
+                <td><input type="text" name="campo{{loop.index}}" class="form-control" id="entrada{{loop.index}}" style="width: 500px;" value="{{ urlsec }}"></td>
+                <td> <a href="{{urlsec}}"  class="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">Ver Pagina</a></td>
+                <td><button id="btn{{loop.index}}" class="btn btn-primary btn-sm" type="button" onclick="eliminarFila('{{loop.index}}')" value="Eliminar">Eliminar</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<input type="submit" value="Aceptar">
+</form>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var contador=document.getElementById("cont");
+    for(var i=1; i<parseInt(contador.value); i++){
+        var select_box_element = document.querySelector('#cat'+String(i));
+        dselect(select_box_element, {
+            search: true
+        });
+    }
+
+    function eliminarFila(index) {
+   //eliminamos sub urls y actualizamos elementos
+    var contador=document.getElementById("cont");
+    var valor="fila"+index;
+    $("#fila" + index).remove();
+    for(var i=parseInt(index); i<parseInt(contador.value); i++){
+      var j=i+1;
+      var idanterior="fila"+j;
+      var idnuevo="fila"+i;
+      var nuevoclick="eliminarFila('"+i+"');";
+      console.log(nuevoclick);
+      var input=document.getElementById(idanterior);
+      var entrada=document.getElementById("entrada"+j);
+      console.log("i="+i);
+      console.log("j="+j);
+      console.log(entrada);
+      entrada.setAttribute("name","campo"+i);
+      entrada.id="entrada"+i;
+      var selcategoria=document.getElementById("cat"+j);
+      selcategoria.setAttribute("name","cat"+i);
+      selcategoria.id="cat"+i;
+      var boton=document.getElementById("btn"+j);
+      console.log(boton);
+      boton.setAttribute("onclick",nuevoclick);
+      boton.id="btn"+i;
+      input.id=idnuevo; 
+    }
+    //console.log(contador.value)
+    var numel=parseInt(contador.getAttribute('value'))-1;
+    contador.setAttribute("value",numel);
+  }
+  function ajaxagregarcategoria(){
+      var nomcategoria=document.getElementById("inputcategoria")
+      console.log(nomcategoria.value)
+      $.ajax({
+        url:'/ajaxañadircategoria',
+        data: {categoria:nomcategoria.value},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            console.log(respuesta)
+            $("select").append("<option>"+nomcategoria.value+"</option>")
+            nomcategoria.value=""
+            alert("Categoria añadida exitosamente")
+        },
+      
+        error: function(error){
+            console.log(error)
+        }
+    });
+  }
+</script>
+{% endblock %}

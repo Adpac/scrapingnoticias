@@ -1,0 +1,81 @@
+
+
+{{texto|safe}}
+
+<div class="xpathmenu" marcar="nopintar">
+    <div class="selector" marcar="nopintar"></div> 
+    <form name="enviarurl" id="formlista" method="post" action="{{url_for('subirpagina')}}">
+        <table marcar="nopintar" width="100%">
+            <tbody marcar="nopintar">
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Titular de la noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(1)" id="pintartag1" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input1" onkeyup="pintarelemento(1)" name="input1"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Resumen de la Noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(2)" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input2" onkeyup="pintarelemento(2)" name="input2"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Imagen de la noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(3)" id="pintartag3" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input3" onkeyup="pintarelemento(3)" name="input3"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Descripción de la imagen</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(4)" id="pintartag4" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input4" onkeyup="pintarelemento(4)" name="input4"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Video de la Noticia (opcional)</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(5)" id="pintartag5" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input5" onkeyup="pintarelemento(5)" name="input5"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Descripción del video</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(6)" id="pintartag6" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input6" onkeyup="pintarelemento(6)" name="input6"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Redactor de la noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(7)" id="pintartag7" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input7" onkeyup="pintarelemento(7)" name="input7"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Fecha y hora de la noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(8)" id="pintartag8" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input8" onkeyup="pintarelemento(8)" name="input8"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Parrafos de la noticia</td>
+                    <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(9)" id="pintartag9" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input9" onkeyup="pintarelemento(9)" name="input9"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Categorias de la noticia</td>
+                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(10)" id="pintartag10" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input10" onkeyup="pintarelemento(10)" name="input10"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+            </tbody>
+
+        </table>
+        <input marcar="nopintar" type="submit" name="enviar" value="Aceptar">
+    </form>
+
+    
+</div>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="/static/scripts/selectorxpathnoticias.js" >
+</script>
+    

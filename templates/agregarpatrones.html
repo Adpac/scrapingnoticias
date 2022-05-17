@@ -1,0 +1,95 @@
+{%extends "layout.html"%}
+{% block titulo1 %}
+Añadir Pagina web
+{% endblock %}
+{% block content %}
+
+<h1>Ultima Parte</h1>
+<form action="{{url_for('subirpagina')}}" name="enviarurl" id="urlpagina" method="post">
+    <p>Nombre de la Pagina web</p>
+    <input type="text" name="NombrePagina">
+    <input type="hidden" name="urlP" value="{{dp}}">
+    <div style="width: 500px">
+        <table class="table table-striped table-bordered table-responsive-lg">
+            <thead>
+                <tr class="bg-success">
+                    <td><b>URL</b></td>
+                    <td><b>Inicio de Pagina</b></td>
+                    <td><b>Hasta la pagina</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% set numsubdominios=urlsel|length %}
+                {% for url in urlsel %}
+                <tr class="bg-primary">
+                    <td><input type="text" name="suburl{{loop.index-1}}" value="{{url}}" style="width: 400px" readonly></td>
+                    <td><input type="number" name="pagini{{loop.index-1}}" value="{{ini[loop.index-1] }}" style="width: 60px"></td>
+                    <td><input type="number" name="pagfin{{loop.index-1}}" value="{{ fin[loop.index-1] }}" style="width: 60px"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="hidden" name="numsubd" value="{{numsubdominios}}">
+    </div>
+    <div>
+        <h3>Datos genericos</h3>
+        <p>Los subdominios encontrados anteriormente poseen un patron generico, lo mismo para las noticias, es necesario
+            encontrar esos patrones</p>
+        <table class="table table-striped table-bordered table-responsive-lg">
+
+            <tbody>
+                <tr class="bg-primary">
+                    <td>URLPaginacion</td>
+                    <td><input type="text" name="urlPaginacion" value="{{paginacion}}"></td>
+                </tr class="bg-primary">
+                <tr class="bg-primary">
+                    <td>XPath URLs Noticias</td>
+                    <td><input type="text" name="xpsecnot"></td>
+                </tr class="bg-primary">
+            </tbody>
+        </table>
+    </div>
+    <div style="width: 500px">
+        <h3>llene el codigo xpath para la pagina que contiene la noticia</h3>
+        <table class="table table-striped table-bordered table-responsive-lg">
+            <thead>
+                <tr>
+                    <td>Datos</td>
+                    <td>Xpath</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="bg-primary">
+                    <td>Titular</td>
+                    <td><input type="text" name="xptitu"></td>
+                </tr class="bg-primary">
+                <tr class="bg-primary">
+                    <td>Fecha y Hora</td>
+                    <td><input type="text" name="xpfecha"></td>
+                </tr>
+                <tr class="bg-primary">
+                    <td>Imagen</td>
+                    <td><input type="text" name="xpimg"></td>
+                </tr>
+                <tr class="bg-primary">
+                    <td>Descripcion de la imagen</td>
+                    <td><input type="text" name="xpdesimg"></td>
+                </tr>
+                <tr class="bg-primary">
+                    <td>Parrafos</td>
+                    <td><input type="text" name="xparrafo"></td>
+                </tr>
+                <tr class="bg-primary">
+                    <td>Video</td>
+                    <td><input type="text" name="xpvideo"></td>
+                </tr>
+                <tr class="bg-primary">
+                    <td>Descripcion del video</td>
+                    <td><input type="text" name="xpdesvideo"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <input type="submit" value="Añadir Pagina Web">
+</form>
+{% endblock %}

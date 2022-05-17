@@ -1,0 +1,38 @@
+
+
+{{texto|safe}}
+
+<div class="xpathmenu" marcar="nopintar" id="xpathmenu">
+    <form marcar="nopintar" name="enviarform" id="formlista" method="post" action="{{url_for('formpart4')}}">
+        <input type="hidden"name="tipopagina" id="tipopagina" value="">
+        <div class="selector" marcar="nopintar"></div> 
+        <table marcar="nopintar" width="100%">
+            <tbody marcar="nopintar">
+                <tr marcar="nopintar">
+                    <td>Seleccionar urls de las noticias</td>
+                    <td><button type="button" marcar="nopintar" onclick="habilitarseleccion()" id="pintartag">Seleccionar</button></td>
+                    <td><input type="text" class="xpathenlace" name="xpathenlace" marcar="nopintar" id="inputxpenlace"></td>
+                    <td marcar="nopintar">
+                        <div class="dropdown" marcar="nopintar" >
+                            <button type="button" onclick="mostrarlista()" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                            <div id="myDropdown" class="dropdown-content " marcar="nopintar">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr marcar="nopintar">
+                    <td marcar="nopintar">Boton Mostrar mas noticias</td>
+                    <td marcar="nopintar"><button type="button" onclick="habilitarseleccion2()" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" class="xpathsiguiente" name="xpathsiguiente" marcar="nopintar" id="xpinputsig" onkeyup="pintarplomo()"></td>
+                    <td><p id="datosinputsig" ></p></td>
+                </tr>
+            </tbody>
+
+        </table>
+        <input marcar="nopintar" id="inputenviarform" type="submit" name="enviar" value="Aceptar">
+    </form>
+    
+</div>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="/static/scripts/selectorxpath.js" >
+</script>

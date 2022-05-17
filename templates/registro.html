@@ -1,0 +1,78 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+{% block titulo1 %}
+Registro de usuarios
+{% endblock %}
+{% block content %}
+    <div id="register">
+        <div class="container">
+            <div id="register-row" class="row justify-content-center align-items-center">
+                <div id="register-column" class="col-md-6">
+                    <div id="register-box" class="col-md-12">
+                        <form id="register-form" class="form" action="{{url_for('registrarusuario')}}" method="post">
+                            <h3 class="text-center text-info">Registrar Usuario</h3>
+                            <div class="form-group">
+                                <label for="username" class="text-info">CI (Sin extencion):</label><br>
+                                <input type="text" name="ci" id="username" class="form-control" pattern="\d+"
+                                required oninvalid="setCustomValidity('Se requiere solo numeros')" oninput="setCustomValidity('')">
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Usuario:</label><br>
+                                <input type="text" name="usuario" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Nombres:</label><br>
+                                <input type="text" name="nombres" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Apellidos:</label><br>
+                                <input type="text" name="apellidos" id="apellidos" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username" class="text-info">Seleccione un rol:</label><br>
+                                <select name="tipousuario" id="tipousuario" class="form-select" aria-label="Default select example">
+                                    <option value="lector">Lector</option>
+                                    <option value="adminsitrador">Administrador</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if mensaje is defined %}
+    <script>
+        var mensaje=' {{mensaje}}'
+        window.alert(mensaje);
+    </script>
+   
+    {%endif%}
+    <script>
+        
+        var password = document.getElementById("password"), confirm_password = document.getElementById("confirm_password");
+        
+        function validatePassword(){
+          console.log("Cambiando contraseña");
+          if(password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Las contraseñas no coinciden");
+          } else {
+            confirm_password.setCustomValidity('');
+          }
+        }
+        
+        password.onchange = validatePassword;
+        confirm_password.onkeyup = validatePassword;    
+        </script>
+{% endblock %}
+

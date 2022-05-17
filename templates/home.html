@@ -1,0 +1,607 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+
+
+
+{% block titulo1 %}
+Pagina principal
+{% endblock %}
+{%block carrousel%}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{% if portada|length>0 %}
+<div style="height: 500px;">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<div style="height: 50px;">
+
+</div>
+
+    <div id="carouselExampleControls" class="container-fluid  text-center">
+        <h4 class="mt-2 font-weight-bold">Principales Noticias</h4>
+        <div class="owl-carousel owl-theme">
+
+            <div class="item first prev">
+                <div class="card border-0 ">
+                    <div class="row justify-content-center"> 
+                        {% if ''== portada[0]['urlimagen'] or not 'http' in portada[0]['urlimagen'] %}
+                        <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
+                        {% else %}
+                        <img src="{{portada[0]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        {% endif %}
+                    </div>
+                    <div class="Textoencima">
+                        <h5 class=""><a href="{{portada[0]['urlnoticia']}}" class="link-light">{{portada[0]['titular']}}</a></h5>
+                        <p>fuente: {{portada[0]['urlfuente'] }}</p>
+                        <p class="content ">{{portada[0]['parrafos'][0:200]}}</p>
+                    </div>
+
+                </div>
+            </div>
+            
+            {% if portada|length>1 %}
+            <div class="item show">
+                <div class="card border-0 ">
+                    <div class="row justify-content-center"> 
+                        {% if ''== portada[1]['urlimagen'] or not 'http' in portada[1]['urlimagen'] %}
+                        <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
+                        {% else %}
+                        <img src="{{portada[1]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        {% endif %}
+                    </div>
+                    <div class="Textoencima">
+                        <h5 class=""><a href="{{portada[1]['urlnoticia']}}" class="link-light">{{portada[1]['titular']}}</a></h5>
+                        <p>fuente: {{portada[1]['urlfuente'] }}</p>
+                        <p class="content ">{{portada[1]['parrafos'][0:200]}}...</p>
+                    </div>
+
+                </div>
+            </div>
+            {% endif %}
+            {% for i in range(2,portada|length-1) %}
+            <div class="item next">
+                <div class="card border-0 ">
+                    <div class="row justify-content-center"> 
+                        {% if ''== portada[i]['urlimagen'] or not 'http' in portada[i]['urlimagen'] %}
+                        <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
+                        {% else %}
+                        <img src="{{portada[i]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        {% endif %}
+                    </div>
+                    <div class="Textoencima">
+                        <h5 class=""><a href="{{portada[i]['urlnoticia']}}" class="link-light">{{portada[i]['titular']}}</a></h5>
+                        <p>fuente: {{portada[i]['urlfuente'] }}</p>
+                        <p class="content">{{portada[i]['parrafos'][0:200]}}...</p>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+            {% if portada|length>1 %}
+            <div class="item last">
+                <div class="card border-0 ">
+                    <div class="row justify-content-center"> <img src="{{portada[portada|length-1]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> </div>
+                    <div class="Textoencima">
+                        <h5 class=""><a href="{{portada[portada|length-1]['urlnoticia']}}" class="link-light">{{portada[portada|length-1]['titular']}}</a></h5>
+                        <p>fuente: {{portada[portada|length-1]['urlfuente'] }}</p>
+                        <p class="content">{{portada[portada|length-1]['parrafos'][0:200]}}...</p>
+                    </div>
+                </div>
+            </div>
+            {%endif%}
+        </div>
+    </div>
+
+</div>
+{% endif %}
+<script>
+  $(document).ready(function() {
+  // you can remove this if you want, it will stop the carousel transtioning automatically. 
+  $('#myCarousel').carousel({
+    interval: 10000
+  });
+});
+
+</script>
+
+{%endblock%}
+{% block content %}
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<form action="{{url_for('buscarnoticia')}}" method="post">
+
+
+<div class="input-group rounded">
+    <input type="search" class="form-control rounded" placeholder="Buscar" name="buscar" aria-label="Search" aria-describedby="search-addon" />
+    <span class="icon-input-btn">
+		<input type="submit" class="btn btn-secondary" value="Buscar">
+	</span>
+  </div>
+</form>
+<hr> 
+<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Ultimas Noticias</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Categorias</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-temas-tab" data-bs-toggle="pill" data-bs-target="#pills-fuentes" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Fuentes de Noticias</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="pills-tabContent">
+    <h3>Ultimas Noticias</h3>
+    <div class="tab-pane fade show active" id="pills-home"  role="tabpanel" aria-labelledby="pills-home-tab">
+       <!--Aqui van las fechas en orden de recoleccion-->
+       <div id="contenidonoticias">
+        {% for n in Noticia %} 
+        <article class="row bg-dark text-white ml-1 py-3 border" tipo="ultnot"url="{{ n['urlnoticia'] }}" >
+        
+            <div class="col-md-3">
+            {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
+            <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
+            {% else %}
+            <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+            {% endif %}
+            </div>
+            <div class="col">
+            <a href="{{ n['urlnoticia'] }}"  target="_blank"><h5>{{n['titular']}}</h5></a>
+            <strong>Fuente: </strong>{{n['urlfuente']}}<br>
+            <strong>Fecha: </strong> {{n['fecha']}} <br>
+            <strong>Redactor: </strong> {{n['redactor']}} <br>
+            <p>{{n['parrafos'][0:400]}}...</p>
+            <a href="{{ n['urlnoticia'] }}" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a>
+            </div>
+            <div class="Noticias Relacionadas">
+                <button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('{{n['urlnoticia'] }}','ultnot')">Noticias Relacionadas</button>
+            </div>
+        </article>
+        {% endfor %}
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="ajaxcargarmasnoticias()">Cargar mas noticias</button>
+      
+    </div>
+    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+ 
+
+            <select id="cambiarcat" name="cambiarcat">
+                {% for categoria in listacategorias %}
+                <option value="{{categoria['_id']}}">{{categoria['cat']}}</option>
+                {% endfor %}
+            </select>
+
+        <br>
+        <div id="listacategoria">
+            <h3 id="h3categoria">Nacional</h3>
+            <div id="tablacatnot">
+            {% for n in Noticiascat %} 
+            <article class="row bg-dark text-white ml-1 py-3 border" tipo="cat"url="{{ n['urlnoticia'] }}" >
+        
+                <div class="col-md-3">
+                {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
+                <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
+                {% else %}
+                <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+                {% endif %}
+                </div>
+                <div class="col">
+                <a href="{{ n['urlnoticia'] }}"  target="_blank"><h5>{{n['titular']}}</h5></a>
+                <strong>Fuente: </strong>{{n['urlfuente']}}<br>
+                <strong>Fecha: </strong> {{n['fecha']}} <br>
+                <strong>Redactor: </strong> {{n['redactor']}} <br>
+                <p>{{n['parrafos'][0:400]}}...</p>
+                <a href="{{ n['urlnoticia'] }}" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a>
+                </div>
+                <div class="Noticias Relacionadas">
+                    <button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('{{n['urlnoticia'] }}','cat')">Noticias Relacionadas</button>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+            <button class="btn btn-primary btn-sm" onclick="ajaxscargarcatergoria()">Cargar mas noticias</button>
+        </div>
+
+  </div>
+
+  <div class="tab-pane fade" id="pills-fuentes" role="tabpanel" aria-labelledby="pills-temas-tab">
+     <div id="FuentesdeNoticias">
+        <select id="cambiarfuente" name="cambiarfuente">
+            {% for pagnot in listapaginanoticias %}
+            <option>{{pagnot["URLPrincipal"]}}</option>
+            {% endfor %}
+        </select>
+        <div id="noticiasfuentes">
+            {% for n in noticiaspagina %} 
+            <article class="row bg-dark text-white ml-1 py-3 border" tipo="fuente"url="{{ n['urlnoticia'] }}" >
+        
+                <div class="col-md-3">
+                {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
+                <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
+                {% else %}
+                <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+                {% endif %}
+                </div>
+                <div class="col">
+                <a href="{{ n['urlnoticia'] }}"  target="_blank"><h5>{{n['titular']}}</h5></a>
+                <strong>Fuente: </strong>{{n['urlfuente']}}<br>
+                <strong>Fecha: </strong> {{n['fecha']}} <br>
+                <strong>Redactor: </strong> {{n['redactor']}} <br>
+                <p>{{n['parrafos'][0:400]}}...</p>
+                <a href="{{ n['urlnoticia'] }}" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a>
+                </div>
+                <div class="Noticias Relacionadas">
+                    <button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('{{n['urlnoticia'] }}','fuente')">Noticias Relacionadas</button>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+      
+         
+     </div>
+     <button class="btn btn-primary btn-sm" onclick="ajaxscargarnotfuente()">Cargar mas Noticias</button>
+  </div>
+
+<script>
+var numpagina=1;
+var numpaginacat=1;
+var numtemas=1;
+var numfuente=1
+function ajaxcargarmasnoticias(){
+    $("#pills-home").append(
+                '<div class="text-center" id="loading">'+
+                '<div class="spinner-border"   role="status">'+
+                '<span class="sr-only">Loading...</span>'+
+                '</div></div>'
+            );
+    $.ajax({
+        url:'/ajaxcargarmasnoticias',
+        data: {numpagina:numpagina},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            $("#pills-home > #loading").remove()
+
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#contenidonoticias").append('<article class="row bg-dark text-white ml-1 py-3 border" tipo="ultnot" url="'+Not['urlnoticia']+'"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <a href="'+Not['urlnoticia']+'"  target="_blank"> <h5>'+Not['titular']+'</h5> </a><strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br><strong>Redactor: </strong> '+Not['redactor']+' <br>'+'  <p>'+Not['parrafos'].substring(0,400)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div>'+
+                    '<div class="Noticias Relacionadas"><button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('+"'"+Not['urlnoticia']+"','ultnot'"+')">Noticias Relacionadas</button></div>'+
+                    ' </article>')
+            }
+            numpagina++;
+            
+        },
+        error: function(error){
+            console.log(error)
+        }
+    });
+}
+function buscarrel( urlnoticia,tipoar){
+    $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"']").append(
+                '<div class="text-center" id="loading">'+
+                '<div class="spinner-border"   role="status">'+
+                '<span class="sr-only">Loading...</span>'+
+                '</div></div>'
+            )
+    $.ajax({
+        url:'/ajaxbuscarnoticiasrelacionadas',
+        data: {urlnoticia:urlnoticia},
+        type: 'POST',
+        
+        success: function(response){
+            $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"'] > #loading").remove();
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            console.log(Noticias)
+            $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"']").append('<div class="row" id="notrel"> </div>');
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                id='#'+String(urlnoticia); 
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"'] > #notrel").append(
+                    "<div class='col-xs-4 p-2 '>"+
+                        '<div class="row text-white  ">'+
+                        '<div class="col" ><img src="'+urlimagen+'"  class="img-thumbnail mw-200" alt="Responsive image"style="width: 600px" > </div>'+
+                        "<div class='col'>"+
+                        "<a href='"+Not['urlnoticia']+"'>"+Not['titular']+"</a>"+
+                        "<p>fuente: "+Not['urlfuente'] +"</p>"+
+                        "<p>fecha: "+Not['fecha'] +"</p>"+
+                        "<p>"+Not['parrafos'].substring(0,150)+"</p>"+
+                        "</div>"+
+                        "</div>"+
+                    "</div"
+                );
+
+                $("article[tipo='"+tipoar+"'][url='"+urlnoticia+"'] > div >button[tipobtn='btnnoticiasrel'").attr('disabled', true);
+
+            }
+
+        },
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+function ajaxsolicitarcatergoria(Categoria){
+    $.ajax({
+        url:'/ajaxcategorias',
+        data: {categoria:Categoria},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            $("#tablacatnot").empty();
+
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                console.log(Not['titular']);
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#tablacatnot").append('<article class="row bg-dark text-white ml-1 py-3 border" tipo="cat" url="'+Not['urlnoticia']+'"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <a href="'+Not['urlnoticia']+'"  target="_blank"> <h5>'+Not['titular']+'</h5> </a><strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br><strong>Redactor: </strong> '+Not['redactor']+' <br>'+'  <p>'+Not['parrafos'].substring(0,400)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div>'+
+                    '<div class="Noticias Relacionadas"><button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('+"'"+Not['urlnoticia']+"','cat'"+')">Noticias Relacionadas</button></div>'+
+                    ' </article>')
+            }
+            numpaginacat=1
+        },
+
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+function ajaxsolicitarfuente(urlfuente){
+    $.ajax({
+        url:'/ajaxfuente',
+        data: {urlfuente:urlfuente},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            $("#noticiasfuentes").empty();
+
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                console.log(Not['titular']);
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#noticiasfuentes").append('<article class="row bg-dark text-white ml-1 py-3 border" tipo="fuente" url="'+Not['urlnoticia']+'"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <a href="'+Not['urlnoticia']+'"  target="_blank"> <h5>'+Not['titular']+'</h5> </a><strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br><strong>Redactor: </strong> '+Not['redactor']+' <br>'+'  <p>'+Not['parrafos'].substring(0,400)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div>'+
+                    '<div class="Noticias Relacionadas"><button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('+"'"+Not['urlnoticia']+"','fuente'"+')">Noticias Relacionadas</button></div>'+
+                    ' </article>')
+            }
+            numfuente=1
+        },
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+function ajaxscargartemas(){
+    $.ajax({
+        url:'/ajaxcargarmastemas',
+        data: {numpagina:numtemas},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            listatemas=JSON.parse(respuesta["listatemas"])
+            
+            for(var tema of listatemas){
+                consultahtml=""
+                consultahtml=consultahtml+'<div class="p-3 mb-2 bg-secondary text-white" >'
+                consultahtml=consultahtml+"<h4>"+tema[0]['titular']+"</h4>"
+                consultahtml=consultahtml+'<div class="outerDiv">'
+                    for(var noticia of tema){
+                        var urlimagen=""
+                        if(!noticia['urlimagen'].includes("http") || noticia['urlimagen']==""){
+                            urlimagen="/static/Imagen_no_disponible.png" ;
+                        }else{
+                            urlimagen=noticia['urlimagen'];
+                        }
+                        consultanot='<div class="innerDiv">'+
+                                        '<h5><a href="'+noticia['urlnoticia']+'">'+noticia['titular']+'</a></h5>'+
+                                        '<div class="doc">'+
+                                            '<div class="imagentemanot">'+
+                                                '<img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image" style="width: 600px">'
+                                            +'</div>'+
+                                        '</div>'+
+                                        '<p>'+noticia['parrafos'].substring(0,250)+'...</p>'+
+                                        '<p>fuente:'+noticia['urlfuente']+'</p>'+
+                                    '</div>';
+                        consultahtml=consultahtml+consultanot
+                    }
+                    consultanot=consultanot+"</div></div>"
+                $("#Contenidotemas").append(consultahtml)
+            }
+            numtemas++;
+        },
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+function ajaxscargarcatergoria(){
+    Categoria=$('#cambiarcat').val();
+    $("#pills-profile").append(
+                '<div class="text-center" id="loading">'+
+                '<div class="spinner-border"   role="status">'+
+                '<span class="sr-only">Loading...</span>'+
+                '</div></div>'
+            );
+    $.ajax({
+        url:'/ajaxcargarcategorias',
+        data: {categoria:Categoria,
+               numpagina:numpaginacat},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            $("#pills-profile > #loading").remove();
+
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                console.log(Not['titular']);
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#tablacatnot").append('<article class="row bg-dark text-white ml-1 py-3 border" tipo="cat" url="'+Not['urlnoticia']+'"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <a href="'+Not['urlnoticia']+'"  target="_blank"> <h5>'+Not['titular']+'</h5> </a><strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br><strong>Redactor: </strong> '+Not['redactor']+' <br>'+'  <p>'+Not['parrafos'].substring(0,400)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div>'+
+                    '<div class="Noticias Relacionadas"><button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('+"'"+Not['urlnoticia']+"','cat'"+')">Noticias Relacionadas</button></div>'+
+                    ' </article>')
+            }
+            numpaginacat++;
+        },
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+
+function ajaxscargarnotfuente(){
+    urlfuente=$('#cambiarfuente').val();
+    $("#pills-fuentes").append(
+                '<div class="text-center" id="loading">'+
+                '<div class="spinner-border"   role="status">'+
+                '<span class="sr-only">Loading...</span>'+
+                '</div></div>'
+            );
+    $.ajax({
+        url:'/ajaxcargarnotfuente',
+        data: {urlfuente:urlfuente,
+               numpagina:numfuente},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            Noticias=JSON.parse(respuesta["Noticias"])
+            $("#pills-fuentes > #loading").remove();
+            for(var i=0; i<Noticias.length; i++){
+                var Not=Noticias[i];
+                console.log(Not['titular']);
+                urlimagen=Not['urlimagen']
+                if(urlimagen == "" || !urlimagen.includes("http")){
+                    urlimagen="/static/Imagen_no_disponible.png";
+                }
+                $("#noticiasfuentes").append('<article class="row bg-dark text-white ml-1 py-3 border" tipo="fuente" url="'+Not['urlnoticia']+'"><div class="col-md-3"><img src="'+urlimagen+'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" ></div> <div class="col"> <a href="'+Not['urlnoticia']+'"  target="_blank"> <h5>'+Not['titular']+'</h5> </a><strong>Fuente: </strong>'+Not['urlfuente']+'<br> <strong>Fecha: </strong>'+Not['fecha']+ '<br><strong>Redactor: </strong> '+Not['redactor']+' <br>'+'  <p>'+Not['parrafos'].substring(0,400)+'...</p> <a href="'+Not['urlnoticia']+'" class="btn btn-primary btn-sm" target="_blank">ir a la noticia</a> </div>'+
+                    '<div class="Noticias Relacionadas"><button class="btn btn-primary btn-sm" tipobtn="btnnoticiasrel" onclick="buscarrel('+"'"+Not['urlnoticia']+"','fuente'"+')">Noticias Relacionadas</button></div>'+
+                    ' </article>')
+            }
+            numfuente++;
+        },
+        error: function(error){
+            console.log(error)
+        }
+    })
+}
+    $('#cambiarcat').change(function(){ 
+    var value = $(this).val();
+    var texto=$(this).find('option:selected').text();
+    console.log(value)
+    $("#h3categoria").text(texto)
+    
+
+    ajaxsolicitarcatergoria(value)
+
+});
+$('#cambiarfuente').change(function(){ 
+    var value = $(this).val();
+    console.log(value)
+    ajaxsolicitarfuente(value)
+
+});
+
+</script>
+
+
+<script>
+  $(document).ready(function() {
+
+$('.owl-carousel').owlCarousel({
+mouseDrag:false,
+loop:true,
+margin:2,
+nav:true,
+responsive:{
+0:{
+items:1
+},
+600:{
+items:1
+},
+1000:{
+items:3
+}
+}
+});
+
+$('.owl-prev').click(function() {
+$active = $('.owl-item .item.show');
+$('.owl-item .item.show').removeClass('show');
+$('.owl-item .item').removeClass('next');
+$('.owl-item .item').removeClass('prev');
+$active.addClass('next');
+if($active.is('.first')) {
+$('.owl-item .last').addClass('show');
+$('.first').addClass('next');
+$('.owl-item .last').parent().prev().children('.item').addClass('prev');
+}
+else {
+$active.parent().prev().children('.item').addClass('show');
+if($active.parent().prev().children('.item').is('.first')) {
+$('.owl-item .last').addClass('prev');
+}
+else {
+$('.owl-item .show').parent().prev().children('.item').addClass('prev');
+}
+}
+});
+
+$('.owl-next').click(function() {
+$active = $('.owl-item .item.show');
+$('.owl-item .item.show').removeClass('show');
+$('.owl-item .item').removeClass('next');
+$('.owl-item .item').removeClass('prev');
+$active.addClass('prev');
+if($active.is('.last')) {
+$('.owl-item .first').addClass('show');
+$('.owl-item .first').parent().next().children('.item').addClass('prev');
+}
+else {
+$active.parent().next().children('.item').addClass('show');
+if($active.parent().next().children('.item').is('.last')) {
+$('.owl-item .first').addClass('next');
+}
+else {
+$('.owl-item .show').parent().next().children('.item').addClass('next');
+}
+}
+});
+
+});
+</script>
+{% endblock %}

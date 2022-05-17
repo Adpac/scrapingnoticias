@@ -1,0 +1,111 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+{% block titulo1 %}
+Añadir Pagina web
+{% endblock %}
+{% block content %}
+<h1>Agregar una nueva pagina web</h1>
+
+{% from "_macro.html" import renderfield %}
+<div class="container pt-3 my-3"> 
+   <!-- Aquí puedes escribir tu comentario -->
+   <!-- action="{{url_for('evaluarpag')}}" --> 
+<form name="enviarurl" id="formpagina" method="post" action="{{url_for('evaluarpag')}}" >
+   <input type="url" name="urlpaginanoticia" required style="width: 100%; margin: 2px">
+   <button type="submit" class="btn btn-primary" id="btnaddurl">Añadir Url</button>
+</form>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function loadingalert(id){
+   var texto='</div  class="alert alert-primary" id="loading" role="alert"><div class="hidden" id="loading"><div class="d-flex justify-content-center"><P>Cargando...</P><div class="spinner-border" role="status"><span class="sr-only"></span></div></div></div></div>';
+   $(id).after(texto);
+}
+function creartablas(id,listaelementos){
+   $(id).after('<p id="Agregue">Elimine las categorias en las cuales no esté interezado</p>');
+   $("p#Agregue").after('<div id="tabla" class="scroll"> <table id="tablasuburls" border="1"></table> </div>');
+   $(id).after('<input type="hidden" id="cont" name="numurls" value="'+listaelementos.length+'">');
+   for(var i=0; i<listaelementos.length; i++){
+     
+      $("div#tabla #tablasuburls").append('<tr id="fila'+i+'"><td><input type="text" class="form-control" style="width: 500px;" value="'+listaelementos[i]+'"></td> <td><a href="'+listaelementos[i]+'" class="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">Ver Pagina</a></td> <td><button id="btn'+i+'" class="btn btn-primary btn-sm" type="button" onclick="eliminarFila('+i+')" value="Eliminar">Eliminar</button></td></tr>');
+   }
+   $("div#tabla").after('<a href="/prueba" id="inspeccionarsubdominio" rel="modal:open">example</a>');
+   $("button#inspeccionarsubdominio").after('#myModaldiv');
+   $.post("/prueba", function(data){
+    $("#myModalDiv").html(data).fadeIn();
+   });
+  
+}
+function eliminarFila(index) {
+   //eliminamos sub urls y actualizamos elementos
+    var contador=document.getElementById("cont");
+    
+ 
+    var valor="fila"+index;
+   
+    $("#fila" + index).remove();
+    for(var i=parseInt(index); i<parseInt(contador.value); i++){
+      var j=i+1;
+      var idanterior="fila"+j;
+      var idnuevo="fila"+i;
+      var nuevoclick="eliminarFila('"+i+"');";
+      console.log(nuevoclick);
+      var input=document.getElementById(idanterior);
+      var entrada=document.getElementById("entrada"+j);
+      entrada.setAttribute("name","campo"+i);
+      entrada.id="entrada"+i
+      var boton=document.getElementById("btn"+j);
+      boton.setAttribute("onclick",nuevoclick);
+      boton.id="btn"+i;
+      input.id=idnuevo; 
+    }
+    //console.log(contador.value)
+    var numel=parseInt(contador.getAttribute('value'))-1;
+    contador.setAttribute("value",numel)
+    contador.setAttribute("value",numel)
+  }
+/*$(document).ready(function(){
+
+
+function ajaxenviarurlprincipal(){
+$("p#Agregue").remove();
+$("div#tabla").remove();
+$("input#btnform2").remove();
+$("input#cont").remove();
+ loadingalert("#btnaddurl");
+   $.ajax({
+      url: 'ajaxpaginanoticia',
+      data: $('form').serialize(),
+      type: 'POST',
+      
+      success: function(response){
+         $('#loading').remove();
+         var pagina=JSON.parse(response);
+
+         var urls=pagina.urlssec;
+         creartablas("#btnaddurl",urls)
+        
+      },
+
+      error: function(error){
+         console.error(error);
+         $('#loading').remove();
+         alert("Ocurrio un problema");
+      }
+   })
+}
+$("#formpagina").submit(function(event){
+   event.preventDefault();
+   ajaxenviarurlprincipal();
+});
+
+
+});*/
+</script>
+{% endblock %}
