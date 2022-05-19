@@ -468,7 +468,7 @@ def pagdimcargarnoticias(url, xpath, xpathboton):
     print("urld ", url)
     print("xpath ", xpath)
     print("xpathboton ", xpathboton)
-    DRIVER_PATH = 'chromedriver.exe'
+    DRIVER_PATH = 'chromedriver'
     driver = webdriver.Chrome(options=set_chrome_options())
     driver.get(url)
     if xpathboton!="":
