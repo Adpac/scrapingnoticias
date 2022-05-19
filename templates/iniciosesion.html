@@ -2,8 +2,11 @@
     {%extends "layoutusuario.html"%}
 {% elif session['type']=="adminsitrador" %}
     {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
 {% else %}
 {%extends "layout.html" %}
+{% endif %}
 {% endif %}
 {% block titulo1 %}
 Iniciar Sesion

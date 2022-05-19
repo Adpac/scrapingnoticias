@@ -2,6 +2,8 @@
     {%extends "layoutusuario.html"%}
 {% elif session['type']=="adminsitrador" %}
     {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
 {% else %}
 {%extends "layout.html" %}
 {% endif %}
@@ -13,7 +15,16 @@ Acerca de
 
 {% endblock %}
 {% block content %}
-
+<div style="height: 100px;"></div>
 <h1>Acerca de</h1>
+
+<p>Este proyecto fue elaborado con los siguientes fines:</p>
+<P>
+    <li>Proporcionar al usuario el acceso a la información diaria en nuestro país.</li>
+    <li>Implementar métodos de recolección de información mediante técnicas de Web Scraping.</li>
+    <li>Esta herramienta no edita ni distorsiona un artículo o noticia publicada por un medio de comunicación, el objetivo de la misma es recopilar información de múltiples paginas con el fin de informar al usuario.</li>
+    <li>Cada hecho noticioso fue elaborado por un medio de comunicación cuyo objetivo es informar a la sociedad, por lo cual esta aplicación tiene la obligación de dar el crédito a su respectiva fuente.</li>
+    <li>Solo se recopila información pública, la cual es accesible a todo público, esta aplicación no pretende atentar contra la privacidad de una persona ya sea natural o jurídica.</li>
+</P>
 <p>Creado por: Adel Paco</p>
 {% endblock %}
