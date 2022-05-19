@@ -1,4 +1,5 @@
 
+from multiprocessing.connection import wait
 from flask import Flask, url_for
 from urllib import response
 from flask_cors import CORS, cross_origin
@@ -24,7 +25,7 @@ import lxml.html as html
 from datetime import datetime, timedelta
 from passlib.hash import sha512_crypt as sha512
 from flask_socketio import SocketIO, send
-import Noticia
+import time
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 CORS(app, support_credentials=True)
@@ -42,6 +43,8 @@ listasw=list(stopwordsspanish)
 def eliminarstopwords(texto):
     return ' '.join([word for word in texto.split(' ') if word not in listasw])
 def scrapingnoticias():
+	time.sleep(120)
+	import Noticia
 	Noticia.cargartodaslaspaginas()
 tarea=threading.Thread(target=scrapingnoticias).start()
 @app.route('/users',methods=['POST'])
