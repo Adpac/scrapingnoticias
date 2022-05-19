@@ -448,6 +448,8 @@ def cargarnoticias():
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
 def set_chrome_options() -> None:
     """Sets chrome options for Selenium.
     Chrome options for headless browser is enabled.
@@ -468,8 +470,7 @@ def pagdimcargarnoticias(url, xpath, xpathboton):
     print("urld ", url)
     print("xpath ", xpath)
     print("xpathboton ", xpathboton)
-    DRIVER_PATH = 'chromedriver'
-    driver = webdriver.Chrome(options=set_chrome_options())
+    driver = webdriver.Chrome(ChromeDriverManager().install(),options=set_chrome_options())
     driver.get(url)
     if xpathboton!="":
         try:
@@ -606,7 +607,7 @@ def cargartodaslaspaginas():
         cargarnoticias()
         time.sleep(30)
 
-#cargartodaslaspaginas()
+cargartodaslaspaginas()
 #cargarnoticiasdeunapagina("http://www.elalteno.com.bo/")
 
 #prueba()
