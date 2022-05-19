@@ -17,11 +17,14 @@ from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import json
 #import Noticias
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from flask_pymongo import PyMongo
 import lxml.html as html
 from datetime import datetime, timedelta
 from passlib.hash import sha512_crypt as sha512
 from flask_socketio import SocketIO, send
+import Noticia
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 CORS(app, support_credentials=True)
@@ -35,9 +38,12 @@ socketio=SocketIO(app)
 swsp = pd.read_fwf('Stop Words Spanish.txt', header=None)
 stopwordsspanish=swsp[0].to_numpy()
 listasw=list(stopwordsspanish)
+
 def eliminarstopwords(texto):
     return ' '.join([word for word in texto.split(' ') if word not in listasw])
-
+def scrapingnoticias():
+	Noticia.cargartodaslaspaginas()
+tarea=threading.Thread(target=scrapingnoticias).start()
 @app.route('/users',methods=['POST'])
 def create_user():
 	return{'message':'received'}
@@ -573,6 +579,6 @@ def ajaxbuscarnoticiasrelacionadas():
 	return json.dumps(response)
 if __name__ == '__main__':
 	app.run()
-	socketio.run(app,port=5004)
+	socketio.run(app,debug=True, port=5004)
 
 	

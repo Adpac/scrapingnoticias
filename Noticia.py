@@ -1,6 +1,5 @@
-from asyncio.windows_events import NULL
+
 import sys, os
-from numpy import array, number, sort
 from pymongo import MongoClient
 from datetime import date
 from datetime import datetime
@@ -8,6 +7,7 @@ import time
 import requests
 import lxml.html as html
 import json
+
 import enviarnotificaciones
 client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority")
 db = client["Noticias"]
@@ -434,6 +434,7 @@ def cargarnoticias():
                                         break
     except Exception as e:
         print("Fallo al cargar la pagina")
+        print(pagina)
         print(e)
 
 
@@ -605,7 +606,7 @@ def cargartodaslaspaginas():
         cargarnoticias()
         time.sleep(30)
 
-cargartodaslaspaginas()
+#cargartodaslaspaginas()
 #cargarnoticiasdeunapagina("http://www.elalteno.com.bo/")
 
 #prueba()
