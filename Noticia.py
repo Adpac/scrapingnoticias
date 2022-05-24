@@ -236,7 +236,11 @@ class Noticia:
                             try:
                                 self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("src")
                                 if(self.urlimagen==None):
-                                    self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("href")
+                                    self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("srcset")
+                                    self.urlimagen=str(self.urlimagen).splitlines()[0]
+                                    if(self.urlimagen==None):
+                                        self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("href")
+                                if(self.urlimagen!=None):
                                     self.urlimagen=concatenarenlace(self.urlimagen, urlprincipal)
                                 print("self.urlimagen", self.urlimagen)
                             except Exception as e:
@@ -588,14 +592,14 @@ def cargarnoticiasdeunapagina(urlpagina):
                     for urlnoticia in listaurlsnot:
                         noti=Noticia()
                         urlnoticia=concatenarenlace(urlnoticia, urlprincipal)
-                        if colnoticias.count_documents({"urlnoticia":urlnot})<1:
+                        if colnoticias.count_documents({"urlnoticia":urlnoticia})<1:
                             cargar=noti.cargarnoticia(urlnoticia,xpathsnoticia, urlprincipal, categoriaprin=idcat)
                             if(cargar==False):
                                 print("Se detendra la categoria")
                                 break
                         else:
                             #En caso de que la noticia sea titular seguimos analizando
-                            consulta=colnoticias.find_one({"urlnoticia":urlnot})
+                            consulta=colnoticias.find_one({"urlnoticia":urlnoticia})
                             print("elemento",consulta)
                             if(consulta["estiular"]==False):
                                 print("Esta noticia ya esta en la lista")
@@ -608,8 +612,8 @@ def cargartodaslaspaginas():
         cargarnoticias()
         time.sleep(30)
 
-cargartodaslaspaginas()
-#cargarnoticiasdeunapagina("http://www.elalteno.com.bo/")
+#cargartodaslaspaginas()
+cargarnoticiasdeunapagina("https://www.paginasiete.bo/")
 
 #prueba()
 
