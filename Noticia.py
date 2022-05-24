@@ -613,7 +613,7 @@ def cargartodaslaspaginas():
         time.sleep(30)
 
 #cargartodaslaspaginas()
-cargarnoticiasdeunapagina("https://www.paginasiete.bo/")
+#cargarnoticiasdeunapagina("https://www.paginasiete.bo/")
 
 #prueba()
 
