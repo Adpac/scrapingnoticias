@@ -455,32 +455,20 @@ def cargarnoticias():
 
 #Paginas dinamicas
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
-def set_chrome_options() -> None:
-    """Sets chrome options for Selenium.
-    Chrome options for headless browser is enabled.
-    """
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_prefs = {}
-    chrome_options.experimental_options["prefs"] = chrome_prefs
-    chrome_prefs["profile.default_content_settings"] = {"images": 2}
-    chrome_options.headless=True
-    chrome_options.add_argument('--log-level=1')
-    return chrome_options            
-
+       
+def set_firefox_options():
+    options = Options()
+    options.add_argument("--headless")
+    return options
 def pagdimcargarnoticias(url, xpath, xpathboton):
     print("urld ", url)
     print("xpath ", xpath)
     print("xpathboton ", xpathboton)
-    driver = webdriver.Chrome(ChromeDriverManager().install(),options=set_chrome_options())
+    driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(),options=set_firefox_options())
     driver.get(url)
     if xpathboton!="":
         try:
@@ -518,10 +506,12 @@ def cargarnoticiasdeunapagina(urlpagina):
     tipo=pagina["Tipo"]
     xpathsnoticia=pagina["datosnoticia"]
     #obteniendo la noticia principal de la pagina 
+    print(xpathrirularprin)
     if(xpathrirularprin!=""):
         r=requests.get(urlprincipal)
         t=html.fromstring(r.content)
         elemAnoticiaprincipal=t.xpath(xpathrirularprin)
+        print(elemAnoticiaprincipal)
         if len(elemAnoticiaprincipal)>0:
             urlnoticiaprin=elemAnoticiaprincipal[0].get("href")
             print("URL noticiaprincipal: ",urlnoticiaprin)
@@ -626,7 +616,7 @@ def cargartodaslaspaginas():
         time.sleep(30)
 
 #cargartodaslaspaginas()
-#cargarnoticiasdeunapagina("https://paginasiete.bo/")
+cargarnoticiasdeunapagina("https://paginasiete.bo/")
 #probarcargarnoticia("https://paginasiete.bo/portada/muere-sergio-perovic-esposo-de-la-exalcaldesa-angelica-sosa-AA2626561","https://paginasiete.bo/")
 #prueba()
 
