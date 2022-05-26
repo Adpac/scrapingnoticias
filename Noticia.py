@@ -8,7 +8,7 @@ import requests
 import lxml.html as html
 import json
 
-import enviarnotificaciones
+#import enviarnotificaciones
 client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority")
 db = client["Noticias"]
 #en caso de conectar localhost db=client["Noticia"]
@@ -174,7 +174,7 @@ class Noticia:
     def generarnotificacion(self, urlfuente):
         enviar={"urlprin":urlfuente,"url":self.urlnot, "categoria":self.categoriaprincipal, "titular":self.titular, "parrafo":self.parrafos, "imagen":self.urlimagen, "mensaje":"nueva noticia"}
         data=json.dumps(enviar)
-        enviarnotificaciones.enviarmensaje(data)
+        #enviarnotificaciones.enviarmensaje(data)
     
 
     def cargarnoticia(self, urlnoticia, xpaths,urlprincipal, estitular=False, categoriaprin=""):
@@ -182,7 +182,13 @@ class Noticia:
         print("URL NOTICIA: ", urlnoticia)
         if colnoticias.count_documents({"urlnoticia":urlnoticia})<1:
             self.urlnot=urlnoticia
-            rn=requests.get(urlnoticia)
+            s = requests.Session()
+            s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36'
+            s.max_redirects = 60
+            
+            print("urlnoticia: ",urlnoticia)
+            
+            rn=s.get(urlnoticia)
             tn=html.fromstring(rn.content)
             self.estitular=estitular
             self.fecharecup=datetime.now()
@@ -235,11 +241,10 @@ class Noticia:
                         if(xpaths["xpimagen"]!=""):
                             try:
                                 self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("src")
+                                if(tn.xpath(xpaths["xpimagen"])[0].get("data-srcset")!=None):
+                                    self.urlimagen="https:"+str(tn.xpath(xpaths["xpimagen"])[0].get("data-srcset").split()[0])
                                 if(self.urlimagen==None):
-                                    self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("srcset")
-                                    self.urlimagen=str(self.urlimagen).splitlines()[0]
-                                    if(self.urlimagen==None):
-                                        self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("href")
+                                    self.urlimagen=tn.xpath(xpaths["xpimagen"])[0].get("href")
                                 if(self.urlimagen!=None):
                                     self.urlimagen=concatenarenlace(self.urlimagen, urlprincipal)
                                 print("self.urlimagen", self.urlimagen)
@@ -458,11 +463,11 @@ def set_chrome_options() -> None:
     """Sets chrome options for Selenium.
     Chrome options for headless browser is enabled.
     """
-    chrome_options = Options()
+    chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_prefs = {}
     chrome_options.experimental_options["prefs"] = chrome_prefs
@@ -605,6 +610,14 @@ def cargarnoticiasdeunapagina(urlpagina):
                                 print("Esta noticia ya esta en la lista")
                                 evaluar=False
                                 break
+def probarcargarnoticia(urlnoticia, urlfuente):
+    colfuente=colpagnot.find_one({"URLPrincipal":urlfuente})
+    rn=requests.get(urlnoticia)
+    tn=html.fromstring(rn.content)
+    listaxpath=colfuente["datosnoticia"]
+    print(listaxpath["xpimagen"])
+    urlimg=tn.xpath(listaxpath["xpimagen"])
+    print(str(urlimg[0].get("data-srcset")).split())
 
 def cargartodaslaspaginas():
     while True:
@@ -613,8 +626,8 @@ def cargartodaslaspaginas():
         time.sleep(30)
 
 #cargartodaslaspaginas()
-#cargarnoticiasdeunapagina("https://www.paginasiete.bo/")
-
+#cargarnoticiasdeunapagina("https://paginasiete.bo/")
+#probarcargarnoticia("https://paginasiete.bo/portada/muere-sergio-perovic-esposo-de-la-exalcaldesa-angelica-sosa-AA2626561","https://paginasiete.bo/")
 #prueba()
 
 #arrayaños=["1 de abril de 2022","01/04/2022","01-04-2022","04-01-2022","1 de abril 2022","2020-04-01","abril 01 2022","abril 1 2022","abril 01 de 2022","2022 abril 01", "viernes, abril 1, 2022", "miércoles, 6 de abril de 2022 · 15:01", "Lunes, 28 de Marzo del 2022", "11:24 ET(15:24 GMT) 7 Abril, 2022", "abril 7, 2022","marzo 11, 2022","Jue, 04/07/2022 - 08:20", "07 Abr 2022","<!--//--><![CDATA[//><!-- if(window.da2a)da2a.script_load(); //--><!]]>"]
