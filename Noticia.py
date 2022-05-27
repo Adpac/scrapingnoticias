@@ -458,8 +458,9 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-
+"""
 def  load_driver():
 	options = webdriver.FirefoxOptions()
 	# enable trace level for debugging 
@@ -477,16 +478,20 @@ def  load_driver():
 		options=options)
 
 	return firefox_driver
-       
+"""       
 def set_firefox_options():
     options = Options()
+    options.add_argument("-no-sandbox")
     options.add_argument("--headless")
+    
     return options
+
 def pagdimcargarnoticias(url, xpath, xpathboton):
     print("urld ", url)
     print("xpath ", xpath)
     print("xpathboton ", xpathboton)
-    driver = load_driver()
+    binary = FirefoxBinary(os.environ.get('FIREFOX_BIN'))
+    driver = driver = webdriver.Firefox(firefox_binary=binary,executable_path=GeckoDriverManager().install(), options=set_firefox_options())
     driver.get(url)
     if xpathboton!="":
         try:
