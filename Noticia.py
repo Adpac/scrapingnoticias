@@ -457,16 +457,13 @@ def cargarnoticias():
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
-from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 def  load_driver():
 	options = webdriver.FirefoxOptions()
-	
 	# enable trace level for debugging 
 	options.log.level = "trace"
-
 	options.add_argument("-remote-debugging-port=9224")
 	options.add_argument("-headless")
 	options.add_argument("-disable-gpu")
@@ -637,7 +634,7 @@ def cargartodaslaspaginas():
         time.sleep(30)
 
 #cargartodaslaspaginas()
-#cargarnoticiasdeunapagina("https://paginasiete.bo/")
+cargarnoticiasdeunapagina("https://paginasiete.bo/")
 #probarcargarnoticia("https://paginasiete.bo/portada/muere-sergio-perovic-esposo-de-la-exalcaldesa-angelica-sosa-AA2626561","https://paginasiete.bo/")
 #prueba()
 
