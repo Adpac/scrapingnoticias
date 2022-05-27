@@ -490,8 +490,8 @@ def pagdimcargarnoticias(url, xpath, xpathboton):
     print("urld ", url)
     print("xpath ", xpath)
     print("xpathboton ", xpathboton)
-    binary = FirefoxBinary(os.environ.get('FIREFOX_BIN'))
-    driver = driver = webdriver.Firefox(firefox_binary=binary,executable_path=GeckoDriverManager().install(), options=set_firefox_options())
+    #binary = FirefoxBinary(os.environ.get('FIREFOX_BIN'))
+    driver = driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=set_firefox_options())
     driver.get(url)
     if xpathboton!="":
         try:
