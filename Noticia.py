@@ -639,7 +639,7 @@ def cargartodaslaspaginas():
         time.sleep(30)
 
 #cargartodaslaspaginas()
-cargarnoticiasdeunapagina("https://paginasiete.bo/")
+#cargarnoticiasdeunapagina("https://paginasiete.bo/")
 #probarcargarnoticia("https://paginasiete.bo/portada/muere-sergio-perovic-esposo-de-la-exalcaldesa-angelica-sosa-AA2626561","https://paginasiete.bo/")
 #prueba()
 
