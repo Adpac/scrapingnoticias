@@ -483,7 +483,7 @@ def set_firefox_options():
     options = Options()
     options.add_argument("-no-sandbox")
     options.add_argument("--headless")
-    options.binary_location = r'/usr/local/bin:/usr/bin:/bin:/app/vendor:/app/vendor/firefox'
+    options.binary_location = r'/usr/local/bin:/usr/bin:/bin:/app/vendor/firefox'
     return options
 
 def pagdimcargarnoticias(url, xpath, xpathboton):
