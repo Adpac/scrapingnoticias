@@ -13,7 +13,7 @@ from flask import Flask, session
 import json
 #import Noticias
 import threading
-from concurrent.futures import ThreadPoolExecutor
+
 from flask_pymongo import PyMongo
 import lxml.html as html
 from datetime import datetime, timedelta
