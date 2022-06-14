@@ -75,8 +75,10 @@ async def cargarpagina(urlpagina):
 	print("se cargo la pagina web")
 	try:
 		await asession.close()
+		print("sesion cerrada")
 	except:
 		print("no se pudo cerrar session")
+	print("retornando")
 	return contenidopag
 
 @unsync
@@ -390,6 +392,9 @@ def añadirportada():
 		#syncio.set_event_loop(loop)
 		#texto= loop.run_until_complete(cargarpagina(url))
 		#loop.close()
+		print("dochtml......")
+		print(texto)
+		print(".........................")
 		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 		iniciobody=re.search("<body.*>",texto)
 		iniciohead=re.search("<head.*>",texto)
