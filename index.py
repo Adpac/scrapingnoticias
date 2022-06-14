@@ -13,7 +13,6 @@ from flask import Flask, session
 import json
 #import Noticias
 import threading
-
 from flask_pymongo import PyMongo
 import lxml.html as html
 from datetime import datetime, timedelta
@@ -43,7 +42,10 @@ def scrapingnoticias():
 	import Monitoreonoticias
 	while(True):
 		time.sleep(60)
-		Monitoreonoticias.monitoriartodaslaspaginas()
+		try:
+			Monitoreonoticias.monitoriartodaslaspaginas()
+		except:
+			print("ocurrio un error")
 tarea=threading.Thread(target=scrapingnoticias).start()
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
