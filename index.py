@@ -23,7 +23,7 @@ import asyncio
 import pandas as pd
 from requestshtml import AsyncHTMLSession
 from requestshtml import HTMLSession
-
+from unsync import unsync
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.config['CORS_HEADERS'] = 'application/json'
@@ -50,6 +50,7 @@ def scrapingnoticias():
 			print("ocurrio un error")
 
 #tarea=threading.Thread(target=scrapingnoticias).start()
+@unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
@@ -76,6 +77,7 @@ async def cargarpagina(urlpagina):
 		print("no se pudo cerrar session")
 	return contenidopag
 
+@unsync
 async def cargarpaginarapida(urlpagina):
     asession = AsyncHTMLSession()
     r = await asession.get(urlpagina)
@@ -94,6 +96,7 @@ async def cargarpaginarapida(urlpagina):
 	#print("-----------")
 	#print(contenidopag)
     return contenidopag
+@unsync
 async def consultarxpath(urlpagina,xpath):
 	asession = AsyncHTMLSession() 
 
@@ -302,11 +305,12 @@ def reglascategoria():
 	if(request.method=="POST"):
 		url=request.form["urlcategoria"]
 		categoria=request.form["categoria"]
+		texto=cargarpagina(url).result()
 		#texto=asyncio.run(cargarpagina(url))
-		loop = asyncio.new_event_loop()
-		asyncio.set_event_loop(loop)
-		texto=loop.run_until_complete(cargarpagina(url))
-		loop.close()
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#texto=loop.run_until_complete(cargarpagina(url))
+		#loop.close()
 	arrayurlext=url.split("/")
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
@@ -336,11 +340,12 @@ def reglasnoticia():
 	categoria=""
 	urlext=request.args["urlext"]
 	url=request.args["urlnoticia"]
+	texto=cargarpagina(url).result()
 	#texto=asyncio.run(cargarpagina(url))
-	loop = asyncio.new_event_loop()
-	asyncio.set_event_loop(loop)
-	texto=loop.run_until_complete(cargarpagina(url))
-	loop.close()
+	#loop = asyncio.new_event_loop()
+	#asyncio.set_event_loop(loop)
+	#texto=loop.run_until_complete(cargarpagina(url))
+	#loop.close()
 	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
@@ -379,11 +384,12 @@ def añadirportada():
 	
 	if request.method=='POST':
 		url=request.form['urlpaginanoticia']
+		texto=cargarpagina(url).result()
 		#texto=asyncio.run(cargarpagina(url))
-		loop = asyncio.new_event_loop()
-		asyncio.set_event_loop(loop)
-		texto= loop.run_until_complete(cargarpagina(url))
-		loop.close()
+		#loop = asyncio.new_event_loop()
+		#syncio.set_event_loop(loop)
+		#texto= loop.run_until_complete(cargarpagina(url))
+		#loop.close()
 		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 		iniciobody=re.search("<body.*>",texto)
 		iniciohead=re.search("<head.*>",texto)
@@ -421,11 +427,12 @@ def validarportada():
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
+		lurlnot=consultarxpath(urlprin,str(xpathurl)+"//@href").result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop = asyncio.new_event_loop()
-		asyncio.set_event_loop(loop)
-		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop.close()
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop.close()
 		print("xpath url", xpathurl)
 		print("Url noticia",lurlnot)
 		urlnoticia=lurlnot[0]
@@ -486,11 +493,12 @@ def validarurlcategoria():
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
+		lurlnot=consultarxpath(urlprin,str(xpathurl)+"//@href").result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop = asyncio.new_event_loop()
-		asyncio.set_event_loop(loop)
-		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop.close()
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop.close()
 		urlnoticia=lurlnot[0]
 		print("redireccionando a reglas noticia")
 		
