@@ -386,6 +386,7 @@ def añadirportada():
 	
 	if request.method=='POST':
 		url=request.form['urlpaginanoticia']
+		print(url)
 		texto=cargarpagina(url).result()
 		#texto=asyncio.run(cargarpagina(url))
 		#loop = asyncio.new_event_loop()
@@ -393,7 +394,7 @@ def añadirportada():
 		#texto= loop.run_until_complete(cargarpagina(url))
 		#loop.close()
 		print("dochtml......")
-		print(texto)
+		#print(texto)
 		print(".........................")
 		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 		iniciobody=re.search("<body.*>",texto)
