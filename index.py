@@ -23,6 +23,8 @@ import asyncio
 import pandas as pd
 from requestshtml import AsyncHTMLSession
 from requestshtml import HTMLSession
+import nest_asyncio
+nest_asyncio.apply()
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.config['CORS_HEADERS'] = 'application/json'
