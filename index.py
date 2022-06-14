@@ -64,13 +64,15 @@ async def cargarpagina(urlpagina):
 	protocolo=arrayurlpag[0]
 	dominioprin=arrayurlpag[2]
 	listaimagenes=r.html.xpath("//@src | //@href")
-	#r.close()
+	print("procesando... imagenes")
+	r.close()
 	for link in listaimagenes:
 		if not ("http" in str(link)):
 			if not(dominioprin in link):
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
 			else:
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
+	print("se cargo la pagina web")
 	try:
 		await asession.close()
 	except:
@@ -81,7 +83,6 @@ async def cargarpagina(urlpagina):
 async def cargarpaginarapida(urlpagina):
     asession = AsyncHTMLSession()
     r = await asession.get(urlpagina)
-    
     contenidopag=r.html.html
     arrayurlpag=urlpagina.split("/")
     protocolo=arrayurlpag[0]
@@ -99,7 +100,6 @@ async def cargarpaginarapida(urlpagina):
 @unsync
 async def consultarxpath(urlpagina,xpath):
 	asession = AsyncHTMLSession() 
-
 	r = await asession.get(urlpagina)
 	try:
 		await r.html.arender(sleep = 10, timeout=60)
