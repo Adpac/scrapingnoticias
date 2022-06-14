@@ -69,8 +69,10 @@ async def cargarpagina(urlpagina):
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
 			else:
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
-
-	await asession.close()
+	try:
+		await asession.close()
+	except:
+		print("no se pudo cerrar session")
 	return contenidopag
 
 async def cargarpaginarapida(urlpagina):
