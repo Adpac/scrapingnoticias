@@ -2,6 +2,8 @@
     {%extends "layoutusuario.html"%}
 {% elif session['type']=="adminsitrador" %}
     {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
 {% else %}
 {%extends "layout.html" %}
 {% endif %}
@@ -9,6 +11,9 @@
 Añadir Pagina web
 {% endblock %}
 {% block content %}
+<div style="height: 100px;">
+
+</div>
 <link rel="stylesheet" href="https://unpkg.com/@jarstone/dselect/dist/css/dselect.css">
 <script src="https://unpkg.com/@jarstone/dselect/dist/js/dselect.js"></script>
 <h1>Agregar una nueva pagina web</h1>

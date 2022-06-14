@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import ExcelWriter
 import openpyxl
 from openpyxl import Workbook
-import requests_html
+import requestshtml
 import requests
 import lxml.html as html
 from pymongo import MongoClient
@@ -66,7 +66,7 @@ def escanearnodinamica(url="https://www.eldiario.net/portal/category/politica/pa
     print("lista elementos")
     for i in range(paginicial, pagfinal):
         urlpag=url.replace("(num)",str(i))
-        session = requests_html.HTMLSession()
+        session = requestshtml.HTMLSession()
         print(urlpag)
         r=requests.get(urlpag)
         decode=r.content.decode('utf-8')

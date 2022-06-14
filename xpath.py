@@ -1,9 +1,9 @@
 
-from requests_html import HTMLSession
-import requests_html
+from requestshtml import HTMLSession
+import requestshtml
 import asyncio
 def cargarpaginarapida(urlpagina):
-    s = requests_html.HTMLSession()
+    s = requestshtml.HTMLSession()
     r=s.get(urlpagina)
     r.html.render(timeout="60")
     respuesta=r.html.xpath("//a")

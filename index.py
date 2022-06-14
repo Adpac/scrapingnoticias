@@ -21,8 +21,8 @@ from flask_socketio import SocketIO, send
 import time
 import asyncio
 import pandas as pd
-from requests_html import AsyncHTMLSession
-from requests_html import HTMLSession
+from requestshtml import AsyncHTMLSession
+from requestshtml import HTMLSession
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.config['CORS_HEADERS'] = 'application/json'
@@ -38,6 +38,7 @@ listasw=list(stopwordsspanish)
  
 def eliminarstopwords(texto):
     return ' '.join([word for word in texto.split(' ') if word not in listasw])
+
 def scrapingnoticias():
 	import Monitoreonoticias
 	while(True):
@@ -46,6 +47,7 @@ def scrapingnoticias():
 			Monitoreonoticias.monitoriartodaslaspaginas()
 		except:
 			print("ocurrio un error")
+
 #tarea=threading.Thread(target=scrapingnoticias).start()
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
@@ -741,7 +743,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	return json.dumps(response)
 
 if __name__ == '__main__':
-	#app.run(debug=True)
+	app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)
 
 	

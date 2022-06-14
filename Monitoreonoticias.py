@@ -1,6 +1,6 @@
 
 from email.mime import image
-from requests_html import AsyncHTMLSession
+from requestshtml import AsyncHTMLSession
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import json
