@@ -55,10 +55,7 @@ async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
 	r = await asession.get(urlpagina)
-	try:
-		await r.html.arender(sleep = 10, timeout=60) # sleeping is optional but do it just in case
-	except:
-		print("no se pudo cargar la pagina completamente")
+
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
 	protocolo=arrayurlpag[0]
@@ -103,10 +100,6 @@ async def cargarpaginarapida(urlpagina):
 async def consultarxpath(urlpagina,xpath):
 	asession = AsyncHTMLSession() 
 	r = await asession.get(urlpagina)
-	try:
-		await r.html.arender(sleep = 10, timeout=60)
-	except:
-		print("no se pudo cargar la pagina completamente")
 	respuesta=r.html.xpath(xpath)
 	print(respuesta)
 	await asession.close()
