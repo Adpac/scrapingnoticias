@@ -88,7 +88,8 @@
       console.log("mensaje nuevo")
       console.log(msg)
       noti = JSON.parse(msg);
-      urlimagen=noti["imagen"]
+      urlimagen=noti["urlimagen"]
+      console.log(urlimagen)
       if(urlimagen == "" || !urlimagen.includes("http")){
         urlimagen="/static/Imagen_no_disponible.png";
       }
@@ -120,7 +121,7 @@
                         Cuenta
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
-                          <a class="dropdown-item" href="#">Editar usuario</a>
+                          <a class="dropdown-item" href="{{url_for('editarusuario')}}">Editar usuario</a>
                           
                           <div class="dropdown-divider"></div>
                           <a class="dropdown-item" href="{{url_for('cerrarsesion')}}">Cerrar sesion</a>

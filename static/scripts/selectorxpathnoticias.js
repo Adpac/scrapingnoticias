@@ -1,4 +1,16 @@
 //desactivando los botones 
+var posicion="arriba";
+function cambiarposicion(){
+    if(posicion=="arriba"){
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenuabajo")
+        posicion="abajo";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Arriba";
+    }else{
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenu")
+        posicion="arriba";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Abajo";
+    }
+}
 const botones=document.querySelectorAll("[onclick]");
 for( boton of botones){
     if(boton.getAttribute("marcar")!="nopintar"){
@@ -64,7 +76,12 @@ document.body.addEventListener("click",(e)=>{
         bordeanterior=e.target.style.border;
         if(e.target.getAttribute("marcar")!="nopintar"){
             let output = getPathTo(e.target);
-            document.getElementById("input"+seleccion).value=optimizarxpath(output);
+            try{
+                document.getElementById("input"+seleccion).value=optimizarxpath2(output);
+            }catch(error){
+                document.getElementById("input"+seleccion).value=(output);
+            }
+            
             for(var i=0; i<=8; i++){
                 try {
                     pintarelemento(i);
@@ -91,10 +108,18 @@ document.body.addEventListener("click",(e)=>{
     }
 });
 
-
+function stringContainsNumber(_input){
+    let string1 = String(_input);
+    for( let i = 0; i < string1.length; i++){
+        if(!isNaN(string1.charAt(i)) && !(string1.charAt(i) === " ") ){
+          return true;
+        }
+    }
+    return false;
+  }
 
 function getPathTo(element) {
-    if (element.id !== '')
+    if (element.id !== '' && !stringContainsNumber(String(element.id)))
         return "//*[@id='" + element.id + "']";
     if (element === document.body)
         return "/";
@@ -175,35 +200,55 @@ function optimizarxpath(xpathentrada){
     elementosxpth=xpathentrada.split("/");
     for(var i=0; i<elementosxpth.length; i++){
         elemento=elementosxpth[i];
+        
+        nombrenodo=elemento.replaceAll(/ *\[[^)]*\] */g, "");
         remplazar="/"+elemento;
-        if(elemento!="" || elemento!=" "){
+        if(elemento!="" || elemento!=" " || !nombrenodo!="a"){
             console.log("remplazar: ",remplazar);
             aux=xpathsalida.replace(remplazar,"");
             var consultaaux=getElementsByXPath2(aux);
             var consultaactual=getElementsByXPath2(xpathsalida);
             console.log("Xpactual="+xpathsalida);
             console.log("xpaux: "+aux);
-            if(consultaaux.length==consultaactual.length && !elemento.includes("@id")){
+            console.log(consultaactual)
+            console.log(consultaaux)
+            if(compararelementosxp(consultaactual,consultaaux)){
                 xpathsalida=aux;
             }else{
-                console.log("no son iguakes");
-                console.log(consultaactual);
-                console.log(consultaaux);
-                break;
+                aux=xpathsalida.replace(remplazar,"/"+nombrenodo);
+                 consultaaux=getElementsByXPath2(aux);
+                 consultaactual=getElementsByXPath2(xpathsalida);
+                if(compararelementosxp(consultaactual,consultaaux)){
+                    xpathsalida=aux;
+                }
             }
     
         }
-    
+        console.log("Xpahsalida: ..."+xpathsalida)
     }
     return xpathsalida;
     }
-
-function pintarelemento(numinput){
+    function compararelementosxp(elema, elemb){
+        retornar=false
+        if(elema.length==elemb.length){
+            for(var i=0; i<elema.length; i++){
+                if(elema[i].isSameNode(elemb[i])){
+                    retornar=true
+                }else{
+                    retornar=false
+                    break
+                }
+            }
+        }
+        return retornar
+    }
+    function pintarelemento(numinput){
         var xpathentrada=document.getElementById("input"+numinput).value;
+        
         
         try {
                 //dejamos de pintar los anteriores elementos con el color del input numinput
-                var elementospintados=document.querySelectorAll('[seleccion="seleccion'+numinput+'"]');
+            var elementospintados=document.querySelectorAll('[seleccion="seleccion'+numinput+'"]');
             for(elemento of elementospintados){
                         if(elemento.getAttribute("estado")!="seleccionado"){
                            elemento.style.backgroundColor="";
@@ -211,16 +256,87 @@ function pintarelemento(numinput){
                         }
                     }
             console.log(xpathentrada);
-            listapint=getElementsByXPath2(xpathentrada);
-            for(var i=0; i<listapint.length; i++){
-                element=listapint[i];
-                element.style.backgroundColor=listacolores[numinput-1];
-                element.style.border="thick solid "+listacolores[numinput-1];
-                element.setAttribute("seleccion","seleccion"+numinput);
+            if(xpathentrada!=""){
+                listapint=getElementsByXPath2(xpathentrada);
+                textoxpath=""
+                for(var i=0; i<listapint.length; i++){
+                    element=listapint[i];
+                    element.style.backgroundColor=listacolores[numinput-1];
+                    element.setAttribute("seleccion","seleccion"+numinput);
+                    element.style.border="thick solid "+listacolores[numinput-1];
+                    textoxpath=textoxpath+element.innerText+" ";
+                    if(numinput==3){
+                        textoxpath=textoxpath+element.src+" ";
+                    }
+                }
+                $('#datos'+numinput).empty();
+                $('#datos'+numinput).append(String(textoxpath));
+            }else{
+                $('#datos'+numinput).empty();
             }
+
+        
         } catch (error) {
             console.error(error);
         }
         
+        }
+        function optimizarxpath2(xpath){
+            xparray=xpath.split("/")
+            xpdevolver="/"+xparray[xparray.length-1]
+            consultaoriginal=getElementsByXPath2(xpath);
+            añadirguion=false;
+
+            for(var i=xparray.length-2; i>1; i--){
+                nodo=xparray[i]
+                nombrenodo=nodo.replaceAll(/ *\[[^)]*\] */g, "");
+                xpincompleto=""
+                for(var j=1; j<i; j++){
+                    if(!(xparray[j]=="" && j==i-1)){
+                        xpincompleto=xpincompleto+"/"+xparray[j]
+    
+                    }
+                    
+                }
+                if(xpincompleto!="/"){
+                    xpincompleto=xpincompleto+"/"
+                }
                 
-}
+                console.log("xpi: "+xpincompleto)
+                console.log("xpd: "+xpdevolver)
+                xpathprueba=xpincompleto+xpdevolver
+                console.log("xpprueba: "+xpathprueba)
+                consultaaux=getElementsByXPath2(xpathprueba);
+                if(nodo!=""){
+                    
+                    if(!compararelementosxp(consultaoriginal,consultaaux)){
+                        if(añadirguion){
+                            nombrenodo=nombrenodo+"/"
+                            nodo=nodo+"/"
+                            añadirguion=false
+                        }
+        
+                        xpdevolveraux="/"+nombrenodo+xpdevolver
+                        xpathprueba=xpincompleto+xpdevolveraux
+                        consultaaux=getElementsByXPath2(xpathprueba);
+                        console.log()
+                        if(!compararelementosxp(consultaoriginal,consultaaux)){
+                            xpdevolver="/"+nodo+xpdevolver
+                            console.log("xpdevolveraux "+xpdevolveraux)
+                            console.log("detencion3"+xpathprueba)
+                        }else{
+                            xpdevolver=xpdevolveraux
+                            console.log("detencion2"+xpathprueba)
+                        }
+                    }else{
+                        console.log("detencion1")
+                        //xpdevolver="/"+xpdevolver
+                        añadirguion=true;
+                    }   
+                }
+    
+                    
+            }
+            xpdevolver="/"+xpdevolver
+            return xpdevolver
+        }

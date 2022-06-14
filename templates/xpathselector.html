@@ -1,38 +1,149 @@
-
-
 {{texto|safe}}
-
 <div class="xpathmenu" marcar="nopintar" id="xpathmenu">
-    <form marcar="nopintar" name="enviarform" id="formlista" method="post" action="{{url_for('formpart4')}}">
-        <input type="hidden"name="tipopagina" id="tipopagina" value="">
+    <form marcar="nopintar" action="{{url_for('validarurlcategoria')}}" method="post" >
+        <input type="hidden" name="urlprincipal" value="{{url}}">
+        <input type="hidden" name="categoria" value="{{categoria}}">
+
         <div class="selector" marcar="nopintar"></div> 
+        {% if listareglas|length > 0 %}
+        <select marcar="nopintar" id="selregla" name="reglaseleccionada">
+            <option marcar="nopintar" value="ninguno" xptitu="" xpres="" xpimg="" xpdesimg="" xpred="" xpfecha="" xparr="" xphas="" >Regla sin seleccionar</option>
+            {% for regla in listareglas %}
+            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}"  >
+                Regla {{loop.index}}
+            </option>
+            {% endfor %}
+        </select>
+        {%endif%}
         <table marcar="nopintar" width="100%">
             <tbody marcar="nopintar">
-                <tr marcar="nopintar">
-                    <td>Seleccionar urls de las noticias</td>
-                    <td><button type="button" marcar="nopintar" onclick="habilitarseleccion()" id="pintartag">Seleccionar</button></td>
-                    <td><input type="text" class="xpathenlace" name="xpathenlace" marcar="nopintar" id="inputxpenlace"></td>
-                    <td marcar="nopintar">
-                        <div class="dropdown" marcar="nopintar" >
-                            <button type="button" onclick="mostrarlista()" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
-                            <div id="myDropdown" class="dropdown-content " marcar="nopintar">
-                            </div>
+
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione las urls de las diferentes noticias</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(1)" id="pintartag1" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputurl"  id="input1" onkeyup="pintarelementos(1)" required></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(1)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown1" class="dropdown-content " marcar="nopintar">
+
                         </div>
-                    </td>
-                </tr>
-                <tr marcar="nopintar">
-                    <td marcar="nopintar">Boton Mostrar mas noticias</td>
-                    <td marcar="nopintar"><button type="button" onclick="habilitarseleccion2()" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" class="xpathsiguiente" name="xpathsiguiente" marcar="nopintar" id="xpinputsig" onkeyup="pintarplomo()"></td>
-                    <td><p id="datosinputsig" ></p></td>
-                </tr>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos1" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione los titulares de las noticias</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(2)" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputtitular"  id="input2" onkeyup="pintarelementos(2)"></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(2)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown2" class="dropdown-content " marcar="nopintar">
+                        </div>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos2" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione las fechas de cada noticia </td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(3)" id="pintartag3" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputfecha"  id="input3" onkeyup="pintarelementos(3)"></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(3)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown3" class="dropdown-content " marcar="nopintar">
+                        </div>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos3" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione las imagenes de las noticias</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(4)" id="pintartag4" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputimg"  id="input4" onkeyup="pintarelementos(4)"></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(4)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown4" class="dropdown-content " marcar="nopintar">
+                        </div>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos4" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione a los redactores de las noticias</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(5)" id="pintartag5" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputredactor"  id="input5" onkeyup="pintarelementos(5)"></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(5)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown5" class="dropdown-content " marcar="nopintar">
+                        </div>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos5" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione las descripciones de las noticias</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(6)" id="pintartag6" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputdescripcion"  id="input6" onkeyup="pintarelementos(6)"></td>
+                <td> 
+                                            
+                    <div class="dropdown" marcar="nopintar" >
+                        <button type="button" onclick="mostrarlista(6)" class="dropbtn" marcar="nopintar" id="btnlista">Ver seleccion</button>
+                        <div id="myDropdown6" class="dropdown-content " marcar="nopintar">
+                        </div>
+                    </div>
+                </td>
+                <td marcar="nopintar"><div id="datos6" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td>
+                <label><input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo ingresar a la Url de la noticia y seleccionar datos </label><br>
+                </td>
+            </tr>
             </tbody>
 
         </table>
-        <input marcar="nopintar" id="inputenviarform" type="submit" name="enviar" value="Aceptar">
+        
+        <input id="inputaceptar" marcar="nopintar" type="submit" name="enviar" value="Aceptar">
+        <button  marcar="nopintar" id="btncambiarposicion" type="button" onclick="cambiarposicion()">Pasar Abajo</button>
     </form>
     
 </div>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="/static/scripts/selectorxpath.js" >
-</script>
+<script src="/static/scripts/selectorxpath.js" ></script>
+<script src="http://code.jquery.com/jquery-latest.js"></script>                       
+<script>
+    //Script para la seleccion de reglas
+    $('#selregla').change(function(){ 
+    var value = $(this).val();
+    var seleccion=$(this).find('option:selected');
+    $("#input1").val(seleccion.attr("xpurl"))
+    $("#input2").val(seleccion.attr("xptitu"))
+    $("#input3").val(seleccion.attr("xpfecha"))
+    $("#input4").val(seleccion.attr("xpimg"))
+    $("#input5").val(seleccion.attr("xpred"))
+    $("#input6").val(seleccion.attr("xpdes"))
+    console.log("seleccionando regla....")
+    pintarelementos(1);
+    pintarelementos(2);
+    pintarelementos(3);
+    pintarelementos(4);
+    pintarelementos(5);
+    pintarelementos(6);
+    pintarelementos(7);
+    pintarelementos(8);
+
+
+});
+</script>                       
+
+
+
+

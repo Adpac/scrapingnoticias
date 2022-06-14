@@ -20,7 +20,7 @@ Iniciar Sesion
                 <div id="login-column" class="col-md-6">
                     <div id="login-box" class="col-md-12">
                         <form id="login-form" class="form" action="{{url_for('validariniciarsesion')}}" method="post">
-                            <h3 class="text-center text-info">Iniciar Sesion</h3>
+                            <h3 class="text-center text-info">Iniciar Sesión</h3>
                             <div class="form-group">
                                 <label for="username" class="text-info">Usuario:</label><br>
                                 <input type="text" name="username" id="username" class="form-control">
@@ -30,11 +30,8 @@ Iniciar Sesion
                                 <input type="password" name="password" id="password" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="remember-me" class="text-info"><span>Recordar Contraseña</span> <span><input id="remember-me" name="remember-me" type="checkbox"></span></label><br>
-                                <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
-                            </div>
-                            <div id="register-link" class="text-right">
-                                <a href="#" class="text-info">Registrarse</a>
+                      
+                                <input type="submit" name="submit" class="btn btn-info btn-md" value="iniciar sesión">
                             </div>
 
                         </form>
@@ -43,5 +40,11 @@ Iniciar Sesion
             </div>
         </div>
     </div>
-
+    {% if mensaje is defined %}
+    <script>
+        var mensaje=' {{mensaje}}'
+        window.alert(mensaje);
+    </script>
+   
+    {%endif%}
 {% endblock %}

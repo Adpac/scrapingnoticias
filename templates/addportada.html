@@ -1,0 +1,365 @@
+{{texto|safe}}
+
+<div class="xpathmenu" marcar="nopintar" id="xpathmenu">
+    <form marcar="nopintar" action="{{url_for('validarportada')}}" method="post" >
+        <input type="hidden" name="urlprincipal" value="{{url}}">
+        <div class="selector" marcar="nopintar"></div> 
+        <table marcar="nopintar" width="100%">
+            <tbody marcar="nopintar">
+
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione la url de la noticia principal </td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(1)" id="pintartag1" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputurl"  id="input1" onkeyup="pintarelementos(1)" required></td>
+                <td marcar="nopintar"><div id="datos1" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione el titular de la noticia principal </td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(2)" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputtitular"  id="input2" onkeyup="pintarelementos(2)"></td>
+                <td marcar="nopintar"><div id="datos2" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione la fecha de la noticia principal </td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(3)" id="pintartag3" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputfecha"  id="input3" onkeyup="pintarelementos(3)"></td>
+                <td marcar="nopintar"><div id="datos3" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione la imagen de la noticia principal</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(4)" id="pintartag4" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputimg"  id="input4" onkeyup="pintarelementos(4)"></td>
+                <td marcar="nopintar"><div id="datos4" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione el redactor de la noticia</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(5)" id="pintartag5" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputredactor"  id="input5" onkeyup="pintarelementos(5)"></td>
+                <td marcar="nopintar"><div id="datos5" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td marcar="nopintar">Seleccione la descripcion de la noticia</td>
+                <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(6)" id="pintartag6" marcar="nopintar">Seleccionar</button></td>
+                <td marcar="nopintar"> <input type="text" marcar="nopintar" name="inputdescripcion"  id="input6" onkeyup="pintarelementos(6)"></td>
+                <td marcar="nopintar"><div id="datos6" class="datosxpath"></div></div></td>
+            </tr>
+            <tr marcar="nopintar">
+                <td>
+                <label><input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo ingresar a la Url de la noticia y seleccionar datos </label><br>
+                </td>
+            </tr>
+            </tbody>
+
+        </table>
+        
+        <input id="inputaceptar" marcar="nopintar" type="submit" name="enviar" value="Aceptar">
+        <button  marcar="nopintar" id="btncambiarposicion" type="button" onclick="cambiarposicion()">Pasar Abajo</button>
+    </form>
+    
+</div>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+</script>
+<script>
+var posicion="arriba";
+var seleccionar=false;
+var colormouseover="rgba(255,255,0, 0.5)";
+var colorclick="rgba(241, 220, 0, 0.5)";
+var campoinput="";
+var seleccion=0;
+var numerodeinputs=8;
+  const botones=document.querySelectorAll("[onclick]");
+for( boton of botones){
+    if(boton.getAttribute("marcar")!="nopintar"){
+        boton.setAttribute("clickenfuncion",boton.getAttribute("onclick"));
+        boton.setAttribute("onclick","return false")
+    }
+}
+//Al momento de hacer click en un enlace no se redireccionara a la pagina web de la noticia
+const enlaces=document.getElementsByTagName("a");
+for( enlace of enlaces){
+    enlace.setAttribute("onclick","return false");
+}
+//..
+var listacolores=["rgba(0,143,76,0.5)","rgba(128,0,128,0.5)","rgba(234,193,2,0.5)","rgba(0,113,188,0.5)","rgba(141,0,54,0.5)","rgba(170,0,0,0.5)","rgba(175,110,55,0.5)","rgba(255,102,0,0.5)","rgba(252,209,198,0.5)","rgba(81,209,246,0.5)","rgba(128,128,128,0.5)","rgba(204,0,0,0.5)","rgba(255,90,54,0.5)","rgba(255,186,0,0.5)","rgba(255,126,0,0.5)","rgba(0,66,37,0.5)","rgba(27,65,37,0.5)","rgba(0,97,169,0.5)","rgba(209,235,247,0.5)","rgba(150,200,162,0.5)","rgba(129,216,208,0.5)","rgba(0,26,87,0.5)","rgba(65,125,193,0.5)","rgba(83,104,149,0.5)","rgba(145,163,176,0.5)","rgba(245,245,220,0.5)","rgba(62,174,177,0.5)","rgba(206,70,118,0.5)","rgba(151,127,115,0.5)","rgba(201,174,93,0.5)","rgba(243,229,171,0.5)","rgba(80,64,77,0.5)","rgba(103,49,71,0.5)","rgba(84,61,63,0.5)","rgba(145,163,176,0.5)","rgba(129,135,139,0.5)","rgba(196,30,58,0.5)","rgba(193,154,107,0.5)","rgba(86,57,112,0.5)","rgba(228,155,15,0.5)","rgba(252,247,94,0.5)","rgba(248,222,126,0.5)","rgba(238,223,160,0.5)","rgba(184,41,40,0.5)","rgba(34,34,34,0.5)","rgba(72,60,50,0.5)","rgba(59,49,33,0.5)","rgba(103,76,71,0.5)","rgba(172,92,181,0.5)","rgba(217,144,88,0.5)","rgba(255,153,102,0.5)","rgba(178,27,28,0.5)","rgba(237,135,45,0.5)","rgba(217,144,88,0.5)","rgba(135,0,116,0.5)","rgba(96,47,107,0.5)","rgba(96,78,151,0.5)","rgba(250,214,165,0.5)","rgba(138,154,91,0.5)","rgba(147,197,146,0.5)","rgba(126,159,46,0.5)","rgba(143,151,121,0.5)","rgba(174,32,41,0.5)","rgba(114,47,55,0.5)"];
+document.body.addEventListener("mouseover",(e)=>{
+    if(seleccionar==true){
+        console.log("llegue aqui");
+        try {
+            //Con el if evitamos la deseleccion de un elemento click
+            anterior.style.backgroundColor=coloranterior;   
+        }catch (error){
+        }
+        let selector = document.querySelector(".selector");
+        // selector output
+        anterior=e.target;
+        coloranterior=e.target.style.backgroundColor;
+        if(e.target.getAttribute("marcar")!="nopintar"){
+            let output = getPathTo(e.target);
+            e.target.style.backgroundColor=colormouseover;
+            console.log(e.target);
+            selector.innerHTML = `<strong>Selector:</strong> ${output}`;
+        
+        }
+        pintarelementos(1);
+        pintarelementos(2);
+        pintarelementos(3);
+        pintarelementos(4);
+        pintarelementos(5);
+        pintarelementos(6);
+    }
+
+});
+function recortarxpath(xpath, simbolo){
+    //El simbolo es un elemento xpath que si o si queremos conservar
+    arrayxp=xpath.split("/")
+    devolver=""
+    encontrosimbolo=false
+    for(var i=1; i<arrayxp.length; i++){
+        devolver=devolver+"/"+arrayxp[i];
+        seccionxp=arrayxp[i];
+        seccionxp=seccionxp.replaceAll(/ *\[[^)]*\] */g, "");
+        seccionxp=seccionxp.replaceAll(/[0-9]/g, '');
+        console.log("seccion: "+seccionxp)
+        if(seccionxp==simbolo){
+            encontrosimbolo=true
+            break;
+        }
+    
+    }
+    return devolver;
+}
+document.body.addEventListener("click",(e)=>{
+    if(seleccionar==true){
+        if(e.target.getAttribute("marcar")!="nopintar"){
+            enlaceel=e.target.getElementsByTagName("a")
+            console.log("enlace.....")
+            xpathelemento=getPathTo(e.target);
+
+            xpathoptim=optimizarxpath2(xpathelemento);
+            if(seleccion==2){
+                xpathoptim=recortarxpath(xpathoptim,"a")
+            }
+            document.getElementById("input"+seleccion).value=xpathoptim
+            
+            pintarelementos(seleccion);
+            seleccionarcampo(seleccion);
+        }
+    }
+
+});
+function seleccionarcampo(campo){
+        console.log("Seleccion: "+campo)
+        colormouseover=listacolores[campo-1];
+        colorclick=listacolores[campo-1];
+        if(seleccion==campo){
+            seleccionar=false
+            seleccion=0;
+            document.getElementById("pintartag"+campo).innerText="Seleccionar";
+        }else{
+            seleccionar=true;
+            seleccion=campo;
+            for(var i=1; i<= numerodeinputs; i++){
+                //Cambiamos los valores de los botones
+                idboton="pintartag"+i;
+                boton=document.getElementById(idboton);
+                
+                if(i==campo){
+                    console.log(idboton);
+                    boton.innerText="Deshabilitar";
+                }else{
+                    boton.innerText="Seleccionar";
+                }
+            }
+        }
+    
+    }
+    function stringContainsNumber(_input){
+    let string1 = String(_input);
+    for( let i = 0; i < string1.length; i++){
+        if(!isNaN(string1.charAt(i)) && !(string1.charAt(i) === " ") ){
+          return true;
+        }
+    }
+    return false;
+  }
+    function getPathTo(element) {
+    if (element.id !== '' && !stringContainsNumber(String(element.id)))
+        return "//*[@id='" + element.id + "']";
+    if (element === document.body)
+        return "/";
+    var ix = 0;
+    var siblings = element.parentNode.childNodes;
+    for (var i = 0; i < siblings.length; i++) {
+        var sibling = siblings[i];
+        if (sibling === element)
+            return getPathTo(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';
+        if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+            ix++;
+        }
+    }
+}
+function pintarelementos(numinput){
+var xpathentrada=document.getElementById("input"+numinput).value;
+
+
+try {
+        //dejamos de pintar los anteriores elementos con el color del input numinput
+    var elementospintados=document.querySelectorAll('[seleccion="seleccion'+numinput+'"]');
+    for(elemento of elementospintados){
+                if(elemento.getAttribute("estado")!="seleccionado"){
+                   elemento.style.backgroundColor="";
+                   elemento.style.border="";
+                }
+            }
+    console.log(xpathentrada);
+    listapint=getElementsByXPath(xpathentrada);
+    textoxpath=""
+    for(var i=0; i<listapint.length; i++){
+        element=listapint[i];
+        element.style.backgroundColor=listacolores[numinput-1];
+        element.setAttribute("seleccion","seleccion"+numinput);
+        element.style.border="thick solid "+listacolores[numinput-1];
+        textoxpath=textoxpath+element.innerText+" ";
+        if(numinput==1){
+            textoxpath=textoxpath+element.href+" ";
+        }
+    }
+    $('#datos'+numinput).empty();
+    $('#datos'+numinput).append(String(textoxpath));
+
+} catch (error) {
+    console.error(error);
+}
+
+
+
+
+
+}
+//
+function getElementsByXPath(xpath, parent){
+    let results = [];
+    let query = document.evaluate(xpath, parent || document,null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (let i = 0, length = query.snapshotLength; i < length; ++i) {
+        results.push(query.snapshotItem(i));
+    }
+    return results;
+}
+function optimizarxpath(xpathentrada){
+xpathsalida=xpathentrada;
+elementosxpth=xpathentrada.split("/");
+for(var i=0; i<elementosxpth.length; i++){
+    elemento=elementosxpth[i];
+    
+    nombrenodo=elemento.replaceAll(/ *\[[^)]*\] */g, "");
+    remplazar="/"+elemento;
+    if(elemento!="" || elemento!=" " || !nombrenodo!="a"){
+        console.log("remplazar: ",remplazar);
+        aux=xpathsalida.replace(remplazar,"");
+        var consultaaux=getElementsByXPath(aux);
+        var consultaactual=getElementsByXPath(xpathsalida);
+        console.log("Xpactual="+xpathsalida);
+        console.log("xpaux: "+aux);
+        console.log(consultaactual)
+        console.log(consultaaux)
+        if(compararelementosxp(consultaactual,consultaaux)){
+            xpathsalida=aux;
+        }else{
+            aux=xpathsalida.replace(remplazar,"/"+nombrenodo);
+             consultaaux=getElementsByXPath(aux);
+             consultaactual=getElementsByXPath(xpathsalida);
+            if(compararelementosxp(consultaactual,consultaaux)){
+                xpathsalida=aux;
+            }
+        }
+
+    }
+    console.log("Xpahsalida: ..."+xpathsalida)
+}
+return xpathsalida;
+}
+
+function compararelementosxp(elema, elemb){
+    retornar=false
+    if(elema.length==elemb.length){
+        for(var i=0; i<elema.length; i++){
+            if(elema[i].isSameNode(elemb[i])){
+                retornar=true
+            }else{
+                retornar=false
+                break
+            }
+        }
+    }
+    return retornar
+}
+function cambiarposicion(){
+    if(posicion=="arriba"){
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenuabajo")
+        posicion="abajo";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Arriba";
+    }else{
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenu")
+        posicion="arriba";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Abajo";
+    }
+}
+function optimizarxpath2(xpath){
+        xparray=xpath.split("/")
+        xpdevolver="/"+xparray[xparray.length-1]
+        consultaoriginal=getElementsByXPath(xpath);
+        añadirguion=false;
+        for(var i=xparray.length-2; i>1; i--){
+            nodo=xparray[i]
+            nombrenodo=nodo.replaceAll(/ *\[[^)]*\] */g, "");
+            xpincompleto=""
+            for(var j=1; j<i; j++){
+                if(!(xparray[j]=="" && j==i-1)){
+                    xpincompleto=xpincompleto+"/"+xparray[j]
+
+                }
+                
+            }
+            if(xpincompleto!="/"){
+                xpincompleto=xpincompleto+"/"
+            }
+            
+            console.log("xpi: "+xpincompleto)
+            console.log("xpd: "+xpdevolver)
+            xpathprueba=xpincompleto+xpdevolver
+            console.log("xpprueba: "+xpathprueba)
+            consultaaux=getElementsByXPath(xpathprueba);
+            if(nodo!=""){
+                if(!compararelementosxp(consultaoriginal,consultaaux)){
+                    if(añadirguion){
+                        nombrenodo=nombrenodo+"/"
+                        nodo=nodo+"/"
+                        añadirguion=false
+                    }
+    
+                    xpdevolveraux="/"+nombrenodo+xpdevolver
+                    xpathprueba=xpincompleto+xpdevolveraux
+                    consultaaux=getElementsByXPath(xpathprueba);
+                    console.log()
+                    if(!compararelementosxp(consultaoriginal,consultaaux)){
+                        xpdevolver="/"+nodo+xpdevolver
+                        console.log("xpdevolveraux "+xpdevolveraux)
+                        console.log("detencion3"+xpathprueba)
+                    }else{
+                        xpdevolver=xpdevolveraux
+                        console.log("detencion2"+xpathprueba)
+                    }
+                }else{
+                    console.log("detencion1")
+                    //xpdevolver="/"+xpdevolver
+                    añadirguion=true;
+                }   
+            }
+
+                
+        }
+        xpdevolver="/"+xpdevolver
+        return xpdevolver
+    }
+
+</script>

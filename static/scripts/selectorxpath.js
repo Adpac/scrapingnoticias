@@ -1,33 +1,14 @@
+var posicion="arriba";
 var seleccionar=false;
-var seleccion2=false; //detectara si la seleccion es del selector de la pagina siguiente
-function habilitarseleccion(){
-    seleccionar=!seleccionar;
-    if(seleccionar==true){
-        document.getElementById("pintartag").textContent="Deshabilitar"
-    }else{
-        document.getElementById("pintartag").textContent="Seleccionar"
-    }
-}
-function habilitarseleccion2(){
-    seleccionar=!seleccionar;
-    if(seleccionar==true){
-        seleccion2=true;
-        document.getElementById("pintartag2").textContent="Deshabilitar"
-    }else{
-        seleccion2=false;
-        document.getElementById("pintartag2").textContent="Seleccionar"
-    }
-}
-var anterior
-var coloranterior
-var bordeanterior
-var listaelemhref=new Array()
-var elements
-//desactivando enlaces
-//desactivando los botones 
-const botones=document.querySelectorAll("[onclick]");
+var colormouseover="rgba(255,255,0, 0.5)";
+var colorclick="rgba(241, 220, 0, 0.5)";
+var campoinput="";
+var seleccion=0;
+var numerodeinputs=8;
+var seleccionmultiple=[1,2,3,4,5,6]
+
+  const botones=document.querySelectorAll("[onclick]");
 for( boton of botones){
-    console.log(boton);
     if(boton.getAttribute("marcar")!="nopintar"){
         boton.setAttribute("clickenfuncion",boton.getAttribute("onclick"));
         boton.setAttribute("onclick","return false")
@@ -38,421 +19,445 @@ const enlaces=document.getElementsByTagName("a");
 for( enlace of enlaces){
     enlace.setAttribute("onclick","return false");
 }
-//..................................................
-//Generar XPaths Multiples algoritmos
-//Algoritmo 1 de Xpath
-function getPathTo(element) {
-        if (element.id !== '')
-            return "//*[@id='" + element.id + "']";
-        if (element === document.body)
-            return "/";
-        var ix = 0;
-        var siblings = element.parentNode.childNodes;
-        for (var i = 0; i < siblings.length; i++) {
-            var sibling = siblings[i];
-            if (sibling === element)
-                return getPathTo(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';
-            if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-                ix++;
-            }
+//..
+var listacolores=["rgba(0,143,76,0.5)","rgba(128,0,128,0.5)","rgba(234,193,2,0.5)","rgba(0,113,188,0.5)","rgba(141,0,54,0.5)","rgba(175,110,55,0.5)","rgba(255,102,0,0.5)","rgba(252,209,198,0.5)","rgba(81,209,246,0.5)","rgba(128,128,128,0.5)","rgba(204,0,0,0.5)","rgba(255,90,54,0.5)","rgba(255,186,0,0.5)","rgba(255,126,0,0.5)","rgba(0,66,37,0.5)","rgba(27,65,37,0.5)","rgba(0,97,169,0.5)","rgba(209,235,247,0.5)","rgba(150,200,162,0.5)","rgba(129,216,208,0.5)","rgba(0,26,87,0.5)","rgba(65,125,193,0.5)","rgba(83,104,149,0.5)","rgba(145,163,176,0.5)","rgba(245,245,220,0.5)","rgba(62,174,177,0.5)","rgba(206,70,118,0.5)","rgba(151,127,115,0.5)","rgba(201,174,93,0.5)","rgba(243,229,171,0.5)","rgba(80,64,77,0.5)","rgba(103,49,71,0.5)","rgba(84,61,63,0.5)","rgba(145,163,176,0.5)","rgba(129,135,139,0.5)","rgba(196,30,58,0.5)","rgba(193,154,107,0.5)","rgba(86,57,112,0.5)","rgba(228,155,15,0.5)","rgba(252,247,94,0.5)","rgba(248,222,126,0.5)","rgba(238,223,160,0.5)","rgba(184,41,40,0.5)","rgba(34,34,34,0.5)","rgba(72,60,50,0.5)","rgba(59,49,33,0.5)","rgba(103,76,71,0.5)","rgba(172,92,181,0.5)","rgba(217,144,88,0.5)","rgba(255,153,102,0.5)","rgba(178,27,28,0.5)","rgba(237,135,45,0.5)","rgba(217,144,88,0.5)","rgba(135,0,116,0.5)","rgba(96,47,107,0.5)","rgba(96,78,151,0.5)","rgba(250,214,165,0.5)","rgba(138,154,91,0.5)","rgba(147,197,146,0.5)","rgba(126,159,46,0.5)","rgba(143,151,121,0.5)","rgba(174,32,41,0.5)","rgba(114,47,55,0.5)"];
+document.body.addEventListener("mouseover",(e)=>{
+    if(seleccionar==true){
+        console.log("llegue aqui");
+        try {
+            //Con el if evitamos la deseleccion de un elemento click
+            anterior.style.backgroundColor=coloranterior;   
+        }catch (error){
         }
-    }
-//Algoritmo 2 de Xpath
-    function createXPathFromElement(elm) { 
-        var allNodes = document.getElementsByTagName('*'); 
-        contador=0;
-        for (var segs = []; elm && elm.nodeType == 1; elm = elm.parentNode) 
-        { 
-            contador++;
-            if (elm.hasAttribute('id')) { 
-                
-                    var uniqueIdCount = 0; 
-                    for (var n=0;n < allNodes.length;n++) { 
-                        if (allNodes[n].hasAttribute('id') && allNodes[n].id == elm.id) uniqueIdCount++; 
-                        if (uniqueIdCount > 1) break; 
-                    }; 
-                    if ( uniqueIdCount == 1) { 
-                        segs.unshift('id("' + elm.getAttribute('id') + '")'); 
-                        return segs.join('/'); 
-                    } else { 
-                        segs.unshift(elm.localName.toLowerCase() + '[@id="' + elm.getAttribute('id') + '"]'); 
-                    } 
-            } else if (elm.hasAttribute('class')) { 
-                segs.unshift(elm.localName.toLowerCase() + '[@class="' + elm.getAttribute('class') + '"]'); 
-            } else { 
-                for (i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) { 
-                    if (sib.localName == elm.localName)  i++; }; 
-                    segs.unshift(elm.localName.toLowerCase() + '[' + i + ']'); 
-            }; 
-            if (contador==37){
-                break;
-            }
-        }; 
-
-        let xpath=segs.length ? '/' + segs.join('/') : null
-        if(contador==37){
-            xpath='/'+xpath;
-        }
-        return xpath; 
-    }; 
-
-    function lookupElementByXPath(path) { 
-        var evaluator = new XPathEvaluator(); 
-        var result = evaluator.evaluate(path, document.documentElement, null,XPathResult.FIRST_ORDERED_NODE_TYPE, null); 
-        return  result.singleNodeValue; 
-    } 
-    
-//.......................................
-  // mouse over, encima de elemento
-    document.body.addEventListener("mouseover", (e) => {
-        if(seleccionar==true){
-            try {
-                if(anterior.getAttribute("color")!="verde"){
-
-                    anterior.setAttribute("color",coloranterior)
-                }
-                
-            }catch (error){
-            
-            }
-            let selector = document.querySelector(".selector");
-            // selector output
-            anterior=e.target;
-            coloranterior=e.target.getAttribute("color");
-            
-            if(e.target.getAttribute("marcar")!="nopintar" && e.target.getAttribute("color")!="verde"  ){
-                if(seleccion2){
-                    e.target.setAttribute("color","amarillo");
-                }else{
-                    e.target.setAttribute("color","naranja");
-                }
-                
-                let output = getPathTo(e.target);
-                console.log(output)
-                selector.innerHTML = `<strong>Selector:</strong> ${output}`;
-            }
-        }
-    
-  });
-
-  
-  document.body.addEventListener("click", (e) => {
-      
-        if(seleccionar==true){
-            
-            try {
-                //Con el if evitamos la deseleccion de un elemento click
-                if (anterior.getAttribute("color")!="verde"){
-                    anterior.setAttribute("color",coloranterior);
-                    
-                }
-                
-            }catch (error){
-            
-            }
-            let selector = document.querySelector(".selector");
-            // selector output
-            anterior=e.target;
-            coloranterior=e.target.getAttribute("color");
-            
-            if(e.target.getAttribute("marcar")!="nopintar"){
-                var elementohtml=new Object();
-                let output = getPathTo(e.target);
-      
-                if(!seleccion2){
-                    e.target.setAttribute("color","verde")
-            
-                    elementohtml.xpath=output;
-                    elementohtml.elemento=e.target;
-                    listaelemhref.push(elementohtml);
-                    var elem = document.getElementById('myDropdown');
-                    elem.insertAdjacentHTML('beforeend', '<p class="delete" marcar="nopintar" xp="'+elementohtml.xpath+'">'+elementohtml.elemento.innerText+'<br> url=('+elementohtml.elemento.href+')<br><button marcar="nopintar">Eliminar</button></p>');
-                    elements = document.getElementsByClassName("delete");
-                    $(".delete").on("click", "button", function(e) {
-                        e.preventDefault();
-                        xpathelim=$(this).parent().attr("xp");
-                        eliminardelista(xpathelim);
-                        $(this).parent().remove();
-                    });
-                    cambiarcolorlista();
-                   
-                    if(listaelemhref.length>=2){
-                        xpgen=generarxpathmultiple(listaelemhref);
-                        document.getElementById("inputxpenlace").value=optimizarxpath(xpgen);
-                        habilitarseleccion();
-                        pintarxp();
-                        
-                    }
-
-                }else{
-                    
-                    document.getElementById("xpinputsig").value=optimizarxpath(output);
-                    habilitarseleccion2();
-                    pintarplomo();
-                    enlacesig=getElementByXpath(output).href;
-                    
-                    if(enlacesig=== undefined){
-                        enlacesig=getElementByXpath(output).getAttribute("clickenfuncion");
-                        if(enlacesig==undefined){
-                            document.getElementById("datosinputsig").innerText="No se selecciono una paginacion";
-                        }else{
-                            document.getElementById("datosinputsig").innerText="Página Web Dinamica";
-                            document.getElementById("tipopagina").value="dinamica"
-                        }
-                    }else{
-                        if(enlacesig==""){
-                            document.getElementById("tipopagina").value="dinamica"
-                            document.getElementById("datosinputsig").innerText="url vacia se tomara a la pagina como dinamica";
-                        }else{
-                            document.getElementById("tipopagina").value="nodinamica"
-                            document.getElementById("datosinputsig").innerText="URL="+enlacesig;
-                        }
-                        
-                    }
-                    
-                    
-                }
-            
-
-           
-                selector.innerHTML = `<strong>Selector:</strong> ${output}`;
-            
-            }
-        }
-    
-  });
-
-
-function generarxpathmultiple(lista){
-//Dado ciertos Xpaths generamos un xpath generico
-var xp=""
-var arrayaux=new Array();
-for(let i=0; i<lista.length; i++){
-    var arrayelemento=lista[i].xpath.split("/");
-    for (let j=0;j < arrayelemento.length; j++){
-        if(arrayaux.length==j){
-            arrayaux.push(arrayelemento[j]);
-        }else{
-            if(arrayaux[j]!= arrayelemento[j] && arrayelemento[j]!=""){
-                arrayaux[j]=arrayaux[j].replace("[","");
-                arrayaux[j]=arrayaux[j].replace(/[0-9]/g,"");
-                arrayaux[j]=arrayaux[j].replace("]","")
-            }
-        }
-    }
-}
-for(let i=0; i<arrayaux.length; i++){
-    xp=xp+"/"+arrayaux[i];
-}
-
-contbarra=0;
-for(let i=0; i<xp.length-1; i++){
-    if(xp.substring(i,i+1)=="/"){
-        contbarra++;
-    }else{
-        break
-    }
-}
-if(contbarra==1){
-    xp="/"+xp
-}
-if(contbarra>2){
-    xp=xp.substring(contbarra-2);
-}
-xp=optimizarxpath(xp);
-return xp;
-}
-/*
-function bindIFrameMousemove(iframe){
-    iframe.contentWindow.addEventListener('mousemove', function(event) {
-        var clRect = iframe.getBoundingClientRect();
-        var evt = new CustomEvent('mousemove', {bubbles: true, cancelable: false});
-
-        evt.clientX = event.clientX + clRect.left;
-        evt.clientY = event.clientY + clRect.top;
-        console.log
-        iframe.dispatchEvent(evt);
-    });
-};
-
-bindIFrameMousemove(document.getElementById('iFrameId'));
-*/
-
-//actualizar input enlaces
-function pintarplomo(){//pintamos el elemento del input2
-            //dejamos de pintar los anteriores elementos seleccionados
-        try{
-            var elementospintados=document.querySelectorAll('[color="plomo"]');
-            for(elemento of elementospintados){
-                if(elemento.getAttribute("estado")!="seleccionado"){
-                    elemento.setAttribute("color","none");
-                   
-                }
-            }
-            //íntamos los valores actuales
-            var valuexp=document.getElementById("xpinputsig").value;
-            pintar=getElementsByXPath(valuexp,"plomo");
-        }catch(e){
-            pintarxp();
-        }
-
-            
-            
-}
-function pintarxp(){
-    try{
+        let selector = document.querySelector(".selector");
+        // selector output
+        anterior=e.target;
+        coloranterior=e.target.style.backgroundColor;
+        if(e.target.getAttribute("marcar")!="nopintar"){
+            let output = getPathTo(e.target);
+            e.target.style.backgroundColor=colormouseover;
+            console.log(e.target);
+            selector.innerHTML = `<strong>Selector:</strong> ${output}`;
         
-        $("#inputxpenlace").on('keyup', function(){
-            //dejamos de pintar los anteriores elementos seleccionados
-            var elementospintados=document.querySelectorAll('[color="rojo"]');
-            for(elemento of elementospintados){
-                if(elemento.getAttribute("estado")!="seleccionado"){
-                    elemento.setAttribute("color","none");
+        }
+        pintarelementos(1);
+        pintarelementos(2);
+        pintarelementos(3);
+        pintarelementos(4);
+        pintarelementos(5);
+        pintarelementos(6);
+    }
+
+});
+function recortarxpath(xpath, simbolo){
+    //El simbolo es un elemento xpath que si o si queremos conservar
+    arrayxp=xpath.split("/")
+    devolver=""
+    encontrosimbolo=false
+    for(var i=1; i<arrayxp.length; i++){
+        devolver=devolver+"/"+arrayxp[i];
+        seccionxp=arrayxp[i];
+        seccionxp=seccionxp.replaceAll(/ *\[[^)]*\] */g, "");
+        seccionxp=seccionxp.replaceAll(/[0-9]/g, '');
+        console.log("seccion: "+seccionxp)
+        if(seccionxp==simbolo){
+            encontrosimbolo=true
+            break;
+        }
+    
+    }
+    return devolver;
+}
+document.body.addEventListener("click",(e)=>{
+    if(seleccionar==true){
+        if(e.target.getAttribute("marcar")!="nopintar"){
+            enlaceel=e.target.getElementsByTagName("a")
+            console.log("enlace.....")
+            xpathelemento=getPathTo(e.target);
+
+            xpathoptim=(xpathelemento);
+            if(seleccion==1){
+                xpathoptim=recortarxpath(xpathoptim,"a")
+            }
+            if(seleccion==4){
+                xpathoptim=recortarxpath(xpathoptim,"img")
+            }
+            var elementohtml=new Object();
+            elementohtml.xpath=xpathoptim;
+            elementohtml.elemento=e.target;
+            var seguirseleccionando=true;
+            document.getElementById("input"+seleccion).value=xpathoptim
+            if(seleccionmultiple.includes(seleccion)){
+                
+                var elem = document.getElementById('myDropdown'+seleccion);
+                elem.insertAdjacentHTML('beforeend', '<p class="delete" marcar="nopintar" xp="'+elementohtml.xpath+'">'+elementohtml.elemento.innerText+'<br> url=('+elementohtml.elemento.href+')<br><button marcar="nopintar" type="button">Eliminar</button></p>');
+                var listaelems=elem.getElementsByClassName("delete")
+                var numelementos=listaelems.length
+                if(numelementos>=2){
+                    listaxpath=[]
+                    for(var i=0; i<numelementos; i++){
+                        xpelement=listaelems[i].getAttribute("xp")
+                        listaxpath.push(xpelement);
+                        console.log(xpelement)
+                    }
+                    xpathvalido=generarxpathmultiple2(listaxpath)
+                    document.getElementById("input"+seleccion).value=xpathvalido
+                    seguirseleccionando=false
+                }
+
+            }
+           
+            //FIn eliminar
+            pintarelementos(seleccion);
+            if(!seguirseleccionando){
+                seleccionarcampo(seleccion);
+            }
+            
+        }
+         //En caso de hacer click en el boton eliminar 
+        elements = document.getElementsByClassName("delete");
+        $(".delete").on("click", "button", function(e) {
+            e.preventDefault();
+            xpathelim=$(this).parent().attr("xp");
+            
+            $(this).parent().remove();
+        });
+    }
+
+});
+function seleccionarcampo(campo){
+        console.log("Seleccion: "+campo)
+        colormouseover=listacolores[campo-1];
+        colorclick=listacolores[campo-1];
+        if(seleccion==campo){
+            seleccionar=false
+            seleccion=0;
+            document.getElementById("pintartag"+campo).innerText="Seleccionar";
+        }else{
+            seleccionar=true;
+            seleccion=campo;
+            for(var i=1; i<= numerodeinputs; i++){
+                //Cambiamos los valores de los botones
+                idboton="pintartag"+i;
+                boton=document.getElementById(idboton);
+                
+                if(i==campo){
+                    console.log(idboton);
+                    boton.innerText="Deshabilitar";
+                }else{
+                    boton.innerText="Seleccionar";
                 }
             }
-            //pintamos los valores actuales
-            var value = $(this).val();
-            lista=getElementsByXPath(value);
-            
-           
-        }).keyup();
-    }catch(e){
-     
-    }
-}
-window.onload = (function(){
-
-    pintarxp();
-});
-//Obtener un elemento mediante xpath
-function getElementByXpath(path) {
-    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-}
-//obtener varios elementos mediante xpath
-function getElementsByXPath(xpath, colorp,parent)
-{
-let results = [];
-let query = document.evaluate(xpath, parent || document,
-    null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-    if(query.snapshotItem(i).getAttribute("estado")!="seleccionado"){
-  
-        query.snapshotItem(i).setAttribute("color",colorp || "rojo");
-        pintarlista();
-    }else{
-        color=query.snapshotItem(i).getAttribute("color")+colorp|| "rojo";
-        query.snapshotItem(i).setAttribute("color",color);
-    }
-    
-    results.push(query.snapshotItem(i));
-}
-return results;
-}
-function getElementsByXPath2(xpath, parent){
-    let results = [];
-let query = document.evaluate(xpath, parent || document,
-    null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-    results.push(query.snapshotItem(i));
-}
-return results;
-}
-
-//eliminar selecionados
-
-
-//Lista elementos seleccionados
-function mostrarlista() {
-    document.getElementById("myDropdown").classList.toggle("show");
-}
-  
-  // Close the dropdown menu if the user clicks outside of it
-  window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-      var dropdowns = document.getElementsByClassName("dropdown-content");
-      var i;
-      for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
         }
+    
+    }
+    function stringContainsNumber(_input){
+        let string1 = String(_input);
+        for( let i = 0; i < string1.length; i++){
+            if(!isNaN(string1.charAt(i)) && !(string1.charAt(i) === " ") ){
+              return true;
+            }
+        }
+        return false;
       }
-    }
-  }
-
-  //Eliminar de la lista
-
-
-//Seleccionar elemento de una lista
-/*
-function pintarelemento(xpa, color){
-var elemento=getElementByXpath(xpa);
-elemento.setAttribute("color",color);
-}
-
-for (var i = 0; i < elements.length; i++) {
-    console.log
-    console.log("llegue aqui");
-    elements[i].addEventListener('mouseover', pintarelemento(elements[i].getAttribute('xp'), "naranja"));
-}*/
-
-function pintarlista(){
-    for (var i=0; i<listaelemhref.length; i++){
-        var xp=listaelemhref[i].xpath;
-        var elem=getElementByXpath(xp);
-        console.log("Xpath cod...")
-        console.log(xp);
-        elem.setAttribute("color", "verde");
-    }
-}
-
-function eliminardelista(xpath){
-    var listaaux=new Array();
-    for (var i=0; i<listaelemhref.length; i++){
-        var xp=listaelemhref[i].xpath;
-        if(xp!=xpath){
-            listaaux.push(listaelemhref[i]);
+    function getPathTo(element) {
+    if (element.id !== '' && !stringContainsNumber(String(element.id)))
+        return "//*[@id='" + element.id + "']";
+    if (element === document.body)
+        return "/";
+    var ix = 0;
+    var siblings = element.parentNode.childNodes;
+    for (var i = 0; i < siblings.length; i++) {
+        var sibling = siblings[i];
+        if (sibling === element)
+            return getPathTo(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';
+        if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+            ix++;
         }
     }
-    listaelemhref=listaaux;
-    console.log("xp............");
-    console.log(xpath);
-    console.log(xpath);
-    var elem=getElementByXpath(xpath);
-    elem.setAttribute("color", "none");
-    pintarxp();
+}
+function pintarelementos(numinput){
+var xpathentrada=document.getElementById("input"+numinput).value;
 
+
+try {
+        //dejamos de pintar los anteriores elementos con el color del input numinput
+    var elementospintados=document.querySelectorAll('[seleccion="seleccion'+numinput+'"]');
+    for(elemento of elementospintados){
+                if(elemento.getAttribute("estado")!="seleccionado"){
+                   elemento.style.backgroundColor="";
+                   elemento.style.border="";
+                }
+            }
+    console.log(xpathentrada);
+    textoxpath=""
+    try{
+        listapint=getElementsByXPath(xpathentrada);
+        
+        for(var i=0; i<listapint.length; i++){
+            element=listapint[i];
+            element.style.backgroundColor=listacolores[numinput-1];
+            element.setAttribute("seleccion","seleccion"+numinput);
+            element.style.border="thick solid "+listacolores[numinput-1];
+            textoxpath=textoxpath+element.innerText+" ";
+            if(numinput==1){
+                textoxpath=textoxpath+element.href+" ";
+            }
+            if(numinput==4){
+                textoxpath=textoxpath+element.src+" ";
+            }
+        }
+    }catch(Exception){
+        listapint=null;
+        $('#datos'+numinput).empty();
+    }
+   
+
+    $('#datos'+numinput).empty();
+    $('#datos'+numinput).append(String(textoxpath));
+    textoxpath=""
+
+} catch (error) {
+    console.error(error);
 }
 
-function cambiarcolorlista(){
-    document.getElementById("btnlista").setAttribute("color","plomo");
-    setTimeout(function() {document.getElementById("btnlista").setAttribute("color","none")}, 200);
-    
-}
 
-//Optimizaremos el xpath, de forma que el mismo funcione la mayor cantidad de veces
+
+
+
+}
+//
+function getElementsByXPath(xpath, parent){
+    let results = [];
+    let query = document.evaluate(xpath, parent || document,null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (let i = 0, length = query.snapshotLength; i < length; ++i) {
+        results.push(query.snapshotItem(i));
+    }
+    return results;
+}
 function optimizarxpath(xpathentrada){
 xpathsalida=xpathentrada;
 elementosxpth=xpathentrada.split("/");
 for(var i=0; i<elementosxpth.length; i++){
     elemento=elementosxpth[i];
+    
+    nombrenodo=elemento.replaceAll(/ *\[[^)]*\] */g, "");
     remplazar="/"+elemento;
-    if(elemento!="" || elemento!=" "){
+    if(elemento!="" || elemento!=" " || !nombrenodo!="a"){
         console.log("remplazar: ",remplazar);
         aux=xpathsalida.replace(remplazar,"");
-        var consultaaux=getElementsByXPath2(aux);
-        var consultaactual=getElementsByXPath2(xpathsalida);
+        var consultaaux=getElementsByXPath(aux);
+        var consultaactual=getElementsByXPath(xpathsalida);
         console.log("Xpactual="+xpathsalida);
         console.log("xpaux: "+aux);
-        if(consultaaux.length==consultaactual.length){
+        console.log(consultaactual)
+        console.log(consultaaux)
+        if(compararelementosxp(consultaactual,consultaaux)){
             xpathsalida=aux;
         }else{
-            console.log("no son iguales");
-            break;
+            aux=xpathsalida.replace(remplazar,"/"+nombrenodo);
+             consultaaux=getElementsByXPath(aux);
+             consultaactual=getElementsByXPath(xpathsalida);
+            if(compararelementosxp(consultaactual,consultaaux)){
+                xpathsalida=aux;
+            }
         }
 
     }
-
+    console.log("Xpahsalida: ..."+xpathsalida)
 }
 return xpathsalida;
 }
+
+function compararelementosxp(elema, elemb){
+    retornar=false
+    if(elema.length==elemb.length){
+        for(var i=0; i<elema.length; i++){
+            if(elema[i].isSameNode(elemb[i])){
+                retornar=true
+            }else{
+                retornar=false
+                break
+            }
+        }
+    }
+    return retornar
+}
+function cambiarposicion(){
+    if(posicion=="arriba"){
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenuabajo")
+        posicion="abajo";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Arriba";
+    }else{
+        document.getElementById("xpathmenu").setAttribute("class","xpathmenu")
+        posicion="arriba";
+        document.getElementById("btncambiarposicion").innerText="Cambiar Abajo";
+    }
+}
+
+
+ function mostrarlista(numlista){
+    document.getElementById("myDropdown"+String(numlista)).classList.toggle("show");    
+ }        
+ 
+ function eliminardelista(xpath){
+    var listaaux=new Array();
+    console.log("xp............");
+    console.log(xpath);
+    console.log(xpath);
+    var elem=getElementByXpath(xpath);
+    elem.setAttribute("color", "none");
+  
+
+}
+function getElementByXpath(path) {
+    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+function generarxpathmultiple(lista){
+    //Dado ciertos Xpaths generamos un xpath generico
+    var xp=""
+    var arrayaux=new Array();
+    for(let i=0; i<lista.length; i++){
+        var arrayelemento=lista[i].split("/");
+        for (let j=0;j < arrayelemento.length; j++){
+            if(arrayaux.length==j){
+                arrayaux.push(arrayelemento[j]);
+            }else{
+                if(arrayaux[j]!= arrayelemento[j] && arrayelemento[j]!=""){
+                    arrayaux[j]=arrayaux[j].replace("[","");
+                    arrayaux[j]=arrayaux[j].replace(/[0-9]/g,"");
+                    arrayaux[j]=arrayaux[j].replace("]","")
+                }
+            }
+        }
+    }
+    for(let i=0; i<arrayaux.length; i++){
+        xp=xp+"/"+arrayaux[i];
+    }
+    
+    contbarra=0;
+    for(let i=0; i<xp.length-1; i++){
+        if(xp.substring(i,i+1)=="/"){
+            contbarra++;
+        }else{
+            break
+        }
+    }
+    if(contbarra==1){
+        xp="/"+xp
+    }
+    if(contbarra>2){
+        xp=xp.substring(contbarra-2);
+    }
+    //xp=optimizarxpath2(xp);
+    return xp;
+    }
+function generarxpathmultiple2(lista){
+    devolver=""
+    listaelementos=[]
+    numcolumnas=Number.MAX_VALUE;
+    for(var i=0; i<lista.length; i++){
+        //EL primer for seleccionara los xpaths
+        xparray=lista[i].split("/");
+        listaelementos.push(xparray.reverse())
+        if(numcolumnas<xparray.length){
+            numcolumnas=xparray.length
+        }
+
+    }
+    numfilas=listaelementos.length;
+    iterar:
+    for(i=0; i<numcolumnas; i++){
+        nombrenodoaux=""
+        corchetenotoaux=""
+        for(j=0; j<numfilas; j++){
+            nodo=listaelementos[j][i]
+            nombrenodo=nodo.replaceAll(/ *\[[^)]*\] */g, "");
+            corchetenodo=nodo.replace(nombrenodo,"");
+            console.log(nombrenodo)
+            console.log(corchetenodo);
+            console.log("Nodo: "+nodo)
+            if(j==0){
+                nombrenodoaux=nombrenodo;
+                corchetenotoaux=corchetenodo;
+            }else{
+                if(nombrenodo==nombrenodoaux && nodo!=""){
+                    if(corchetenotoaux!=corchetenodo){
+                        corchetenotoaux=""
+                    }
+                }else{
+                    break iterar;
+                }
+            }
+        }
+        console.log("////////////////////")
+        if(devolver!=""){
+            devolver=nombrenodoaux+corchetenotoaux+"/"+devolver
+        }else{
+            devolver=nombrenodoaux+corchetenotoaux
+        }
+
+        
+    }
+    devolver="//"+devolver
+    devolver=optimizarxpath2(devolver)
+    return devolver
+}
+    function optimizarxpath2(xpath){
+        xparray=xpath.split("/")
+        xpdevolver="/"+xparray[xparray.length-1]
+        consultaoriginal=getElementsByXPath(xpath);
+        añadirguion=false;
+        for(var i=xparray.length-2; i>1; i--){
+            nodo=xparray[i]
+            nombrenodo=nodo.replaceAll(/ *\[[^)]*\] */g, "");
+            xpincompleto=""
+            for(var j=1; j<i; j++){
+                if(!(xparray[j]=="" && j==i-1)){
+                    xpincompleto=xpincompleto+"/"+xparray[j]
+
+                }
+                
+            }
+            if(xpincompleto!="/"){
+                xpincompleto=xpincompleto+"/"
+            }
+            
+            console.log("xpi: "+xpincompleto)
+            console.log("xpd: "+xpdevolver)
+            xpathprueba=xpincompleto+xpdevolver
+            console.log("xpprueba: "+xpathprueba)
+            consultaaux=getElementsByXPath(xpathprueba);
+            if(nodo!=""){
+                if(!compararelementosxp(consultaoriginal,consultaaux)){
+                    if(añadirguion){
+                        nombrenodo=nombrenodo+"/"
+                        nodo=nodo+"/"
+                        añadirguion=false
+                    }
+    
+                    xpdevolveraux="/"+nombrenodo+xpdevolver
+                    xpathprueba=xpincompleto+xpdevolveraux
+                    consultaaux=getElementsByXPath(xpathprueba);
+                    console.log()
+                    if(!compararelementosxp(consultaoriginal,consultaaux)){
+                        xpdevolver="/"+nodo+xpdevolver
+                        console.log("xpdevolveraux "+xpdevolveraux)
+                        console.log("detencion3"+xpathprueba)
+                    }else{
+                        xpdevolver=xpdevolveraux
+                        console.log("detencion2"+xpathprueba)
+                    }
+                }else{
+                    console.log("detencion1")
+                    //xpdevolver="/"+xpdevolver
+                    añadirguion=true;
+                }   
+            }
+
+                
+        }
+        xpdevolver="/"+xpdevolver
+        return xpdevolver
+    }

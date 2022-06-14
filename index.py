@@ -1,8 +1,7 @@
 
+from audioop import add
 from multiprocessing.connection import wait
 from flask import Flask, url_for
-from urllib import response
-from flask_cors import CORS, cross_origin
 from re import sub
 import re
 from flask import Flask, redirect, render_template, session
@@ -11,11 +10,6 @@ from flask import request
 from bson.json_util import dumps
 from flask import Flask, session
 #from Noticias import paginanoticia
-import requests
-import scraping as scr
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import pandas as pd
 import json
 #import Noticias
 import threading
@@ -26,9 +20,12 @@ from datetime import datetime, timedelta
 from passlib.hash import sha512_crypt as sha512
 from flask_socketio import SocketIO, send
 import time
+import asyncio
+import pandas as pd
+from requests_html import AsyncHTMLSession
+from requests_html import HTMLSession
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
-CORS(app, support_credentials=True)
 app.config['CORS_HEADERS'] = 'application/json'
 app.config["MONGO_URI"] = "mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.secret_key = 'esto-es-una-clave-muy-secreta'
@@ -39,14 +36,78 @@ socketio=SocketIO(app)
 swsp = pd.read_fwf('Stop Words Spanish.txt', header=None)
 stopwordsspanish=swsp[0].to_numpy()
 listasw=list(stopwordsspanish)
-
+ 
 def eliminarstopwords(texto):
     return ' '.join([word for word in texto.split(' ') if word not in listasw])
 def scrapingnoticias():
-	time.sleep(120)
-	import Noticia
-	Noticia.cargartodaslaspaginas()
+	import Monitoreonoticias
+	while(True):
+		time.sleep(60)
+		Monitoreonoticias.monitoriartodaslaspaginas()
 tarea=threading.Thread(target=scrapingnoticias).start()
+async def cargarpagina(urlpagina):
+	asession = AsyncHTMLSession() 
+
+	r = await asession.get(urlpagina)
+
+	await r.html.arender(sleep = 10, timeout=60) # sleeping is optional but do it just in case
+	contenidopag=r.html.html
+	arrayurlpag=urlpagina.split("/")
+	protocolo=arrayurlpag[0]
+	dominioprin=arrayurlpag[2]
+	listaimagenes=r.html.xpath("//@src | //@href")
+	#r.close()
+	for link in listaimagenes:
+		if not ("http" in str(link)):
+			if not(dominioprin in link):
+				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
+			else:
+				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
+
+	await asession.close()
+	return contenidopag
+
+async def cargarpaginarapida(urlpagina):
+    asession = AsyncHTMLSession()
+    r = await asession.get(urlpagina)
+    
+    contenidopag=r.html.html
+    arrayurlpag=urlpagina.split("/")
+    protocolo=arrayurlpag[0]
+    dominioprin=arrayurlpag[2]
+    listaimagenes=r.html.xpath("//@src | //@href")
+    for link in listaimagenes:
+        if not ("http" in str(link)):
+            if not(dominioprin in link):
+                contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
+            else:
+                contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
+	#print("-----------")
+	#print(contenidopag)
+    return contenidopag
+async def consultarxpath(urlpagina,xpath):
+	asession = AsyncHTMLSession() 
+
+	r = await asession.get(urlpagina)
+
+	await r.html.arender(sleep = 10, timeout=60)
+	respuesta=r.html.xpath(xpath)
+	print(respuesta)
+	await asession.close()
+	return respuesta
+def limpiarenlaces(listaenlace, urlprincipal):
+	arrayurlpag=urlprincipal.split("/")
+	urlp=arrayurlpag[0]+"//"+arrayurlpag[2]
+	print("urlp: ",urlp)
+	listaaux=[]
+	for enlace in listaenlace:
+		if enlace!="" and enlace!="/" and enlace !="#" and enlace!=urlp and enlace != str(urlp+"/"):
+			print(enlace)
+			if not "http" in enlace:
+				listaaux.append(urlp+enlace)
+			else:
+				listaaux.append(enlace)
+	return listaaux
 @app.route('/users',methods=['POST'])
 def create_user():
 	return{'message':'received'}
@@ -61,7 +122,7 @@ def home():
 		
 		print(rol)
 	noticias=db.noticia
-	listapaginanoticias=list(db.Paginanoticias.find({},{"URLPrincipal":1,"_id":0}))
+	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
 	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
 	hoy=datetime.today()
 	ayer=hoy-timedelta(days=1)
@@ -70,7 +131,7 @@ def home():
 	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fechaasig",-1).limit(20))
 	noticiaspagina=[]
 	if len(listapaginanoticias)>0:
-		urlfuente=listapaginanoticias[0]["URLPrincipal"]
+		urlfuente=listapaginanoticias[0]["url"]
 		if urlfuente[-1:]=="/":
 			urlfuente=urlfuente[0:-1]
 		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fechaasig",-1).limit(20))
@@ -111,7 +172,12 @@ def buscarnoticia():
 	return render_template('busqueda.html', consulta=consulta, Noticia=Noti)
 @app.route('/iniciarsesion')
 def iniciarsesion():
-	return render_template('iniciosesion.html')
+	if 'mensaje' in request.args:
+		mensaje=request.args["mensaje"]
+		print("Mensaje:", mensaje)
+		return render_template('iniciosesion.html', mensaje=mensaje)
+	else:
+		return render_template('iniciosesion.html')
 @app.route('/validariniciarsesion', methods=['POST'])	
 def validariniciarsesion():
 	if request.method=="POST":
@@ -133,11 +199,11 @@ def validariniciarsesion():
 			else:
 				mensaje="contraseña no valida"
 				print(mensaje)
-				return redirect(url_for('iniciarsesion'))
+				return redirect(url_for('iniciarsesion',mensaje= "Contraseña no valida"))
 		else:
 			mensaje="Usuario no valido"
 			print(mensaje)
-			return redirect(url_for('iniciarsesion'))
+			return redirect(url_for('iniciarsesion', mensaje= "Nombre de usuario no valido"))
 
 	
 @app.route('/registro')
@@ -152,10 +218,11 @@ def registro():
 
 @app.route('/editarusuario')
 def editarusuario():
-	return render_template('home.html')
+	if session.get("user")!=None:
+		rol=session.get("type")
+		print(rol)
+	return render_template('Editarusuario.html')
 	
-
-
 @app.route('/registrarusuario', methods=['POST'])
 def registrarusuario ():
 	#Se registra al usuario en la base de datos
@@ -183,7 +250,7 @@ def registrarusuario ():
 				return redirect(url_for('registro', mensaje="El nombre de usuario ya se encuentra en la base de datos"))
 		else:	
 			return redirect(url_for('registro',mensaje= "El numero de carnet ya se encuentra en la base de datos"))
-
+"""
 @app.route('/formpart2', methods=['POST'])
 def formpart2():
 	xpathtitular=""
@@ -195,8 +262,13 @@ def formpart2():
 		xpathtitular=request.form["inputtitular"]
 		urlprincipal=request.form["urlprincipal"]
 	print("urlp",urlprincipal)
-	listaenlaces=scr.obtenerenlaces(urlprincipal,xpathcabecera)
+	#listaenlaces=scr.obtenerenlaces(urlprincipal,xpathcabecera)
+	loop = asyncio.new_event_loop()
+	listaenlaces= loop.run_until_complete(consultarxpath(urlprincipal,str(xpathcabecera)+"//@href"))
+	listaenlaces=limpiarenlaces(listaenlaces,urlprincipal)
+	print("-----------listaenlaces---------")
 	print(listaenlaces)
+
 	response=make_response(render_template('formpart2.html', xpathcabecera=xpathcabecera, xpathtitular=xpathtitular, urlprincipal=urlprincipal, lista=listaenlaces, listacategorias=listacategorias))
 	print(urlprincipal)
 	response.set_cookie('Urlprincipal',urlprincipal)
@@ -204,32 +276,28 @@ def formpart2():
 	response.set_cookie('Xpathcabecera',xpathcabecera)
 	return response
 
+"""
 
 
 
-
-@app.route('/formpart3', methods=['POST'])
-@cross_origin(origin='*')
-def formpart3():
+@app.route('/reglascategoria', methods=['POST'])
+def reglascategoria():
 	#https://www.la-razon.com/nacional/
 	#https://erbol.com.bo/nacional
 	#https://www.eldiario.net/portal/category/nacional/
 	#https://www.paginasiete.bo/nacional/
 	url="https://www.paginasiete.bo/nacional/"
-	urlp="https://www.paginasiete.bo"
-	listaurls=[]
-	listacategoria=[]
-	if(request.method=="POST"):
-		url=request.form["campo1"]
-		numsuburls=request.form["numurls"]
-		for i in range(1, int(numsuburls)):
-			suburl=request.form["campo"+str(i)]
-			categoriaurl=request.form["cat"+str(i)]
-			listaurls.append(suburl)
-			listacategoria.append(categoriaurl)
-		urlp=request.cookies.get("Urlprincipal")
-		texto=scr.cargarpaginaycorregir(url,urlp)
 
+	if(request.method=="POST"):
+		url=request.form["urlcategoria"]
+		categoria=request.form["categoria"]
+
+		loop = asyncio.new_event_loop()
+		texto=loop.run_until_complete(cargarpagina(url))
+	arrayurlext=url.split("/")
+	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
+	print("Lista reglas: ",listareglas)
 	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpath.css">'
 
 	iniciobody=re.search("<body.*>",texto)
@@ -244,60 +312,27 @@ def formpart3():
 	#entre la parte2 y la 3 concatenamos la cabecera
 	dochtml=css+parte1+css+parte2+parte3
 	
-	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml))
-	response.set_cookie("listasuburls",json.dumps(listaurls))
-	response.set_cookie("listacategorias",json.dumps(listacategoria))
+	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas))
 	return response
 
-@app.route('/formpart4', methods=['POST'])
-def formpart4():
-	xpathurlsnoticias=""
-	xpathsiguiente=""
-	tipopagina=""
-	if request.method=='POST':
-		xpathurlsnoticias=request.form["xpathenlace"]
-		xpathsiguiente=request.form["xpathsiguiente"]
-		tipopagina=request.form["tipopagina"]
-		print("xpsig: ",xpathsiguiente)
-	urlp=request.cookies.get("Urlprincipal")
-
-	xpathnoticia=request.cookies.get("Xpathtitular")
-	print(urlp)
-	print(xpathsiguiente)
-	#urlnoticia,textourl=scr.consultarxpa(urlp,xpathnoticia)
-	urlnoticia=scr.obtenerenlaces(urlp,xpathnoticia)
-	print("34234234")
-	print(xpathnoticia)
-	print(urlnoticia)
-	url=urlnoticia[0]
-	r=requests.get(url)
-	decode=r.content.decode('utf-8')
-	parser=html.fromstring(decode)
-	texto=decode
-	listacss=parser.xpath("//@href")
-	for enlacecss in listacss:
-		if not("http" in enlacecss):
-			enlacenuevo='href="'+urlp+enlacecss+'"'
-			#print(enlacenuevo)
-			texto=texto.replace('href="'+enlacecss+'"',enlacenuevo)
-	listasrc=parser.xpath("//@src")
-	for enlacesrc in listasrc:
-		if not("http" in enlacesrc):
-			enlacenuevo='src="'+urlp+enlacesrc+'"'
-			#print(enlacenuevo)
-			texto=texto.replace('src="'+enlacesrc+'"',enlacenuevo)
-	listasrc=parser.xpath("//@srcset")
-	for enlacesrc in listasrc:
-		if not("http" in enlacesrc):
-			enlacenuevo='srcset="'+urlp+enlacesrc+'"'
-			#print(enlacenuevo)
-			texto=texto.replace('srcset="'+enlacesrc+'"',enlacenuevo)
-
+@app.route('/reglasnoticia')
+def reglasnoticia():
+	print("llegue a reglas noticia")
+	tipo=request.args["tipo"]
+	jsondatos=request.args["datosregla"]
+	categoria=""
+	urlext=request.args["urlext"]
+	url=request.args["urlnoticia"]
+	loop = asyncio.new_event_loop()
+	texto=loop.run_until_complete(cargarpagina(url))
 	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
-
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
 	#print(iniciobody.end)
+	arrayurlext=urlext.split("/")
+	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+
+	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"noticias"}))
 	parte1=texto[0:iniciohead.end()]
 
 	parte2=texto[iniciohead.end():iniciobody.end()]
@@ -306,10 +341,10 @@ def formpart4():
 	#Entre la parte 1 y la 2 concatenamos css y scripts
 	#entre la parte2 y la 3 concatenamos la cabecera
 	dochtml=css+parte1+css+parte2+parte3
-	response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml))
-	response.set_cookie("xpathurlnoticias",xpathurlsnoticias)
-	response.set_cookie("xpathsiguiente",xpathsiguiente)
-	response.set_cookie("tipopagina",tipopagina)
+	if(tipo=="categoria"):
+		categoria=request.args["categoria"]
+	
+	response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml, tipo=tipo, jsonp1=jsondatos, urlext=urlext, listareglas=listareglas, categoria=categoria))
 	return response
 	
 
@@ -317,19 +352,19 @@ def formpart4():
 @app.route('/agregar')
 #Redireccion para agregar pagina
 def agregar():
+	listacategorias=list(db.Categoria.find())
+	return render_template('agregar.html',title="agregar", listacategorias=listacategorias)
 
-	return render_template('agregar.html',title="agregar")
-
-@app.route('/evaluarpag', methods=['GET', 'POST'])
+@app.route('/añadirportada', methods=['GET', 'POST'])
 #al momento de agregar la nueva pagina llenaremos un formulario para identificar los patrones de la misma
-def evaluarpag():
-	direccion="evaluarpag.html"
+def añadirportada():
+	direccion="addportada.html"
 	documento=""
 	
 	if request.method=='POST':
 		url=request.form['urlpaginanoticia']
-
-		texto=scr.cargarpaginaycorregir(url,url)
+		loop = asyncio.new_event_loop()
+		texto= loop.run_until_complete(cargarpagina(url))
 		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 		iniciobody=re.search("<body.*>",texto)
 		iniciohead=re.search("<head.*>",texto)
@@ -338,91 +373,225 @@ def evaluarpag():
 		parte2=texto[iniciohead.end():iniciobody.end()]
 		parte3=texto[iniciobody.end():]
 		documento=css+parte1+parte2+parte3
-
 	return render_template(direccion, title="evaluarpag", url=url, texto=documento)
 
-@app.route('/agregarpatrones', methods=['GET', 'POST'])
-def agregarpatrones():
-	direccion="agregarpatrones.html"
-	pagina=""
-	if request.method=='POST':
-		dominioprincipal=request.form['urlP']
-		urlsseleccionadas=[] #SubUrl
+@app.route('/validarportada', methods=['GET', 'POST'])
+def validarportada():
 	
-		contini=[] #contador inicial de las URLs
-		contfin=[] #contafor final de las urls
-		numero=request.form['numurls']
-		paginacion=""
-		for i in range(1, int(numero)):
-			rurl="campo"+str(i)
-			print(rurl)
-			print("------------------")
-			url=request.form[rurl]
-			urlsseleccionadas.append(url)
-			pag, ini, fin =scr.obtenernumeracionpag(url)
-			print("Paginacion: ", pag)
-			paginacion=pag
-			contini.append(ini)
-			contfin.append(fin)
-		print('Hola a todos')
+	if request.method=='POST':
+		xpathurl=request.form["inputurl"]
+		xpathtitular=request.form["inputtitular"]
+		xpathfecha=request.form["inputfecha"]
+		xpathimg=request.form["inputimg"]
+		xpathredactor=request.form["inputredactor"]
+		xpathdescripcion=request.form["inputdescripcion"]
+		urlprin=request.form["urlprincipal"]
+		arrayurlext=urlprin.split("/")
+		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+		jsondatos={
+			"urlprincipal":urlprincipal,
+			"urlportada":urlprin,
+			"tiporegla":"portada",
+			"xpathurl":xpathurl,
+			"xpathtitular":xpathtitular,
+			"xpathfecha":xpathfecha,
+			"xpathimg":xpathimg,
+			"xpathredactor":xpathredactor,
+			"xpathdescripcion":xpathdescripcion,
+			"idreglainterna":""
+		}
+	if request.form.get("continuarform"):
+		print("obteniendo enlace")
+		loop = asyncio.new_event_loop()
+		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		print("xpath url", xpathurl)
+		print("Url noticia",lurlnot)
+		urlnoticia=lurlnot[0]
+		if not("http" in urlnoticia):
+			urlnoticia=urlprincipal+urlnoticia
+		print("redireccionando a reglas noticia")
+		print(urlnoticia)
+		return redirect(url_for('reglasnoticia', tipo="portada",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlprin ))
+	else:
+		addreglaext=db['Reglas'].insert_one(jsondatos)
+		portada={
+				"urlportada":urlprin,
+				"idregla":addreglaext.inserted_id
+			}
+		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+		if(len(paginanoticia)>0):
+			#en caso de que exista la pagina de noticias añadimos portada
+			arrayportadas=paginanoticia[0]["portada"]
+			arrayportadas.append(portada)
+			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
+		else:
+			#en caso de que la url de la pagina no exista
+			paginanoticia={
+				"url":urlprincipal,
+				"portada":[portada],
+				"categorias":[]
+			}
+			db["paginanoticia"].insert_one(paginanoticia)
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Se añadio las reglas de la portada a la base de datos", mensajesec="A partir de ahora el sistema empezara a monitorear las noticias de portada de la página: " )
+@app.route('/validarurlcategoria', methods=['GET', 'POST'])
+def validarurlcategoria():
+	idreglaexterna="ninguno"
+	if request.method=='POST':
+		if "reglaseleccionada" in request.form:
+			idreglaexterna=request.form["reglaseleccionada"]
+		categoria=request.form["categoria"]
+		xpathurl=request.form["inputurl"]
+		xpathtitular=request.form["inputtitular"]
+		xpathfecha=request.form["inputfecha"]
+		xpathimg=request.form["inputimg"]
+		xpathredactor=request.form["inputredactor"]
+		xpathdescripcion=request.form["inputdescripcion"]
+		urlprin=request.form["urlprincipal"]
+		print("urlprin", urlprin)
+		arrayurlext=urlprin.split("/")
+		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+		jsondatos={
+			"urlprincipal":urlprincipal,
+			"urlcategoria":urlprin,
+			"tiporegla":"categoria",
+			"xpathurl":xpathurl,
+			"xpathtitular":xpathtitular,
+			"xpathfecha":xpathfecha,
+			"xpathimg":xpathimg,
+			"xpathredactor":xpathredactor,
+			"xpathdescripcion":xpathdescripcion,
+			"idreglainterna":""
+		}
+	if request.form.get("continuarform"):
+		print("obteniendo enlace")
+		loop = asyncio.new_event_loop()
+		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		urlnoticia=lurlnot[0]
+		print("redireccionando a reglas noticia")
 		
-	return render_template(direccion, title="agregarpatrones", urlsel=urlsseleccionadas, paginacion=paginacion, ini=contini, fin=contfin,dp=dominioprincipal)
-
+		if not("http" in urlnoticia):
+			urlnoticia=urlprincipal+urlnoticia
+		print(urlnoticia)
+		print("urlp: ",urlprincipal)
+		return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlprin, categoria=categoria ))
+	else:
+		print("idreglaexterna", idreglaexterna)
+		if idreglaexterna=="ninguno":
+			addreglaext=db['Reglas'].insert_one(jsondatos)
+			idreglaexterna=addreglaext.inserted_id
+		categoria={
+			"url":urlprin,
+			"idcategoria":request.form["categoria"],
+			"idregla":idreglaexterna
+		}	
+		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+		if(len(paginanoticia)>0):
+			#en caso de que exista la pagina de noticias añadimos la categoria
+			arraycategorias=paginanoticia[0]["categorias"]
+			arraycategorias.append(categoria)
+			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
+		else:
+			#en caso de que la url de la pagina no exista
+			paginanoticia={
+				"url":urlprincipal,
+				"portada":[],
+				"categorias":[categoria]
+			}
+			db["paginanoticia"].insert_one(paginanoticia)
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Se añadio las reglas de la portada a la base de datos", mensajesec="A partir de ahora el sistema empezara a monitorear las noticias de portada de la página: " )
 
 @app.route("/subirpagina", methods=["POST"])
 def subirpagina():
+	idreglainterna="ninguno"
 	if request.method=='POST':
-		paginaprincipal=request.cookies.get("Urlprincipal")
-		xpathcabecera=request.cookies.get("Xpathcabecera")
-		xpurlnoticiaprincipal=request.cookies.get("Xpathtitular")
-		listaurlcategorias=request.cookies.get("listasuburls")
-		listacategorias=request.cookies.get("listacategorias")
-		xpathurlnoticias=request.cookies.get("xpathurlnoticias")
-		xpathpagsig=request.cookies.get("xpathsiguiente")
-		tipopagina=request.cookies.get("tipopagina")
+		if "reglaseleccionada" in request.form:
+			idreglainterna=request.form["reglaseleccionada"]
+		tiporeglaexterna=request.form["tiporeglaexterna"]
+		urlpaginaexterna=request.form["urlexterna"]
+		reglaex=request.form["datosreglaexterna"]
 		#xpath de las noticias
 		xptitularnot=request.form['input1']
 		xpresumennot=request.form['input2']
 		xpimgnot=request.form['input3']
 		xpdesimgnot=request.form['input4']
-		xpvideonot=request.form['input5']
-		xpdesvideonot=request.form['input6']
-		xpredactornot=request.form['input7']
-		xpfechanot=request.form['input8']
-		xpparrafos=request.form['input9']
-		xpcategoriasnot=request.form['input10']
+		xpredactornot=request.form['input5']
+		xpfechanot=request.form['input6']
+		xpparrafos=request.form['input7']
+		xphshtag=request.form['input8']
 		#Añadimos los datos a la base de datos de MongoDb (coleccion Paginanoticias)
-		colpagina={
-			"URLPrincipal":paginaprincipal,
-			"urls":listaurlcategorias,
-			"categorias":listacategorias,
-			"Xpathcabecera":xpathcabecera,
-			"Xpathnotprincipal":xpurlnoticiaprincipal,
-			"Xpathurlsnoticias":xpathurlnoticias,
-			"Xpathpagsig":xpathpagsig,
-			"Tipo":tipopagina,
-			"datosnoticia":{
+		arrurlexterna=urlpaginaexterna.split("/")
+		print("urlexterna: "+urlpaginaexterna)
+		urlprincipal=arrurlexterna[0]+"//"+arrurlexterna[2]
+		reglacoin=list(db["Reglas"].find({"tiporegla":"noticias","urlprincipal":urlprincipal,"xptitular":xptitularnot,"xpresumen":xpresumennot,"xpimg":xpimgnot,"xpdesimg":xpdesimgnot,"xpredactor":xpredactornot,"xpfecha":xpfechanot,"xpparrafos":xpparrafos,"xphashtags":xphshtag}))
+		if(len(reglacoin)==0):
+			#por ninguno añadimos la nueva regla el nuevo id sera 
+			colregla={
+				"tiporegla":"noticias",
+				"urlprincipal":urlprincipal,
 				"xptitular":xptitularnot,
 				"xpresumen":xpresumennot,
+				"xpimg":xpimgnot,
+				"xpdesimg":xpdesimgnot,
 				"xpredactor":xpredactornot,
 				"xpfecha":xpfechanot,
-				"xpimagen":xpimgnot,
-				"xpdesimagen":xpdesimgnot,
 				"xpparrafos":xpparrafos,
-				"xpvideo":xpvideonot,
-				"xpdesvideo":xpdesvideonot,
-				"xpcategorias":xpcategoriasnot
+				"xphashtags":xphshtag
 			}
-		
-		}
-		colpaginanoticia=db['Paginanoticias']
-		colpaginanoticia.insert_one(colpagina)
+			addregla=db['Reglas'].insert_one(colregla)
+			idreglainterna=addregla.inserted_id
+		else:
+			idreglainterna=reglacoin[0]["_id"]
 
+		print("reglaext",reglaex)
+		print("//*/*/**/*/*/*/*/*")
+		#añadiendo la regla externa
+		reglaexterna=json.loads(reglaex)
+		reglaexterna['idreglainterna']=idreglainterna
+		addreglaext=db['Reglas'].insert_one(reglaexterna)
+		if(reglaexterna['tiporegla']=="categoria"):
+			categoria={
+				"url":urlpaginaexterna,
+				"idcategoria":request.form["categoria"],
+				"idregla":addreglaext.inserted_id
+			}
+			
+			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+			if(len(paginanoticia)>0):
+				#en caso de que exista la pagina de noticias añadimos la categoria
+				arraycategorias=paginanoticia[0]["categorias"]
+				arraycategorias.append(categoria)
+				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
+			else:
+				#en caso de que la url de la pagina no exista
+				paginanoticia={
+					"url":urlprincipal,
+					"portada":[],
+					"categorias":[categoria]
+				}
+				db["paginanoticia"].insert_one(paginanoticia)
+		else:
+			#Añadiendo portada
+			portada={
+				"urlportada":urlpaginaexterna,
+				"idregla":addreglaext.inserted_id
+			}
+			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+			if(len(paginanoticia)>0):
+				#en caso de que exista la pagina de noticias añadimos portada
+				arrayportadas=paginanoticia[0]["portada"]
+				arrayportadas.append(portada)
+				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
+			else:
+				#en caso de que la url de la pagina no exista
+				paginanoticia={
+					"url":urlprincipal,
+					"portada":[portada],
+					"categorias":[]
+				}
+				db["paginanoticia"].insert_one(paginanoticia)
 
-		
-		
 	mensaje="Se añadio la pagina web con exito "
-	mensajesec=mensajesec="A partir de ahora se empezara recolectar noticias de esta paginaweb "+paginaprincipal
+	mensajesec=mensajesec="A partir de ahora se empezara recolectar noticias de esta paginaweb "+urlprincipal
 	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec=mensajesec )
 
 @app.route("/recibirnot", methods=["POST"])
@@ -434,22 +603,7 @@ def recibirnot():
 	print(mensaje)
 	response={'status':200}
 	return(response)
-@app.route("/ajaxpaginanoticia", methods=["POST"])
-def ajaxpaginanoticia():
-	paginaprincipal= request.form['urlpaginanoticia']
-	print("-------------")
-	print(paginaprincipal)
-	urls=scr.obtenerurlsec(paginaprincipal)
-	paginahtml=scr.cargarpaginaweb(paginaprincipal,  paginaprincipal)
-	print(urls)
-	response={
-		'status': 200,
-		'url': str(paginaprincipal),
-		'Paginahtml':str(paginahtml),
-		'urlssec':urls,
-		'id': 1
-	}
-	return json.dumps(response)
+
 @app.route("/ajaxcategorias", methods=["POST"])
 def ajaxcategorias():
 	categoria=request.form['categoria']
@@ -501,8 +655,11 @@ def ajaxcargarcategorias():
 @app.route("/ajaxcargarnotfuente", methods=["POST"])
 def ajaxcargarnotfuente():
 	urlfuente=request.form['urlfuente']
+	if urlfuente[-1]=="/":
+		urlfuente=urlfuente[:-1]
 	numpagina=request.form["numpagina"]
 	omitir=20*int(numpagina)
+	
 	noticias=db.noticia	
 	Noticiascat=list(noticias.find({"urlfuente":urlfuente}).sort("fechaasig",-1).skip(omitir).sort("fechaasig",-1).limit(20))
 
@@ -580,8 +737,9 @@ def ajaxbuscarnoticiasrelacionadas():
 		'id': 1
 	}
 	return json.dumps(response)
+
 if __name__ == '__main__':
-	app.run()
+	#app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)
 
 	
