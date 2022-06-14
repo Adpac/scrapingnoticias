@@ -30,6 +30,7 @@ Jinja2==3.1.2
 lxml==4.9.0
 MarkupSafe==2.1.1
 monotonic==1.6
+nest-asyncio==1.5.5
 numpy==1.22.4
 pandas==1.4.2
 parse==1.19.0
