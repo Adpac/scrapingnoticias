@@ -301,10 +301,10 @@ def reglascategoria():
 	if(request.method=="POST"):
 		url=request.form["urlcategoria"]
 		categoria=request.form["categoria"]
-
-		loop = asyncio.new_event_loop()
-		texto=loop.run_until_complete(cargarpagina(url))
-		loop.close()
+		texto=asyncio.run(cargarpagina(url))
+		#loop = asyncio.new_event_loop()
+		#texto=loop.run_until_complete(cargarpagina(url))
+		#loop.close()
 	arrayurlext=url.split("/")
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
@@ -334,9 +334,10 @@ def reglasnoticia():
 	categoria=""
 	urlext=request.args["urlext"]
 	url=request.args["urlnoticia"]
-	loop = asyncio.new_event_loop()
-	texto=loop.run_until_complete(cargarpagina(url))
-	loop.close()
+	texto=asyncio.run(cargarpagina(url))
+	#loop = asyncio.new_event_loop()
+	#texto=loop.run_until_complete(cargarpagina(url))
+	#loop.close()
 	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
@@ -375,9 +376,10 @@ def añadirportada():
 	
 	if request.method=='POST':
 		url=request.form['urlpaginanoticia']
-		loop = asyncio.new_event_loop()
-		texto= loop.run_until_complete(cargarpagina(url))
-		loop.close()
+		texto=asyncio.run(cargarpagina(url))
+		#loop = asyncio.new_event_loop()
+		#texto= loop.run_until_complete(cargarpagina(url))
+		#loop.close()
 		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 		iniciobody=re.search("<body.*>",texto)
 		iniciohead=re.search("<head.*>",texto)
@@ -415,9 +417,10 @@ def validarportada():
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
-		loop = asyncio.new_event_loop()
-		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop.close()
+		lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop = asyncio.new_event_loop()
+		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop.close()
 		print("xpath url", xpathurl)
 		print("Url noticia",lurlnot)
 		urlnoticia=lurlnot[0]
@@ -478,9 +481,10 @@ def validarurlcategoria():
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
-		loop = asyncio.new_event_loop()
-		lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		loop.close()
+		lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop = asyncio.new_event_loop()
+		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+		#loop.close()
 		urlnoticia=lurlnot[0]
 		print("redireccionando a reglas noticia")
 		
