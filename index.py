@@ -135,15 +135,15 @@ def home():
 	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
 	hoy=datetime.today()
 	ayer=hoy-timedelta(days=2)
-	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("fechaasig",-1).limit(20))
+	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("fecharecup",-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
-	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fechaasig",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fecharecup",-1).limit(20))
 	noticiaspagina=[]
 	if len(listapaginanoticias)>0:
 		urlfuente=listapaginanoticias[0]["url"]
 		if urlfuente[-1:]=="/":
 			urlfuente=urlfuente[0:-1]
-		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fechaasig",-1).limit(20))
+		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fecharecup",-1).limit(20))
 	#print(noticiaspagina)
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
