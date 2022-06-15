@@ -340,10 +340,12 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 }
             #print(noticia)
             añadirnoticia(noticia)
+            
         else:
             contrep+=1
         if contrep>=2:
             break #en caso de encontrar mas de dos notiicias repetidas saltamos de categoria
+        contador=contador+1
     r.close()
     try:
         await asession.close()
