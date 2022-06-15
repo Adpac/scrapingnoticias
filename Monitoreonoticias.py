@@ -222,10 +222,13 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
     #print("reglascategoria", reglascategoria)
     asession = AsyncHTMLSession()
     r = await asession.get(urlcategoria)
+    """
     try:
         await r.html.arender(sleep = 10, timeout=50)
     except:
         print("no se pudo completar la carga de la pagina")
+    """
+
     listaurls=r.html.xpath(reglascategoria["xpathurl"]+"//@href")
     try:
         listastitulares=r.html.xpath(reglascategoria["xpathtitular"]+"//text()")
@@ -276,10 +279,6 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 print("error redactor categoria")
             if idreglainterna!="" and idreglainterna!="ninguno":
                 r2 = await asession.get(urlnot)
-                try:
-                    await r2.html.arender(sleep = 10, timeout=50)
-                except:
-                    print("no se pudo completar la carga")
                 reglainterna=db["Reglas"].find_one({"_id":ObjectId(str(idreglainterna))})
                 try:
                     titular=r2.html.xpath(reglainterna["xptitular"]+"//text()")[0]
