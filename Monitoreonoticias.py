@@ -121,13 +121,18 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         print("error al cargar fecha")
     try:
         imagen=r.html.xpath(reglaportada["xpathimg"]+"/@data-srcset")[0]
+    except(Exception):
+        print("error al cargar imagen (srcset)")
+    try:
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"/@src")[0]
-        print("llegue aqui.....")
+    except(Exception):
+        print("error al cargar imagen (src)")
+    try:
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"/@href")[0]
     except(Exception):
-        print("error al cargar imagen")
+        print("error al cargar imagen (href)")
     try:
         redactor=r.html.xpath(reglaportada["xpathredactor"]+"/text()")[0]
     except(Exception):
@@ -168,15 +173,20 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
             print("error al cargar resumen interno")
         try:
             urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@data-srcset")[0]
+        except(Exception):
+            print("error al cargar imagen (data srcset")
+        try:
             if urlimagenint=="" or urlimagenint==None: 
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
-            print("img int...")
+        except(Exception):
+            print("error al cargar imagen (src)")
+        try:
             if urlimagenint=="" or urlimagenint==None: 
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@href")[0]
-            if urlimagenint!="" and noticia["urlimagen"]=="":
-                noticia["urlimagen"]=urlimagenint
         except(Exception):
-            print("error al cargar resumen interno")
+            print("error al cargar imagen (href)")
+        if urlimagenint!="" and noticia["urlimagen"]=="":
+            noticia["urlimagen"]=urlimagenint
         try:
             desimagen=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
             noticia["desimagen"]=desimagen
@@ -293,13 +303,18 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                     print("no se pudo cargar el titular")
                 try:
                     urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@data-srcset")[0]
+                except(Exception):
+                    print("error al cargar imagen srcset")
+                try:
                     if urlimagen=="" or urlimagen==None: 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
-                        print("llegue aqui....")
+                except(Exception):
+                    print("error al cargar imagen src")
+                try:
                     if urlimagen=="" or urlimagen==None: 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@href")[0]
                 except:
-                    print("no se pudo cargar el titular")
+                    print("no se pudo cargar imagen href")
                 try:
                     desimg=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
                 except:
@@ -360,7 +375,7 @@ def añadirnoticia(noticia):
     print(noticia["urlnoticia"])
     print(noticia["titular"])
     print(noticia["fecha"])
-    if noticia["urlnoticia"]!="" and noticia["titular"]!="" and cantidadnot==0:
+    if noticia["urlnoticia"]!="" and noticia["titular"]!="" and noticia["titular"]!="\n" and cantidadnot==0:
         db["noticia"].insert_one(noticia)
         generarnotificacion(noticia)
         print("Noticia añadida")
