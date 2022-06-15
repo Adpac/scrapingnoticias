@@ -82,6 +82,7 @@ def generarfecha(texto):
     return retornar
 @unsync
 async def consultarportada(urlprincipal,urlportada, idreglap):
+    print("inicio portada..............")
     #print("idregla: ",idreglap)
     reglaportada=db["Reglas"].find_one({"_id":ObjectId(str(idreglap))})
     asession = AsyncHTMLSession() 
@@ -213,6 +214,8 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         await asession.close()
     except:
         print("No se pudo cerrar session")
+    añadirnoticia(noticia)
+    print("fin portada")
     return noticia
 @unsync
 async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
@@ -375,7 +378,7 @@ def monitorearpagina(urlpagina):
         urlportada=portada["urlportada"]
         idreglap=portada["idregla"]
         Noticia=consultarportada(urlpagina,urlportada,idreglap).result()
-        añadirnoticia(Noticia)
+        
         #cargamos la regla de la portada
         #loop = asyncio.new_event_loop()
         #Noticia=loop.run_until_complete(consultarportada(urlpagina,urlportada,idreglap))
@@ -404,7 +407,7 @@ def monitoriartodaslaspaginas():
             #Noticia=loop.run_until_complete(consultarportada(urlprincipal,urlportada,idreglap))
             #print(Noticia)
             Noticia=consultarportada(urlprincipal,urlportada,idreglap).result()
-            añadirnoticia(Noticia)
+            
             print("-------------------")
         for categoria in listareglascategoria:
             #print("urlcategoria",categoria["url"])

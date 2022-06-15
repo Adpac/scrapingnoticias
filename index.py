@@ -134,7 +134,7 @@ def home():
 	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
 	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
 	hoy=datetime.today()
-	ayer=hoy-timedelta(days=1)
+	ayer=hoy-timedelta(days=2)
 	portada=list(noticias.find({'estiular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("fechaasig",-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
 	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fechaasig",-1).limit(20))
