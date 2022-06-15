@@ -85,8 +85,8 @@
 <script>
   const socket=io();
     socket.on('message', function (msg){
-      console.log("mensaje nuevo")
-      console.log(msg)
+      //console.log("mensaje nuevo")
+      //console.log(msg)
       noti = JSON.parse(msg);
       urlimagen=noti["urlimagen"]
       console.log(urlimagen)

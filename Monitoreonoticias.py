@@ -8,6 +8,7 @@ from datetime import date
 from datetime import datetime
 import asyncio
 import enviarnotificaciones
+from unsync import unsync
 client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority")
 db = client["Noticias"]
 def generarnotificacion( enviar):
@@ -79,7 +80,7 @@ def generarfecha(texto):
     except:
         retornar="Fecha no valida"
     return retornar
-
+@unsync
 async def consultarportada(urlprincipal,urlportada, idreglap):
     #print("idregla: ",idreglap)
     reglaportada=db["Reglas"].find_one({"_id":ObjectId(str(idreglap))})
@@ -121,6 +122,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         imagen=r.html.xpath(reglaportada["xpathimg"]+"//@data-srcset")[0]
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"//@src")[0]
+        print("llegue aqui.....")
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"//@href")[0]
     except(Exception):
@@ -167,6 +169,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
             urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"//@data-srcset")[0]
             if urlimagenint=="" or urlimagenint==None: 
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"//@src")[0]
+            print("img int...")
             if urlimagenint=="" or urlimagenint==None: 
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"//@href")[0]
             if urlimagenint!="" and noticia["urlimagen"]=="":
@@ -206,8 +209,12 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
             print("error al cargar hashtags int")
         r2.close()
     r.close()
-    await asession.close()
+    try:
+        await asession.close()
+    except:
+        print("No se pudo cerrar session")
     return noticia
+@unsync
 async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
     #print("idregla: ",idreglap)
     reglascategoria=db["Reglas"].find_one({"_id": ObjectId(str(idreglascategoria))})
@@ -286,6 +293,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                     urlimagen=r2.html.xpath(reglainterna["xpimg"]+"//@data-srcset")[0]
                     if urlimagen=="" or urlimagen==None: 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"//@src")[0]
+                        print("llegue aqui....")
                     if urlimagen=="" or urlimagen==None: 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"//@href")[0]
                 except:
@@ -331,46 +339,52 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 "parrafos":parrafos,
                 "hashtags":hashtags
                 }
-            print(noticia)
+            #print(noticia)
             añadirnoticia(noticia)
         else:
             contrep+=1
         if contrep>=2:
             break #en caso de encontrar mas de dos notiicias repetidas saltamos de categoria
     r.close()
-    await asession.close()
+    try:
+        await asession.close()
+    except:
+        print("No se pudo cerrar sesion")
 
 def añadirnoticia(noticia):
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":noticia["urlnoticia"]})))
-    
+    print(noticia["urlnoticia"])
+    print(noticia["titular"])
+    print(noticia["fecha"])
     if noticia["urlnoticia"]!="" and noticia["titular"]!="" and cantidadnot==0:
         db["noticia"].insert_one(noticia)
         generarnotificacion(noticia)
+        print("Noticia añadida")
     else:
         print("No se añadio la pagina web...")
         if cantidadnot!=0:
-            print("Se encontro la url en la bas")
-        print(noticia["urlnoticia"])
-        print(noticia["titular"])
-        print(noticia["fecha"])
+            print("Se encontro la url en la base de datos")
 def monitorearpagina(urlpagina):
     colpagina=db["paginanoticia"].find_one({"url":ObjectId(str(urlpagina))})
     #print(colpagina)
     listareglasportada=colpagina["portada"]
     listareglascategoria=colpagina["categorias"]
-    print("listacat",listareglascategoria)
+    #print("listacat",listareglascategoria)
     for portada in listareglasportada:
         urlportada=portada["urlportada"]
         idreglap=portada["idregla"]
+        Noticia=consultarportada(urlpagina,urlportada,idreglap).result()
+        añadirnoticia(Noticia)
         #cargamos la regla de la portada
-        loop = asyncio.new_event_loop()
-        Noticia=loop.run_until_complete(consultarportada(urlpagina,urlportada,idreglap))
-        print(Noticia)
+        #loop = asyncio.new_event_loop()
+        #Noticia=loop.run_until_complete(consultarportada(urlpagina,urlportada,idreglap))
+        #print(Noticia)
         #cargamos la pagina web de la portada a la base de datos
     for categoria in listareglascategoria:
         print("categoria",categoria)
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(monitorearcat(urlpagina,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
+        #loop = asyncio.new_event_loop()
+        monitorearcat(urlpagina,categoria["url"],categoria["idcategoria"],categoria["idregla"]).result()
+        #loop.run_until_complete(monitorearcat(urlpagina,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
         print("////////////////////////////")
 
         
@@ -385,14 +399,16 @@ def monitoriartodaslaspaginas():
             urlportada=portada["urlportada"]
             idreglap=portada["idregla"]
             #cargamos la regla de la portada
-            loop = asyncio.new_event_loop()
-            Noticia=loop.run_until_complete(consultarportada(urlprincipal,urlportada,idreglap))
-            print(Noticia)
+            #loop = asyncio.new_event_loop()
+            #Noticia=loop.run_until_complete(consultarportada(urlprincipal,urlportada,idreglap))
+            #print(Noticia)
+            Noticia=consultarportada(urlprincipal,urlportada,idreglap).result()
             añadirnoticia(Noticia)
             print("-------------------")
         for categoria in listareglascategoria:
-            print("urlcategoria",categoria["url"])
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
+            #print("urlcategoria",categoria["url"])
+            #loop = asyncio.new_event_loop()
+            #loop.run_until_complete(monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
+            monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]).result()
 #monitorearpagina("https://www.eldiario.net")
 monitoriartodaslaspaginas()

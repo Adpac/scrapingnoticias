@@ -49,7 +49,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-#tarea=threading.Thread(target=scrapingnoticias).start()
+tarea=threading.Thread(target=scrapingnoticias).start()
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
@@ -101,7 +101,7 @@ async def consultarxpath(urlpagina,xpath):
 	asession = AsyncHTMLSession() 
 	r = await asession.get(urlpagina)
 	respuesta=r.html.xpath(xpath)
-	print(respuesta)
+	#print(respuesta)
 	await asession.close()
 	return respuesta
 def limpiarenlaces(listaenlace, urlprincipal):
@@ -124,12 +124,12 @@ def create_user():
 @app.route('/')
 def home():
 	print(__name__)
-	print("redireccionado")
+	#print("redireccionado")
 	rol="ninguno"
 	if session.get("user")!=None:
 		rol=session.get("type")
 		
-		print(rol)
+		#print(rol)
 	noticias=db.noticia
 	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
 	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
@@ -144,7 +144,7 @@ def home():
 		if urlfuente[-1:]=="/":
 			urlfuente=urlfuente[0:-1]
 		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fechaasig",-1).limit(20))
-	print(noticiaspagina)
+	#print(noticiaspagina)
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
 
@@ -182,8 +182,8 @@ def buscarnoticia():
 @app.route('/iniciarsesion')
 def iniciarsesion():
 	if 'mensaje' in request.args:
-		mensaje=request.args["mensaje"]
-		print("Mensaje:", mensaje)
+		#mensaje=request.args["mensaje"]
+		#print("Mensaje:", mensaje)
 		return render_template('iniciosesion.html', mensaje=mensaje)
 	else:
 		return render_template('iniciosesion.html')
@@ -196,8 +196,8 @@ def validariniciarsesion():
 		if colusuario.count_documents({"$and":[{"usuario":usuario }]})==1:
 			usuario=colusuario.find_one({"usuario": usuario})
 			passcod=usuario['contraseña']
-			print(contraseña)
-			print("passcod", passcod)
+			#print(contraseña)
+			#print("passcod", passcod)
 			if sha512.verify(str(contraseña), str(passcod)):
 				#Datos validos
 				print("URL inicial: ",url_for('home'))
@@ -309,7 +309,7 @@ def reglascategoria():
 	arrayurlext=url.split("/")
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
-	print("Lista reglas: ",listareglas)
+	#print("Lista reglas: ",listareglas)
 	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpath.css">'
 
 	iniciobody=re.search("<body.*>",texto)
@@ -491,7 +491,7 @@ def validarurlcategoria():
 			"idreglainterna":""
 		}
 	if request.form.get("continuarform"):
-		print("obteniendo enlace")
+		#print("obteniendo enlace")
 		lurlnot=consultarxpath(urlprin,str(xpathurl)+"//@href").result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
 		#loop = asyncio.new_event_loop()
@@ -503,8 +503,8 @@ def validarurlcategoria():
 		
 		if not("http" in urlnoticia):
 			urlnoticia=urlprincipal+urlnoticia
-		print(urlnoticia)
-		print("urlp: ",urlprincipal)
+		#print(urlnoticia)
+		#print("urlp: ",urlprincipal)
 		return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlprin, categoria=categoria ))
 	else:
 		print("idreglaexterna", idreglaexterna)
@@ -552,7 +552,7 @@ def subirpagina():
 		xphshtag=request.form['input8']
 		#Añadimos los datos a la base de datos de MongoDb (coleccion Paginanoticias)
 		arrurlexterna=urlpaginaexterna.split("/")
-		print("urlexterna: "+urlpaginaexterna)
+		#print("urlexterna: "+urlpaginaexterna)
 		urlprincipal=arrurlexterna[0]+"//"+arrurlexterna[2]
 		reglacoin=list(db["Reglas"].find({"tiporegla":"noticias","urlprincipal":urlprincipal,"xptitular":xptitularnot,"xpresumen":xpresumennot,"xpimg":xpimgnot,"xpdesimg":xpdesimgnot,"xpredactor":xpredactornot,"xpfecha":xpfechanot,"xpparrafos":xpparrafos,"xphashtags":xphshtag}))
 		if(len(reglacoin)==0):
@@ -574,8 +574,8 @@ def subirpagina():
 		else:
 			idreglainterna=reglacoin[0]["_id"]
 
-		print("reglaext",reglaex)
-		print("//*/*/**/*/*/*/*/*")
+		#print("reglaext",reglaex)
+		#print("//*/*/**/*/*/*/*/*")
 		#añadiendo la regla externa
 		reglaexterna=json.loads(reglaex)
 		reglaexterna['idreglainterna']=idreglainterna
@@ -641,7 +641,7 @@ def ajaxcategorias():
 	categoria=request.form['categoria']
 	noticias=db.noticia	
 	cat=str(categoria)
-	print("Categoria: ",cat)
+	#print("Categoria: ",cat)
 	Noticiascat=list(noticias.find({"categoriaprin":cat}).sort("fechaasig",-1).limit(20))
 
 
@@ -673,7 +673,7 @@ def ajaxcargarcategorias():
 	omitir=20*int(numpagina)
 	noticias=db.noticia	
 	cat=str(categoria)
-	print("Categoria: ",cat)
+	#print("Categoria: ",cat)
 	Noticiascat=list(noticias.find({"categoriaprin":cat}).skip(omitir).sort("fechaasig",-1).limit(20))
 
 
@@ -748,7 +748,7 @@ def ajaxcargarmastemas():
 def ajaxañadircategoria():
 	categoria=request.form["categoria"]
 	insertar=db.Categoria.insert_one({"cat":categoria})
-	print("Añadido: ",insertar.inserted_id)
+	#print("Añadido: ",insertar.inserted_id)
 	response={
 		'status':200,
 		'respuesta':'Categoria agregada exitosamente',
@@ -761,7 +761,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	url=request.form["urlnoticia"]
 	noticia=dbnoticias.find_one({"urlnoticia":url})
 	textosinsw=eliminarstopwords(noticia["titular"])
-	print(textosinsw)
+	#print(textosinsw)
 	Noti =list(dbnoticias.find({"$text": {"$search": textosinsw}, "urlnoticia":{"$ne":url} }, { "score": { "$meta": "textScore" }}).sort([('score', {'$meta': 'textScore'})]).limit(10))
 	response={
 		'status': 200,
@@ -771,7 +771,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	return json.dumps(response)
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	#app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)
 
 	

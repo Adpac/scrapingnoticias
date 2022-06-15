@@ -193,17 +193,17 @@ function ajaxagregarcategoria(){
                         xpdevolveraux="/"+nombrenodo+xpdevolver
                         xpathprueba=xpincompleto+xpdevolveraux
                         consultaaux=getElementsByXPath2(xpathprueba);
-                        console.log()
+                        //console.log()
                         if(!compararelementosxp(consultaoriginal,consultaaux)){
                             xpdevolver="/"+nodo+xpdevolver
-                            console.log("xpdevolveraux "+xpdevolveraux)
-                            console.log("detencion3"+xpathprueba)
+                            //console.log("xpdevolveraux "+xpdevolveraux)
+                            //console.log("detencion3"+xpathprueba)
                         }else{
                             xpdevolver=xpdevolveraux
-                            console.log("detencion2"+xpathprueba)
+                            //console.log("detencion2"+xpathprueba)
                         }
                     }else{
-                        console.log("detencion1")
+                        //console.log("detencion1")
                         //xpdevolver="/"+xpdevolver
                         añadirguion=true;
                     }   

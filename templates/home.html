@@ -310,7 +310,7 @@ function buscarrel( urlnoticia,tipoar){
             $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"'] > #loading").remove();
             respuesta=JSON.parse(response)
             Noticias=JSON.parse(respuesta["Noticias"])
-            console.log(Noticias)
+            //console.log(Noticias)
             $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"']").append('<div class="row" id="notrel"> </div>');
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
@@ -356,7 +356,7 @@ function ajaxsolicitarcatergoria(Categoria){
 
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
-                console.log(Not['titular']);
+                //console.log(Not['titular']);
                 urlimagen=Not['urlimagen']
                 if(urlimagen == "" || !urlimagen.includes("http")){
                     urlimagen="/static/Imagen_no_disponible.png";
@@ -386,7 +386,7 @@ function ajaxsolicitarfuente(urlfuente){
 
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
-                console.log(Not['titular']);
+                //console.log(Not['titular']);
                 urlimagen=Not['urlimagen']
                 if(urlimagen == "" || !urlimagen.includes("http")){
                     urlimagen="/static/Imagen_no_disponible.png";
@@ -467,7 +467,7 @@ function ajaxscargarcatergoria(){
 
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
-                console.log(Not['titular']);
+                //console.log(Not['titular']);
                 urlimagen=Not['urlimagen']
                 if(urlimagen == "" || !urlimagen.includes("http")){
                     urlimagen="/static/Imagen_no_disponible.png";
@@ -504,7 +504,7 @@ function ajaxscargarnotfuente(){
             $("#pills-fuentes > #loading").remove();
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
-                console.log(Not['titular']);
+               //console.log(Not['titular']);
                 urlimagen=Not['urlimagen']
                 if(urlimagen == "" || !urlimagen.includes("http")){
                     urlimagen="/static/Imagen_no_disponible.png";
@@ -516,14 +516,14 @@ function ajaxscargarnotfuente(){
             numfuente++;
         },
         error: function(error){
-            console.log(error)
+            //console.log(error)
         }
     })
 }
     $('#cambiarcat').change(function(){ 
     var value = $(this).val();
     var texto=$(this).find('option:selected').text();
-    console.log(value)
+    //console.log(value)
     $("#h3categoria").text(texto)
     
 
@@ -532,7 +532,7 @@ function ajaxscargarnotfuente(){
 });
 $('#cambiarfuente').change(function(){ 
     var value = $(this).val();
-    console.log(value)
+    //console.log(value)
     ajaxsolicitarfuente(value)
 
 });

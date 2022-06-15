@@ -70,19 +70,19 @@ Añadir Pagina web
       var idanterior="fila"+j;
       var idnuevo="fila"+i;
       var nuevoclick="eliminarFila('"+i+"');";
-      console.log(nuevoclick);
+      //console.log(nuevoclick);
       var input=document.getElementById(idanterior);
       var entrada=document.getElementById("entrada"+j);
-      console.log("i="+i);
-      console.log("j="+j);
-      console.log(entrada);
+      //console.log("i="+i);
+      //console.log("j="+j);
+      //console.log(entrada);
       entrada.setAttribute("name","campo"+i);
       entrada.id="entrada"+i;
       var selcategoria=document.getElementById("cat"+j);
       selcategoria.setAttribute("name","cat"+i);
       selcategoria.id="cat"+i;
       var boton=document.getElementById("btn"+j);
-      console.log(boton);
+      //console.log(boton);
       boton.setAttribute("onclick",nuevoclick);
       boton.id="btn"+i;
       input.id=idnuevo; 
@@ -93,7 +93,7 @@ Añadir Pagina web
   }
   function ajaxagregarcategoria(){
       var nomcategoria=document.getElementById("inputcategoria")
-      console.log(nomcategoria.value)
+      //console.log(nomcategoria.value)
       $.ajax({
         url:'/ajaxañadircategoria',
         data: {categoria:nomcategoria.value},
@@ -101,7 +101,7 @@ Añadir Pagina web
         
         success: function(response){
             respuesta=JSON.parse(response)
-            console.log(respuesta)
+            //console.log(respuesta)
             $("select").append('<option value="'+respuesta["id"]+'">'+nomcategoria.value+'</option>')
             $(".dselect-items").append('<button class="dropdown-item" data-dselect-value="'+respuesta["id"]+'" type="button" onclick="dselectUpdate(this, \'dselect-wrapper\', \'form-select\')">'+nomcategoria.value+'</button>')
             nomcategoria.value=""

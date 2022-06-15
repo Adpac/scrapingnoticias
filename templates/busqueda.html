@@ -70,7 +70,7 @@ Buscar
             $("#busquedanoticias > #loading ").remove();    
             for(var i=0; i<Noticias.length; i++){
                 var Not=Noticias[i];
-                console.log(Not['titular']);
+                //console.log(Not['titular']);
                 urlimagen=Not['urlimagen']
                 if(urlimagen == "" || !urlimagen.includes("http")){
                     urlimagen="/static/Imagen_no_disponible.png";
