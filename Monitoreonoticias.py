@@ -161,6 +161,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         "desimagen":"",
         "hashtags":""
     }
+    urlimagenint=""
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":urlnoticiaportada})))
     if idreglainterna!="" and urlnoticiaportada!="" and cantidadnot==0:
         r2 = await asession.get(urlnoticiaportada)
