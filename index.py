@@ -132,18 +132,18 @@ def home():
 		#print(rol)
 	noticias=db.noticia
 	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
-	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
+	Noti =list(noticias.find().sort('fechaasig',-1).limit(20))
 	hoy=datetime.today()
 	ayer=hoy-timedelta(days=2)
-	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("field",-1).limit(20))
+	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort('fechaasig',-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
-	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("field",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoria":"6283257b2964b7cbd0b5a9ab"}).sort('fechaasig',-1).limit(20))
 	noticiaspagina=[]
 	if len(listapaginanoticias)>0:
 		urlfuente=listapaginanoticias[0]["url"]
 		if urlfuente[-1:]=="/":
 			urlfuente=urlfuente[0:-1]
-		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("field",-1).limit(20))
+		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort('fechaasig',-1).limit(20))
 	#print(noticiaspagina)
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
@@ -163,7 +163,7 @@ def ajaxsolicitarnoti():
 	user=request.form['user']
 	print(user)
 	colnot=db.noticia
-	Noti =list(colnot.find({},{"titular":1,"parrafos":1,"urlfuente":1, "urlnoticia":1, "urlimagen":1}).sort("field",-1).limit(20))
+	Noti =list(colnot.find({},{"titular":1,"parrafos":1,"urlfuente":1, "urlnoticia":1, "urlimagen":1}).sort("fechaasig",-1).limit(20))
 	respuesta=dumps(Noti)
 	return respuesta
 	
@@ -642,7 +642,7 @@ def ajaxcategorias():
 	noticias=db.noticia	
 	cat=str(categoria)
 	#print("Categoria: ",cat)
-	Noticiascat=list(noticias.find({"categoriaprin":cat}).sort("field",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoriaprin":cat}).sort("fechaasig",-1).limit(20))
 
 
 	response={
@@ -658,7 +658,7 @@ def ajaxfuente():
 	if urlfuente[-1]=="/":
 		urlfuente=urlfuente[:-1]
 	noticias=db.noticia	
-	noticiaspagina=list(noticias.find({"urlfuente":urlfuente}).sort("field",-1).limit(20))
+	noticiaspagina=list(noticias.find({"urlfuente":urlfuente}).sort("fechaasig",-1).limit(20))
 
 	response={
 		'status': 200,
@@ -674,7 +674,7 @@ def ajaxcargarcategorias():
 	noticias=db.noticia	
 	cat=str(categoria)
 	#print("Categoria: ",cat)
-	Noticiascat=list(noticias.find({"categoriaprin":cat}).skip(omitir).sort("field",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoriaprin":cat}).skip(omitir).sort("fechaasig",-1).limit(20))
 
 
 	response={
@@ -693,7 +693,7 @@ def ajaxcargarnotfuente():
 	omitir=20*int(numpagina)
 	
 	noticias=db.noticia	
-	Noticiascat=list(noticias.find({"urlfuente":urlfuente}).sort("field",-1).skip(omitir).sort("field",-1).limit(20))
+	Noticiascat=list(noticias.find({"urlfuente":urlfuente}).skip(omitir).sort("fechaasig",-1).limit(20))
 
 	response={
 		'status': 200,
@@ -706,7 +706,7 @@ def ajaxcargarmasnoticias():
 	numpagina=request.form["numpagina"]
 	omitir=20*int(numpagina)
 	noticias=db.noticia	
-	Noti =list(noticias.find().sort("field",-1).skip(omitir).limit(20))
+	Noti =list(noticias.find().sort("fechaasig",-1).skip(omitir).limit(20))
 	response={
 		'status': 200,
 		'Noticias':dumps(Noti),
