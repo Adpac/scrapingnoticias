@@ -49,7 +49,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-#tarea=threading.Thread(target=scrapingnoticias).start()
+tarea=threading.Thread(target=scrapingnoticias).start()
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
