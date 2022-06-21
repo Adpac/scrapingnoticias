@@ -49,7 +49,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
@@ -135,15 +135,15 @@ def home():
 	Noti =list(noticias.find().sort("fechaasig",-1).limit(20))
 	hoy=datetime.today()
 	ayer=hoy-timedelta(days=2)
-	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("fecharecup",-1).limit(20))
+	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort("field",-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
-	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("fecharecup",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoriaprin":"6283257b2964b7cbd0b5a9ab"}).sort("field",-1).limit(20))
 	noticiaspagina=[]
 	if len(listapaginanoticias)>0:
 		urlfuente=listapaginanoticias[0]["url"]
 		if urlfuente[-1:]=="/":
 			urlfuente=urlfuente[0:-1]
-		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("fecharecup",-1).limit(20))
+		noticiaspagina=list(noticias.find({"urlfuente": urlfuente}).sort("field",-1).limit(20))
 	#print(noticiaspagina)
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
@@ -182,7 +182,7 @@ def buscarnoticia():
 @app.route('/iniciarsesion')
 def iniciarsesion():
 	if 'mensaje' in request.args:
-		#mensaje=request.args["mensaje"]
+		mensaje=request.args["mensaje"]
 		#print("Mensaje:", mensaje)
 		return render_template('iniciosesion.html', mensaje=mensaje)
 	else:
@@ -771,7 +771,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	return json.dumps(response)
 
 if __name__ == '__main__':
-	#app.run(debug=True)
+	app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)
 
 	

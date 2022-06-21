@@ -83,7 +83,7 @@ def generarfecha(texto):
 @unsync
 async def consultarportada(urlprincipal,urlportada, idreglap):
     print("inicio portada..............")
-    #print("idregla: ",idreglap)
+    print("idregla: ",str(idreglap))
     reglaportada=db["Reglas"].find_one({"_id":ObjectId(str(idreglap))})
     asession = AsyncHTMLSession() 
     r = await asession.get(urlportada)
@@ -101,7 +101,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     desimagen=""
 
     #consultamos diversos xpath
-    #print(reglaportada)
+    print("reglaportada: ",reglaportada)
     #print("xpathurl: ",reglaportada["xpathurl"])
     try:
         urlnoticiaportada=r.html.xpath(reglaportada["xpathurl"]+"/@href")[0]
@@ -144,6 +144,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         descripcion=r.html.xpath(reglaportada["xpathdescripcion"]+"/text()")[0]
     except(Exception):
         print("error al cargar descripcion")
+    print("tiporegla",reglaportada["tiporegla"])
     idreglainterna=reglaportada["idreglainterna"]
     
     noticia={

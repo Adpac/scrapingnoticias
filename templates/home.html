@@ -33,14 +33,16 @@ Pagina principal
                 <div class="card border-0 ">
                     <div class="row justify-content-center"> 
                         {% if ''== portada[0]['urlimagen'] or not 'http' in portada[0]['urlimagen'] %}
-                        <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
+                        <img src="/static/imgplomo.jpg"  id="imgportada"  class="img-fluid profile-pic mb-3 mt-3">
                         {% else %}
-                        <img src="{{portada[0]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        
+                        <img src="{{portada[0]['urlimagen']}}" id="imgportada" onerror="this.src='/static/imgplomo.jpg'" class="img-fluid profile-pic mb-3 mt-3"> 
                         {% endif %}
                     </div>
                     <div class="Textoencima">
                         <h5 class=""><a href="{{portada[0]['urlnoticia']}}" class="link-light">{{portada[0]['titular']}}</a></h5>
                         <p>fuente: {{portada[0]['urlfuente'] }}</p>
+                        <p>fecha: {{portada[0]['fecha'] }} </p>
                         <p class="content ">{{portada[0]['parrafos'][0:200]}}</p>
                     </div>
 
@@ -54,12 +56,13 @@ Pagina principal
                         {% if ''== portada[1]['urlimagen'] or not 'http' in portada[1]['urlimagen'] %}
                         <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
                         {% else %}
-                        <img src="{{portada[1]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        <img src="{{portada[1]['urlimagen']}}" onerror="this.src='/static/imgplomo.jpg'" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
                         {% endif %}
                     </div>
                     <div class="Textoencima">
                         <h5 class=""><a href="{{portada[1]['urlnoticia']}}" class="link-light">{{portada[1]['titular']}}</a></h5>
                         <p>fuente: {{portada[1]['urlfuente'] }}</p>
+                        <p>fecha: {{portada[1]['fecha'] }} </p>
                         <p class="content ">{{portada[1]['parrafos'][0:200]}}...</p>
                     </div>
 
@@ -73,12 +76,13 @@ Pagina principal
                         {% if ''== portada[i]['urlimagen'] or not 'http' in portada[i]['urlimagen'] %}
                         <img src="/static/imgplomo.jpg"  id="imgportada" class="img-fluid profile-pic mb-3 mt-3">
                         {% else %}
-                        <img src="{{portada[i]['urlimagen']}}" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
+                        <img src="{{portada[i]['urlimagen']}}" onerror="this.src='/static/imgplomo.jpg'" id="imgportada" class="img-fluid profile-pic mb-3 mt-3"> 
                         {% endif %}
                     </div>
                     <div class="Textoencima">
                         <h5 class=""><a href="{{portada[i]['urlnoticia']}}" class="link-light">{{portada[i]['titular']}}</a></h5>
                         <p>fuente: {{portada[i]['urlfuente'] }}</p>
+                        <p>fecha: {{portada[i]['fecha'] }} </p>
                         <p class="content">{{portada[i]['parrafos'][0:200]}}...</p>
                     </div>
 
@@ -92,6 +96,7 @@ Pagina principal
                     <div class="Textoencima">
                         <h5 class=""><a href="{{portada[portada|length-1]['urlnoticia']}}" class="link-light">{{portada[portada|length-1]['titular']}}</a></h5>
                         <p>fuente: {{portada[portada|length-1]['urlfuente'] }}</p>
+                        <p>fecha: {{portada[portada|length-1]['fecha'] }} </p>
                         <p class="content">{{portada[portada|length-1]['parrafos'][0:200]}}...</p>
                     </div>
                 </div>
@@ -152,7 +157,7 @@ Pagina principal
             {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
             <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
             {% else %}
-            <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+            <img src="{{n['urlimagen']}}" onerror="this.src='/static/imgplomo.jpg'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
             {% endif %}
             </div>
             <div class="col">
@@ -192,7 +197,7 @@ Pagina principal
                 {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
                 <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
                 {% else %}
-                <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+                <img src="{{n['urlimagen']}}" onerror="this.src='/static/imgplomo.jpg'" class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
                 {% endif %}
                 </div>
                 <div class="col">
@@ -230,7 +235,7 @@ Pagina principal
                 {% if ''== n['urlimagen'] or not 'http' in n['urlimagen'] %}
                 <img src="/static/Imagen_no_disponible.png"  class="img-thumbnail mw-100" alt="Responsive image" style="width: 600px">
                 {% else %}
-                <img src="{{n['urlimagen']}}"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
+                <img src="{{n['urlimagen']}}" onerror="this.src='/static/imgplomo.jpg'"  class="img-thumbnail mw-500" alt="Responsive image"style="width: 600px" >
                 {% endif %}
                 </div>
                 <div class="col">
@@ -322,7 +327,7 @@ function buscarrel( urlnoticia,tipoar){
                 $("article[url='"+urlnoticia+"'][tipo='"+tipoar+"'] > #notrel").append(
                     "<div class='col-xs-4 p-2 '>"+
                         '<div class="row text-white  ">'+
-                        '<div class="col" ><img src="'+urlimagen+'"  class="img-thumbnail mw-200" alt="Responsive image"style="width: 600px" > </div>'+
+                        '<div class="col" ><img src="'+urlimagen+'"  class="img-thumbnail mw-200"  onerror="this.src=\'/static/imgplomo.jpg\'"  alt="Responsive image"style="width: 600px" > </div>'+
                         "<div class='col'>"+
                         "<a href='"+Not['urlnoticia']+"'>"+Not['titular']+"</a>"+
                         "<p>fuente: "+Not['urlfuente'] +"</p>"+
@@ -605,5 +610,6 @@ $('.owl-item .show').parent().next().children('.item').addClass('next');
 });
 
 });
+
 </script>
 {% endblock %}
