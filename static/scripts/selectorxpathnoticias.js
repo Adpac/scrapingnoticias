@@ -243,12 +243,16 @@ function optimizarxpath(xpathentrada){
         return retornar
     }
     function pintarelemento(numinput){
-        var xpathentrada=document.getElementById("input"+numinput).value;
+        var entrada=document.getElementById("input"+numinput)
+        var xpathentrada=entrada.value;
+        
         
         
         try {
                 //dejamos de pintar los anteriores elementos con el color del input numinput
+
             var elementospintados=document.querySelectorAll('[seleccion="seleccion'+numinput+'"]');
+            entrada.setCustomValidity("")
             for(elemento of elementospintados){
                         if(elemento.getAttribute("estado")!="seleccionado"){
                            elemento.style.backgroundColor="";
@@ -278,6 +282,7 @@ function optimizarxpath(xpathentrada){
         
         } catch (error) {
             console.error(error);
+            entrada.setCustomValidity("Xpath no valido");
         }
         
         }

@@ -177,7 +177,8 @@ function seleccionarcampo(campo){
     }
 }
 function pintarelementos(numinput){
-var xpathentrada=document.getElementById("input"+numinput).value;
+var entrada=document.getElementById("input"+numinput)
+var xpathentrada=entrada.value;
 
 
 try {
@@ -193,7 +194,7 @@ try {
     textoxpath=""
     try{
         listapint=getElementsByXPath(xpathentrada);
-        
+        entrada.setCustomValidity("");
         for(var i=0; i<listapint.length; i++){
             element=listapint[i];
             element.style.backgroundColor=listacolores[numinput-1];
@@ -208,8 +209,10 @@ try {
             }
         }
     }catch(Exception){
+        console.log("Error: "+xpathentrada)
         listapint=null;
         $('#datos'+numinput).empty();
+        entrada.setCustomValidity("Xpath no valido");
     }
    
 

@@ -54,7 +54,7 @@ tarea=threading.Thread(target=scrapingnoticias).start()
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
-	r = await asession.get(urlpagina)
+	r = await asession.get(urlpagina,  verify=False)
 
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
@@ -134,7 +134,7 @@ def home():
 	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
 	Noti =list(noticias.find().sort('fechaasig',-1).limit(20))
 	hoy=datetime.today()
-	ayer=hoy-timedelta(days=2)
+	ayer=hoy-timedelta(days=1)
 	portada=list(noticias.find({'estitular':True, 'fecharecup':{'$lt': hoy, '$gte': ayer}}).sort('fechaasig',-1).limit(20))
 	listacategorias=list(db.Categoria.find({}))
 	Noticiascat=list(noticias.find({"categoria":"6283257b2964b7cbd0b5a9ab"}).sort('fechaasig',-1).limit(20))
