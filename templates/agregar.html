@@ -157,71 +157,7 @@ function ajaxagregarcategoria(){
             search: true
         });
 
-        function optimizarxpath2(xpath){
-            xparray=xpath.split("/")
-            xpdevolver="/"+xparray[xparray.length-1]
-            consultaoriginal=getElementsByXPath2(xpath);
-            añadirguion=false;
-            for(var i=xparray.length-2; i>1; i--){
-                nodo=xparray[i]
-                nombrenodo=nodo.replaceAll(/ *\[[^)]*\] */g, "");
-                xpincompleto=""
-                for(var j=1; j<i; j++){
-                    if(!(xparray[j]=="" && j==i-1)){
-                        xpincompleto=xpincompleto+"/"+xparray[j]
-    
-                    }
-                    
-                }
-                if(xpincompleto!="/"){
-                    xpincompleto=xpincompleto+"/"
-                }
-                
-                console.log("xpi: "+xpincompleto)
-                console.log("xpd: "+xpdevolver)
-                xpathprueba=xpincompleto+xpdevolver
-                console.log("xpprueba: "+xpathprueba)
-                consultaaux=getElementsByXPath2(xpathprueba);
-                if(nodo!=""){
-                    if(!compararelementosxp(consultaoriginal,consultaaux)){
-                        if(añadirguion){
-                            nombrenodo=nombrenodo+"/"
-                            nodo=nodo+"/"
-                            añadirguion=false
-                        }
-        
-                        xpdevolveraux="/"+nombrenodo+xpdevolver
-                        xpathprueba=xpincompleto+xpdevolveraux
-                        consultaaux=getElementsByXPath2(xpathprueba);
-                        //console.log()
-                        if(!compararelementosxp(consultaoriginal,consultaaux)){
-                            xpdevolver="/"+nodo+xpdevolver
-                            //console.log("xpdevolveraux "+xpdevolveraux)
-                            //console.log("detencion3"+xpathprueba)
-                        }else{
-                            xpdevolver=xpdevolveraux
-                            //console.log("detencion2"+xpathprueba)
-                        }
-                    }else{
-                        //console.log("detencion1")
-                        //xpdevolver="/"+xpdevolver
-                        añadirguion=true;
-                    }   
-                }
-    
-                    
-            }
-            xpdevolver="/"+xpdevolver
-            return xpdevolver
-        }
-function getElementsByXPath2(xpath, parent){
-    let results = [];
-    let query = document.evaluate(xpath, parent || document,null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-        results.push(query.snapshotItem(i));
-    }
-    return results;
-}
+
 </script>
 
 {% endblock %}

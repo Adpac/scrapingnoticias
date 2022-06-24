@@ -170,6 +170,18 @@ def ajaxsolicitarnoti():
 @app.route('/about')
 def about():
 	return render_template('about.html')
+@app.route('/gestionarpaginas')
+def gestionarpaginas():
+	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
+
+	return render_template('gestionarpaginas.html', listapaginanoticias=listapaginanoticias)
+@app.route('/editarpagina',methods=['GET'])
+def editarpagina():
+	url = request.args.get('url')
+	paginanoticia=db.paginanoticia.find_one({"url":url})
+	print(paginanoticia)
+	listacategorias=list(db.Categoria.find({}))
+	return render_template('editarpagina.html', paginanoticia=paginanoticia, listacategorias=listacategorias)
 @app.route('/buscarnoticia', methods=['POST'])
 def buscarnoticia():
 	if request.method=="POST":
@@ -289,14 +301,14 @@ def formpart2():
 
 
 
-@app.route('/reglascategoria', methods=['POST'])
+@app.route('/reglascategoria', methods=['GET','POST'])
 def reglascategoria():
 	#https://www.la-razon.com/nacional/
 	#https://erbol.com.bo/nacional
 	#https://www.eldiario.net/portal/category/nacional/
 	#https://www.paginasiete.bo/nacional/
 	url="https://www.paginasiete.bo/nacional/"
-
+	editar=False
 	if(request.method=="POST"):
 		url=request.form["urlcategoria"]
 		categoria=request.form["categoria"]
@@ -324,9 +336,46 @@ def reglascategoria():
 	#entre la parte2 y la 3 concatenamos la cabecera
 	dochtml=css+parte1+css+parte2+parte3
 	
-	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas))
+	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
 	return response
+	
+@app.route('/editreglascategoria', methods=['GET'])
+def editreglascategoria():
+	#https://www.la-razon.com/nacional/
+	#https://erbol.com.bo/nacional
+	#https://www.eldiario.net/portal/category/nacional/
+	#https://www.paginasiete.bo/nacional/
+	url="https://www.paginasiete.bo/nacional/"
+	editar=True
+	if(request.method=="GET"):
+		url=request.args.get("urlcategoria")
+		categoria=request.args.get("categoria")
+		texto=cargarpagina(url).result()
+		#texto=asyncio.run(cargarpagina(url))
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#texto=loop.run_until_complete(cargarpagina(url))
+		#loop.close()
+	arrayurlext=url.split("/")
+	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
+	#print("Lista reglas: ",listareglas)
+	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpath.css">'
 
+	iniciobody=re.search("<body.*>",texto)
+	iniciohead=re.search("<head.*>",texto)
+	#print(iniciobody.end)
+	parte1=texto[0:iniciohead.end()]
+
+	parte2=texto[iniciohead.end():iniciobody.end()]
+
+	parte3=texto[iniciobody.end():]
+	#Entre la parte 1 y la 2 concatenamos css y scripts
+	#entre la parte2 y la 3 concatenamos la cabecera
+	dochtml=css+parte1+css+parte2+parte3
+	
+	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
+	return response
 @app.route('/reglasnoticia')
 def reglasnoticia():
 	print("llegue a reglas noticia")

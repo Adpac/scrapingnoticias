@@ -1,0 +1,40 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+
+
+
+{% block titulo1 %}
+Gestionar paginas
+{% endblock %}
+{% block content %}
+
+<table class="table table-bordered">
+    <thead class="thead-dark">
+      <tr >
+        <th scope="col">#</th>
+        <th scope="col">Url</th>
+        <th scope="col">Editar</th>
+        <th scope="col">Eliminar</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for pagina in listapaginanoticias %}
+        <tr class="table-light">
+            <th scope="row">{{loop.index0 +1}}</th>
+            <td>{{pagina['url']}}</td>
+            <td><a class="btn btn-primary" href="{{url_for('editarpagina')}}?url={{pagina['url']}}">Editar</a></td>
+            <td><a class="btn btn-primary">Eliminar</a></td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+  </table>
+
+{% endblock %}

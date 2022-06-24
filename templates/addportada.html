@@ -229,6 +229,9 @@ try {
 
 } catch (error) {
     console.error(error);
+    if(xpathentrada!=""){
+            entrada.setCustomValidity("Xpath no valido");
+    }
 }
 
 

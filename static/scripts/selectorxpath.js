@@ -212,7 +212,9 @@ try {
         console.log("Error: "+xpathentrada)
         listapint=null;
         $('#datos'+numinput).empty();
-        entrada.setCustomValidity("Xpath no valido");
+        if(xpathentrada!=""){
+            entrada.setCustomValidity("Xpath no valido");
+        }
     }
    
 

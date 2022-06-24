@@ -282,7 +282,9 @@ function optimizarxpath(xpathentrada){
         
         } catch (error) {
             console.error(error);
-            entrada.setCustomValidity("Xpath no valido");
+            if(xpathentrada!=""){
+                entrada.setCustomValidity("Xpath no valido");
+            }
         }
         
         }
