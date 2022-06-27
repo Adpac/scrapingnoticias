@@ -116,11 +116,11 @@ document.body.addEventListener("click",(e)=>{
         }
          //En caso de hacer click en el boton eliminar 
         elements = document.getElementsByClassName("delete");
-        $(".delete").on("click", "button", function(e) {
+        jQuery(".delete").on("click", "button", function(e) {
             e.preventDefault();
-            xpathelim=$(this).parent().attr("xp");
+            xpathelim=jQuery(this).parent().attr("xp");
             
-            $(this).parent().remove();
+            jQuery(this).parent().remove();
         });
     }
 
@@ -211,15 +211,15 @@ try {
     }catch(Exception){
         console.log("Error: "+xpathentrada)
         listapint=null;
-        $('#datos'+numinput).empty();
+        jQuery('#datos'+numinput).empty();
         if(xpathentrada!=""){
             entrada.setCustomValidity("Xpath no valido");
         }
     }
    
 
-    $('#datos'+numinput).empty();
-    $('#datos'+numinput).append(String(textoxpath));
+    jQuery('#datos'+numinput).empty();
+    jQuery('#datos'+numinput).append(String(textoxpath));
     textoxpath=""
 
 } catch (error) {

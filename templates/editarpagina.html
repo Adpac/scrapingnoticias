@@ -56,7 +56,7 @@ Editar Pagina: {{paginanoticia['url']}}
       <tbody>
         <input type="hidden" id="cont" name="numurls" value="{{paginanoticia['categorias']|length}}">
           {% for urlcategoria in paginanoticia['categorias'] %}
-          <tr class="table-light">
+          <tr class="table-light" urlcat="{{urlcategoria['url']}}">
               <th scope="row">{{loop.index0 +1}}</th>
               <td>{{urlcategoria['url']}}</td>
               <td>
@@ -72,7 +72,7 @@ Editar Pagina: {{paginanoticia['url']}}
                     {% endfor%}
                 </select>
               </td>
-              <td><a class="btn btn-primary" href="{{url_for('editreglascategoria')}}?urlcategoria={{urlcategoria['url']}}&categoria={{urlcategoria['idcategoria']}}">Editar Regla</a></td>
+              <td><a class="btn btn-primary" href="{{url_for('editreglascategoria')}}?urlcategoria={{urlcategoria['url']}}&categoria={{urlcategoria['idcategoria']}}&idr={{urlcategoria['idregla']}}">Editar Regla</a></td>
               <td><button class="btn btn-primary" onclick="eliminarcategoria('{{urlcategoria['url']}}')">Eliminar</button></td>
           </tr>
           {% endfor %}
@@ -81,25 +81,51 @@ Editar Pagina: {{paginanoticia['url']}}
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+
         console.log("llegue aqui1.........")
+        var urlpagina="{{paginanoticia['url']}}"
         var select_box_element = document.querySelector('#cat1');
         dselect(select_box_element, {
                         search: true
             });
         console.log("llegue aqui.........")
 
-    function eliminarcategoria(urlcategoria){
+    function ajaxeliminarurlcat(urlcat){
+    $.ajax({
+        url:'/ajaxeliminarurlcat',
+        data: {urlpagina:urlpagina,
+               urlcat:urlcat},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            console.log(response)
+            swal("Sub URL eliminada", {
+                icon: "success",
+              });
+            jQuery("[urlcat='"+urlcat+"']").remove()
+        },
+
+        error: function(error){
+            console.log(error)
+            swal("Ocurrio un problema al eliminar esta categoria", {
+                icon: "error",
+              });
+        }
+    })
+}
+  function eliminarcategoria(urlpagina){
       swal({
-            title: "¿Esta seguro de eliminar esta SubURL?",
+            title: "¿Esta seguro de eliminar esta página?",
             text: "Las noticias pertenecientes a esté dominio no se eliminarán",
             buttons: true,
             dangerMode: true,
           })
           .then((willDelete) => {
+            
             if (willDelete) {
-              swal("Sub URL eliminada", {
-                icon: "success",
-              });
+              ajaxeliminarurlcat(urlpagina)
+              
             } else {
               swal("No se elimino la SubURL");
             }

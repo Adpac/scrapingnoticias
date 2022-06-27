@@ -164,7 +164,7 @@ function seleccionarcampo(campo){
 function xpathinput(numinput){
     try{
         
-        $("#inputxpenlace").on('keyup', function(){
+        jQuery("#inputxpenlace").on('keyup', function(){
             //dejamos de pintar los anteriores elementos seleccionados
             var elementospintados=document.querySelectorAll('[color="rojo"]');
             for(elemento of elementospintados){
@@ -176,7 +176,7 @@ function xpathinput(numinput){
                 }
             }
             //pintamos los valores actuales
-            var value = $(this).val();
+            var value = jQuery(this).val();
             lista=getElementsByXPath(value);
             
            
@@ -259,7 +259,7 @@ function optimizarxpath(xpathentrada){
                            elemento.style.border="";
                         }
                     }
-            console.log(xpathentrada);
+        
             if(xpathentrada!=""){
                 listapint=getElementsByXPath2(xpathentrada);
                 textoxpath=""
@@ -273,10 +273,10 @@ function optimizarxpath(xpathentrada){
                         textoxpath=textoxpath+element.src+" ";
                     }
                 }
-                $('#datos'+numinput).empty();
-                $('#datos'+numinput).append(String(textoxpath));
+                jQuery('#datos'+numinput).empty();
+                jQuery('#datos'+numinput).append(String(textoxpath));
             }else{
-                $('#datos'+numinput).empty();
+                jQuery('#datos'+numinput).empty();
             }
 
         

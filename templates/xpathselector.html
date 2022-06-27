@@ -1,4 +1,5 @@
 {{texto|safe}}
+
 <div class="xpathmenu" marcar="nopintar" id="xpathmenu">
     <form marcar="nopintar" action="{{url_for('validarurlcategoria')}}" method="post" >
         <input type="hidden" name="urlprincipal" value="{{url}}">
@@ -9,9 +10,15 @@
         <select marcar="nopintar" id="selregla" name="reglaseleccionada">
             <option marcar="nopintar" value="ninguno" xptitu="" xpres="" xpimg="" xpdesimg="" xpred="" xpfecha="" xparr="" xphas="" >Regla sin seleccionar</option>
             {% for regla in listareglas %}
+            {% if editar and idregla|string==regla['_id']|string %}
+            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}" selected >
+                Regla {{loop.index}}
+            </option>
+            {% else %}
             <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}"  >
                 Regla {{loop.index}}
             </option>
+            {% endif %}
             {% endfor %}
         </select>
         {%endif%}
@@ -120,6 +127,11 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="/static/scripts/selectorxpath.js" ></script>           
 <script>
+    var editar=("{{ editar }}")
+    console.log("Editar: "+editar)
+    if(editar=="True"){
+        actualizarseleccion()
+    }
     //Script para la seleccion de reglas
     $('#selregla').change(function(){ 
     var value = $(this).val();
@@ -142,6 +154,35 @@
 
 
 });
+function actualizarseleccion(){
+    var value = $('#selregla').val();
+    var seleccion=$('#selregla').find('option:selected');
+    $("#input1").val(seleccion.attr("xpurl"))
+    $("#input2").val(seleccion.attr("xptitu"))
+    $("#input3").val(seleccion.attr("xpfecha"))
+    $("#input4").val(seleccion.attr("xpimg"))
+    $("#input5").val(seleccion.attr("xpred"))
+    $("#input6").val(seleccion.attr("xpdes"))
+    console.log("seleccionando regla....")
+    pintarelementos(1);
+    pintarelementos(2);
+    pintarelementos(3);
+    pintarelementos(4);
+    pintarelementos(5);
+    pintarelementos(6);
+    pintarelementos(7);
+    pintarelementos(8);
+}
+function actualizar(){
+    pintarelementos(1);
+    pintarelementos(2);
+    pintarelementos(3);
+    pintarelementos(4);
+    pintarelementos(5);
+    pintarelementos(6);
+    pintarelementos(7);
+    pintarelementos(8);
+}
 </script>                       
 
 

@@ -327,14 +327,10 @@ def reglascategoria():
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
 	#print(iniciobody.end)
-	parte1=texto[0:iniciohead.end()]
 
-	parte2=texto[iniciohead.end():iniciobody.end()]
-
-	parte3=texto[iniciobody.end():]
 	#Entre la parte 1 y la 2 concatenamos css y scripts
 	#entre la parte2 y la 3 concatenamos la cabecera
-	dochtml=css+parte1+css+parte2+parte3
+	dochtml=css+texto
 	
 	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
 	return response
@@ -350,6 +346,8 @@ def editreglascategoria():
 	if(request.method=="GET"):
 		url=request.args.get("urlcategoria")
 		categoria=request.args.get("categoria")
+		idregla=request.args.get("idr")
+		print("idregla",idregla)
 		texto=cargarpagina(url).result()
 		#texto=asyncio.run(cargarpagina(url))
 		#loop = asyncio.new_event_loop()
@@ -374,7 +372,7 @@ def editreglascategoria():
 	#entre la parte2 y la 3 concatenamos la cabecera
 	dochtml=css+parte1+css+parte2+parte3
 	
-	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
+	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar, idregla=idregla))
 	return response
 @app.route('/reglasnoticia')
 def reglasnoticia():
@@ -398,14 +396,10 @@ def reglasnoticia():
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"noticias"}))
-	parte1=texto[0:iniciohead.end()]
 
-	parte2=texto[iniciohead.end():iniciobody.end()]
-
-	parte3=texto[iniciobody.end():]
 	#Entre la parte 1 y la 2 concatenamos css y scripts
 	#entre la parte2 y la 3 concatenamos la cabecera
-	dochtml=css+parte1+css+parte2+parte3
+	dochtml=css+texto
 	if(tipo=="categoria"):
 		categoria=request.args["categoria"]
 	
@@ -818,7 +812,38 @@ def ajaxbuscarnoticiasrelacionadas():
 		'id': 1
 	}
 	return json.dumps(response)
+@app.route("/ajaxeliminarpagina", methods=["POST"])
+def ajaxeliminarpagina():
+	urlpagina=request.form["urlpagina"]
+	db.Reglas.delete_many({"urlprincipal":urlpagina})
+	db.paginanoticia.delete_one({"url":urlpagina})
+	
+	response={
+		'status': 200,
+		'respuesta': "eliminado con exito"
+	}
+	return json.dumps(response)
+@app.route("/ajaxeliminarurlcat", methods=["POST"])
+def ajaxeliminarurlcat():
+	#Este algoritmo elimina una url seleccionada
+	#nota ejecutar un algortimo que elimine las reglas en caso de que la regla de la categoria sea la unica
+	urlpagina=request.form["urlpagina"]
+	urlcategoria=request.form["urlcat"]
+	paginanot=db.paginanoticia.find_one({"url":urlpagina})
+	listaurlcat=paginanot["categorias"]
+	aux=[]
+	print(urlcategoria)
+	for urlcat in listaurlcat:
+		if urlcat["url"]!=urlcategoria:
+			aux.append(urlcat)
+	
+	db["paginanoticia"].update_one({"url":urlpagina},{"$set": { "categorias": aux }})
 
+	response={
+		'status': 200,
+		'respuesta': "eliminado con exito"
+	}
+	return json.dumps(response)
 if __name__ == '__main__':
 	app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)

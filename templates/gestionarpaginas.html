@@ -26,15 +26,58 @@ Gestionar paginas
     </thead>
     <tbody>
         {% for pagina in listapaginanoticias %}
-        <tr class="table-light">
+        <tr class="table-light" urlpag="{{pagina['url']}}">
             <th scope="row">{{loop.index0 +1}}</th>
             <td>{{pagina['url']}}</td>
             <td><a class="btn btn-primary" href="{{url_for('editarpagina')}}?url={{pagina['url']}}">Editar</a></td>
-            <td><a class="btn btn-primary">Eliminar</a></td>
+            <td><button class="btn btn-primary" onclick="eliminarpagina('{{pagina['url']}}')">Eliminar</button></td>
         </tr>
         {% endfor %}
 
     </tbody>
   </table>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+function ajaxeliminarpagina(urlpagina){
+    $.ajax({
+        url:'/ajaxeliminarpagina',
+        data: {urlpagina:urlpagina},
+        type: 'POST',
+        
+        success: function(response){
+          console.log("llegue aqui eliminado")
+            respuesta=JSON.parse(response)
+            console.log(response)
+            swal("URL eliminada", {
+                icon: "success",
+              });
+            jQuery("[urlpag='"+urlpagina+"']").remove()
+        },
 
+        error: function(error){
+            console.log(error)
+            swal("Ocurrio un problema al eliminar esta página", {
+                icon: "error",
+              });
+        }
+    })
+}
+  function eliminarpagina(urlpagina){
+      swal({
+            title: "¿Esta seguro de eliminar esta página?",
+            text: "Las noticias pertenecientes a esté dominio no se eliminarán",
+            buttons: true,
+            dangerMode: true,
+          })
+          .then((willDelete) => {
+            
+            if (willDelete) {
+              ajaxeliminarpagina(urlpagina)
+              
+            } else {
+              swal("No se elimino la SubURL");
+            }
+          });
+    }
+</script>
 {% endblock %}
