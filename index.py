@@ -49,7 +49,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
@@ -804,6 +804,7 @@ def ajaxbuscarnoticiasrelacionadas():
 	url=request.form["urlnoticia"]
 	noticia=dbnoticias.find_one({"urlnoticia":url})
 	textosinsw=eliminarstopwords(noticia["titular"])
+	textosinsw=textosinsw+eliminarstopwords(noticia["parrafos"][0:500])
 	#print(textosinsw)
 	Noti =list(dbnoticias.find({"$text": {"$search": textosinsw}, "urlnoticia":{"$ne":url} }, { "score": { "$meta": "textScore" }}).sort([('score', {'$meta': 'textScore'})]).limit(10))
 	response={
@@ -842,6 +843,51 @@ def ajaxeliminarurlcat():
 	response={
 		'status': 200,
 		'respuesta': "eliminado con exito"
+	}
+	return json.dumps(response)
+@app.route("/ajaxeliminarurlportada", methods=["POST"])
+def ajaxeliminarurlportada():
+	#Este algoritmo elimina una url seleccionada
+	#nota ejecutar un algortimo que elimine las reglas en caso de que la regla de la categoria sea la unica
+	urlpagina=request.form["urlpagina"]
+	urlportada=request.form["urlportada"]
+	paginanot=db.paginanoticia.find_one({"url":urlpagina})
+	listaurlportada=paginanot["portada"]
+	aux=[]
+	print(urlportada)
+	for urlport in listaurlportada:
+		if urlport["urlportada"]!=urlportada:
+			aux.append(urlport)
+	
+	db["paginanoticia"].update_one({"url":urlpagina},{"$set": { "portada": aux }})
+
+	response={
+		'status': 200,
+		'respuesta': "eliminado con exito"
+	}
+	return json.dumps(response)
+@app.route("/ajaxcambiarcat", methods=["POST"])
+def ajaxcambiarcat():
+	#Este algoritmo elimina una url seleccionada
+	#nota ejecutar un algortimo que elimine las reglas en caso de que la regla de la categoria sea la unica
+	urlpagina=request.form["urlpagina"]
+	urlcategoria=request.form["urlcat"]
+	idcatnueva=request.form["categoria"]
+	paginanot=db.paginanoticia.find_one({"url":urlpagina})
+	listaurlcat=paginanot["categorias"]
+	aux=[]
+	print(urlcategoria)
+	for urlcat in listaurlcat:
+		if urlcat["url"]==urlcategoria:
+			print("cambiando categoria....")
+			urlcat["idcategoria"]=idcatnueva
+		aux.append(urlcat)
+		
+	db["paginanoticia"].update_one({"url":urlpagina},{"$set": { "categorias": aux }})
+
+	response={
+		'status': 200,
+		'respuesta': "Modificado con exito"
 	}
 	return json.dumps(response)
 if __name__ == '__main__':

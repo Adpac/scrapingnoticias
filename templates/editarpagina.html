@@ -33,11 +33,11 @@ Editar Pagina: {{paginanoticia['url']}}
     </thead>
     <tbody>
         {% for portada in paginanoticia['portada'] %}
-        <tr class="table-light">
+        <tr class="table-light" urlport="{{portada['urlportada']}}">
             <th scope="row">{{loop.index0 +1}}</th>
             <td>{{portada['urlportada']}}</td>
             <td><a class="btn btn-primary">Editar Regla</a></td>
-            <td><a class="btn btn-primary">Eliminar</a></td>
+            <td><button class="btn btn-primary" onclick="eliminarportada('{{portada['urlportada']}}')">Eliminar</button></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -60,8 +60,8 @@ Editar Pagina: {{paginanoticia['url']}}
               <th scope="row">{{loop.index0 +1}}</th>
               <td>{{urlcategoria['url']}}</td>
               <td>
-                <select id="cat{{loop.index0 +1}}" name="categoria" name="select_box" class="form-select">
-                    <option value="">Selecciona una categoria</option>
+                <select id="cat{{loop.index0 +1}}" name="categoria" name="select_box" class="form-select" onchange="cambiarcategoria('{{urlcategoria['url']}}',this)">
+                    <option value="" >Selecciona una categoria</option>
                     {% for categoria in listacategorias %}
                         {% set idcat = categoria['_id']| string() %}
                         {%if idcat==urlcategoria['idcategoria'] %}
@@ -84,11 +84,15 @@ Editar Pagina: {{paginanoticia['url']}}
 
         console.log("llegue aqui1.........")
         var urlpagina="{{paginanoticia['url']}}"
-        var select_box_element = document.querySelector('#cat1');
+        var numurlscat="{{listacategorias|length}}"
+        for(var i=1; i<=numurlscat; i++){
+          var select_box_element = document.querySelector('#cat'+i);
         dselect(select_box_element, {
                         search: true
             });
-        console.log("llegue aqui.........")
+        }
+        
+        
 
     function ajaxeliminarurlcat(urlcat){
     $.ajax({
@@ -131,6 +135,87 @@ Editar Pagina: {{paginanoticia['url']}}
             }
           });
     }
+    function eliminarportada(urlpagina){
+      swal({
+            title: "¿Esta seguro de eliminar esta página?",
+            text: "Las noticias pertenecientes a esté dominio no se eliminarán",
+            buttons: true,
+            dangerMode: true,
+          })
+          .then((willDelete) => {
+            
+            if (willDelete) {
+              ajaxeliminarurlportada(urlpagina)
+              
+            } else {
+              swal("No se elimino la SubURL");
+            }
+          });
+    }
+    function ajaxeliminarurlportada(urlportada){
+    $.ajax({
+        url:'/ajaxeliminarurlportada',
+        data: {urlpagina:urlpagina,
+               urlportada:urlportada},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            console.log(response)
+            swal("Sub URL eliminada", {
+                icon: "success",
+              });
+            jQuery("[urlport='"+urlportada+"']").remove()
+        },
+
+        error: function(error){
+            console.log(error)
+            swal("Ocurrio un problema al eliminar esta categoria", {
+                icon: "error",
+              });
+        }
+    })
+}
+    function cambiarcategoria(urlcategoria,  selectObject){
+      swal({
+            title: "¿Esta seguro de cambiar categoria?",
+            text: "Las noticias pertenecientes a esté dominio no se eliminarán",
+            buttons: true,
+            
+          })
+          .then((willDelete) => {
+
+            if (willDelete) {
+              $.ajax({
+                url:'/ajaxcambiarcat',
+                data: {urlpagina:urlpagina,
+                      urlcat:urlcategoria,
+                      categoria:selectObject.value},
+                type: 'POST',
+                
+                success: function(response){
+                    respuesta=JSON.parse(response)
+                    console.log(response)
+                    swal("Categoria cambiada con exito", {
+                        icon: "success",
+                      });
+                    jQuery("[urlport='"+urlportada+"']").remove()
+                },
+
+                error: function(error){
+                    console.log(error)
+                    swal("Ocurrio un problema al cambiar la categoria", {
+                        icon: "error",
+                      });
+                }
+              });
+              
+            } else {
+              swal("No se cambio la categoria de está URL");
+            }
+          });
+    }    
+
     </script>
     
 {% endblock %}
