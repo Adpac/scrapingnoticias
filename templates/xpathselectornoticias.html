@@ -1,7 +1,23 @@
 
 
 {{texto|safe}}
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="/static/scripts/selectorxpathnoticias.js" ></script>
+{% if editar!=ninguno %}
+<div hidden id="datosri"  xptitular="{{reglainterna['xptitular']}}"
+xpresumen="{{reglainterna['xpresumen']}}"
+xpimg="{{reglainterna['xpimg']}}"
+xpdesimg="{{reglainterna['xpdesimg']}}"
+xpredactor="{{reglainterna['xpresumen']}}"
+xpfecha="{{reglainterna['xpfecha']}}"
+xpparrafos="{{reglainterna['xpparrafos']}}"
+xphashtags="{{reglainterna['xprhashtags']}}"
+>
+</div>
+
+
+{% endif %}
+
 <div class="xpathmenu" marcar="nopintar" id="xpathmenu">
     <div class="selector" marcar="nopintar"></div> 
     <form name="enviarurl" id="formlista" method="post" action="{{url_for('subirpagina')}}">
@@ -9,16 +25,7 @@
         <input type="hidden" name="datosreglaexterna" value="{{jsonp1}}">
         <input type="hidden" name="urlexterna" value="{{urlext}}">
         <input type="hidden" name="categoria" value="{{categoria}}">
-        {% if listareglas|length > 0 %}
-        <select marcar="nopintar" id="selregla" name="reglaseleccionada">
-            <option marcar="nopintar" value="ninguno" xptitu="" xpres="" xpimg="" xpdesimg="" xpred="" xpfecha="" xparr="" xphas="" >Regla sin seleccionar</option>
-            {% for regla in listareglas %}
-            <option marcar="nopintar" value="{{regla['_id']}}" xptitu="{{regla['xptitular']}}" xpres="{{regla['xpresumen']}}" xpimg="{{regla['xpimg']}}" xpdesimg="{{regla['xpdesimg']}}" xpred="{{regla['xpredactor']}}" xpfecha="{{regla['xpfecha']}}" xparr="{{regla['xpparrafos']}}" xphas="{{regla['xphashtags']}}" >
-                Regla {{loop.index}}
-            </option>
-            {% endfor %}
-        </select>
-        {%endif%}
+        <input type="hidden" name="reglaex" id="reglaex" value="ninguno">
         <table marcar="nopintar" width="100%">
             <tbody marcar="nopintar">
                 <tr marcar="nopintar">
@@ -72,7 +79,7 @@
             </tbody>
 
         </table>
-        <input marcar="nopintar" type="submit" name="enviar" value="Aceptar">
+        <button id="inputaceptar" marcar="nopintar" type="button" name="enviar" id="btnsubmit" onclick="validarform()">Aceptar</button>
         <button  marcar="nopintar" id="btncambiarposicion" type="button" onclick="cambiarposicion()">Pasar Abajo</button>
 
     </form>
@@ -81,7 +88,30 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="/static/scripts/selectorxpathnoticias.js" ></script>
-    
+<script>
+    var editar="{{editar}}"
+    if(editar!="ninguno"){
+        console.log("Regla interna.....................")
+        console.log(editar)
+        var reglainterna=$('#datosri')
+        jQuery("#input1").val(reglainterna.attr("xptitular"))
+        jQuery("#input2").val(reglainterna.attr("xpresumen"))
+        jQuery("#input3").val(reglainterna.attr("xpimg"))
+        jQuery("#input4").val(reglainterna.attr("xpdesimg"))
+        jQuery("#input5").val(reglainterna.attr("xpredactor"))
+        jQuery("#input6").val(reglainterna.attr("xpfecha"))
+        jQuery("#input7").val(reglainterna.attr("xpparrafos"))
+        jQuery("#input8").val(reglainterna.attr("xphashtags"))
+        pintarelemento(1);
+        pintarelemento(2);
+        pintarelemento(3);
+        pintarelemento(4);
+        pintarelemento(5);
+        pintarelemento(6);
+        pintarelemento(7);
+        pintarelemento(8);
+    }
+</script>
 <script>
     //Script para la seleccion de reglas
     $('#selregla').change(function(){ 
@@ -107,4 +137,42 @@
 
 
 });
+function cambioregla(){
+    //Retornara verdadero en caso de que se detecten cambios entre la regla seleccionada y los valoresdentro de esta
+    retornar=false;
+
+        var seleccion=$('#datosri')
+        if(seleccion.attr("xptitular")!=$("#input1").val() || seleccion.attr("xpresumen")!=$("#input2").val() ||seleccion.attr("xpimg")!=$("#input3").val() || seleccion.attr("xpdesimg")!=$("#input4").val() || seleccion.attr("xpredactor")!=$("#input5").val()|| seleccion.attr("xpfecha")!=$("#input6").val()|| seleccion.attr("xpparrafos")!=$("#input7").val()|| seleccion.attr("xphashtags")!=$("#input8").val()){
+            retornar=true;
+        }
+    
+    return retornar
+}
+function validarform(){
+    var form = $("#formlista")
+    var cambios="{{cambios}}"
+    console.log(cambios)
+    if( (cambioregla()  || cambios=="true") && "{{editar}}"!="ninguno" ){
+        swal({
+            title: "¿Desea modificar la regla actual?",
+            text: "Recuerde que esta regla es utilizada por diferentes enlaces, si selecciona \"Crear nueva regla\" solo se aplicaran los cambios a esta URL ",
+            buttons: true,
+            buttons: ['Crear nueva regla', 'Editar regla']
+          })
+          .then((modificar) => {
+            
+            if (modificar) {
+                $("#reglaex").val(editar)
+                swal("Se modificara la regla"+editar);
+                form.submit();
+            } else {
+              swal("Se creara una nueva regla");
+              form.submit();
+            }
+          });
+    }else{
+        form.submit();
+    }
+    
+}
 </script>

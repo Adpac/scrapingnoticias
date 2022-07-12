@@ -36,7 +36,7 @@ Editar Pagina: {{paginanoticia['url']}}
         <tr class="table-light" urlport="{{portada['urlportada']}}">
             <th scope="row">{{loop.index0 +1}}</th>
             <td>{{portada['urlportada']}}</td>
-            <td><a class="btn btn-primary">Editar Regla</a></td>
+            <td><a class="btn btn-primary" href="{{url_for('editreglasportada')}}?urlportada={{portada['urlportada']}}&idr={{portada['idregla']}}">Editar Regla</a></td>
             <td><button class="btn btn-primary" onclick="eliminarportada('{{portada['urlportada']}}')">Eliminar</button></td>
         </tr>
         {% endfor %}

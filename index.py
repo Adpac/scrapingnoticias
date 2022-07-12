@@ -24,6 +24,7 @@ import pandas as pd
 from requestshtml import AsyncHTMLSession
 from requestshtml import HTMLSession
 from unsync import unsync
+from bson.objectid import ObjectId
 app = Flask(__name__)
 conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.config['CORS_HEADERS'] = 'application/json'
@@ -49,7 +50,17 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
+
+def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
+	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
+			"xpathurl":xpathurl,
+			"xpathtitular":xpathtitular,
+			"xpathfecha":xpathfecha,
+			"xpathimg":xpathimg,
+			"xpathredactor":xpathredactor,
+			"xpathdescripcion":xpathdescripcion
+			}})
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
@@ -300,7 +311,6 @@ def formpart2():
 """
 
 
-
 @app.route('/reglascategoria', methods=['GET','POST'])
 def reglascategoria():
 	#https://www.la-razon.com/nacional/
@@ -374,11 +384,54 @@ def editreglascategoria():
 	
 	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar, idregla=idregla))
 	return response
+@app.route('/editreglasportada', methods=['GET'])
+def editreglasportada():
+	url="https://www.paginasiete.bo/nacional/"
+	editar=True
+	if(request.method=="GET"):
+		url=request.args.get("urlportada")
+		idregla=request.args.get("idr")
+		print("idregla",idregla)
+		texto=cargarpagina(url).result()
+		#texto=asyncio.run(cargarpagina(url))
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#texto=loop.run_until_complete(cargarpagina(url))
+		#loop.close()
+	arrayurlext=url.split("/")
+	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"portada"}))
+	#print("Lista reglas: ",listareglas)
+	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpath.css">'
+
+	iniciobody=re.search("<body.*>",texto)
+	iniciohead=re.search("<head.*>",texto)
+	#print(iniciobody.end)
+	parte1=texto[0:iniciohead.end()]
+
+	parte2=texto[iniciohead.end():iniciobody.end()]
+
+	parte3=texto[iniciobody.end():]
+	#Entre la parte 1 y la 2 concatenamos css y scripts
+	#entre la parte2 y la 3 concatenamos la cabecera
+	dochtml=css+parte1+css+parte2+parte3
+
+	response=make_response(render_template('addportada.html',title="evaluarpag", debug=True, url=url, texto=dochtml, listareglas=listareglas, editar=editar, idregla=idregla))
+	return response
 @app.route('/reglasnoticia')
 def reglasnoticia():
 	print("llegue a reglas noticia")
 	tipo=request.args["tipo"]
 	jsondatos=request.args["datosregla"]
+	idreglaexterna=request.args["idreglaexterna"]
+	cambios=request.args["cambios"]
+	reglaex=[]
+	reglainterna=[]
+	if(idreglaexterna!="ninguno"):
+		print(idreglaexterna)
+		reglaex=db.Reglas.find_one({"_id":ObjectId(str(idreglaexterna))})
+		reglainterna=reglaex["reglainterna"]
+		
 	categoria=""
 	urlext=request.args["urlext"]
 	url=request.args["urlnoticia"]
@@ -403,7 +456,7 @@ def reglasnoticia():
 	if(tipo=="categoria"):
 		categoria=request.args["categoria"]
 	
-	response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml, tipo=tipo, jsonp1=jsondatos, urlext=urlext, listareglas=listareglas, categoria=categoria))
+	response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml, tipo=tipo, jsonp1=jsondatos, urlext=urlext, listareglas=listareglas, categoria=categoria, editar=idreglaexterna, reglainterna=reglainterna, cambios=cambios))
 	return response
 	
 
@@ -444,20 +497,24 @@ def añadirportada():
 
 @app.route('/validarportada', methods=['GET', 'POST'])
 def validarportada():
-	
+	idreglaexterna="ninguno"
 	if request.method=='POST':
+		seregistrocambios=request.form["cambiosre"]
+		print("src",seregistrocambios)
+		idreglaexterna=request.form["reglaseleccionada"]
+		editarregla=request.form["editarregla"]
 		xpathurl=request.form["inputurl"]
 		xpathtitular=request.form["inputtitular"]
 		xpathfecha=request.form["inputfecha"]
 		xpathimg=request.form["inputimg"]
 		xpathredactor=request.form["inputredactor"]
 		xpathdescripcion=request.form["inputdescripcion"]
-		urlprin=request.form["urlprincipal"]
-		arrayurlext=urlprin.split("/")
+		urlportada=request.form["urlprincipal"]
+		arrayurlext=urlportada.split("/")
 		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 		jsondatos={
 			"urlprincipal":urlprincipal,
-			"urlportada":urlprin,
+			"urlportada":urlportada,
 			"tiporegla":"portada",
 			"xpathurl":xpathurl,
 			"xpathtitular":xpathtitular,
@@ -465,11 +522,11 @@ def validarportada():
 			"xpathimg":xpathimg,
 			"xpathredactor":xpathredactor,
 			"xpathdescripcion":xpathdescripcion,
-			"idreglainterna":""
+			"reglainterna":""
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
-		lurlnot=consultarxpath(urlprin,str(xpathurl)+"//@href").result()
+		lurlnot=consultarxpath(urlportada,str(xpathurl)+"//@href").result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
 		#loop = asyncio.new_event_loop()
 		#asyncio.set_event_loop(loop)
@@ -482,33 +539,87 @@ def validarportada():
 			urlnoticia=urlprincipal+urlnoticia
 		print("redireccionando a reglas noticia")
 		print(urlnoticia)
-		return redirect(url_for('reglasnoticia', tipo="portada",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlprin ))
+		return redirect(url_for('reglasnoticia', tipo="portada",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlportada, idreglaexterna=idreglaexterna,cambios=seregistrocambios ))
 	else:
-		addreglaext=db['Reglas'].insert_one(jsondatos)
-		portada={
-				"urlportada":urlprin,
-				"idregla":addreglaext.inserted_id
-			}
+		mensaje=""
+		mensajesec=""
+		#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
+		print("idreglaexterna", idreglaexterna)
+		if(editarregla!=""):
+			if(idreglaexterna!="ninguno"):
+				print(editarregla)
+				#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
+				editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
+				mensajesec="Se modificaron los parametros de la regla con exito"
+			else:
+				#En este caso se creara una nueva regla en base a la regla externa
+				reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
+				reglacat["xpathurl"]=xpathurl
+				reglacat["xpathtitular"]=xpathtitular			
+				reglacat["xpathfecha"]=xpathfecha
+				reglacat["xpathimg"]=xpathimg
+				reglacat["xpathredactor"]=xpathredactor
+				reglacat["xpathdescripcion"]=xpathdescripcion
+				addreglaext=db['Reglas'].insert_one(reglacat)
+				idreglaexterna=addreglaext.inserted_id
+				print("llegue a este caso")
+				mensajesec="Se crearon nuevos parametros para esta URL: "+urlportada
+		else:
+			if idreglaexterna=="ninguno":
+				#si la id regla externa==ninguno entonces se creara una nueva regla
+				addreglaext=db['Reglas'].insert_one(jsondatos)
+				idreglaexterna=addreglaext.inserted_id
+				mensajesec="Se crearon nuevos parametros para la URL: "+urlportada
+			else:
+				#Si la regla existe entonces la id regla sera establecida
+				mensajesec="Se asignaron parametros existentes a esta URL: "+urlportada
+		#CONFIGURACION DE LA portada
+
 		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
 		if(len(paginanoticia)>0):
-			#en caso de que exista la pagina de noticias añadimos portada
+			#en caso de que exista la pagina de noticias añadimos la portada
+			#verificamos si la urlportada existe
 			arrayportadas=paginanoticia[0]["portada"]
-			arrayportadas.append(portada)
+			print("Arrayportadas",arrayportadas)
+			portadasaux=[]
+			añadircat=True
+			for port in arrayportadas:
+				if port["urlportada"]==urlportada:
+					#en caso de existir la urlcategorica cambiamos la portada a la nueva regla
+					añadircat=False
+					port["idregla"]=idreglaexterna
+					mensaje="Se modificó la URL"
+				portadasaux.append(port)
+			print("portadasaux",portadasaux)
+			print("///////////")
+			arrayportadas=portadasaux
+			if añadircat:
+				#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
+				portada={
+					"url":urlportada,
+					"idportada":request.form["portada"],
+					"idregla":idreglaexterna
+				}
+				arrayportadas.append(portada)
+				mensaje="Se añadio una nueva URL "
 			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
 		else:
-			#en caso de que la url de la pagina no exista
+			#en caso de que la url principal de la pagina no exista
 			paginanoticia={
 				"url":urlprincipal,
-				"portada":[portada],
-				"categorias":[]
+				"portada":[portada]
 			}
 			db["paginanoticia"].insert_one(paginanoticia)
-		return render_template("mensaje.html", title="evaluarpag", mensaje="Se añadio las reglas de la portada a la base de datos", mensajesec="A partir de ahora el sistema empezara a monitorear las noticias de portada de la página: " )
+			mensaje="URL Añadida con exito"
+			mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlportada
+		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
 @app.route('/validarurlcategoria', methods=['GET', 'POST'])
 def validarurlcategoria():
 	idreglaexterna="ninguno"
 	if request.method=='POST':
+		editarregla=request.form["editarregla"]
 		if "reglaseleccionada" in request.form:
+			seregistrocambios=request.form["cambiosre"]
 			idreglaexterna=request.form["reglaseleccionada"]
 		categoria=request.form["categoria"]
 		xpathurl=request.form["inputurl"]
@@ -517,13 +628,13 @@ def validarurlcategoria():
 		xpathimg=request.form["inputimg"]
 		xpathredactor=request.form["inputredactor"]
 		xpathdescripcion=request.form["inputdescripcion"]
-		urlprin=request.form["urlprincipal"]
-		print("urlprin", urlprin)
-		arrayurlext=urlprin.split("/")
+		urlcategoria=request.form["urlprincipal"]
+		print("urlprin", urlcategoria)
+		arrayurlext=urlcategoria.split("/")
 		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 		jsondatos={
 			"urlprincipal":urlprincipal,
-			"urlcategoria":urlprin,
+			"urlcategoria":urlcategoria,
 			"tiporegla":"categoria",
 			"xpathurl":xpathurl,
 			"xpathtitular":xpathtitular,
@@ -531,11 +642,11 @@ def validarurlcategoria():
 			"xpathimg":xpathimg,
 			"xpathredactor":xpathredactor,
 			"xpathdescripcion":xpathdescripcion,
-			"idreglainterna":""
+			"reglainterna":""
 		}
 	if request.form.get("continuarform"):
 		#print("obteniendo enlace")
-		lurlnot=consultarxpath(urlprin,str(xpathurl)+"//@href").result()
+		lurlnot=consultarxpath(urlcategoria,str(xpathurl)+"//@href").result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
 		#loop = asyncio.new_event_loop()
 		#asyncio.set_event_loop(loop)
@@ -548,40 +659,87 @@ def validarurlcategoria():
 			urlnoticia=urlprincipal+urlnoticia
 		#print(urlnoticia)
 		#print("urlp: ",urlprincipal)
-		return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlprin, categoria=categoria ))
+		return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlcategoria, categoria=categoria, idreglaexterna=idreglaexterna, cambios=seregistrocambios))
 	else:
+		mensaje=""
+		mensajesec=""
+		#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
 		print("idreglaexterna", idreglaexterna)
-		if idreglaexterna=="ninguno":
-			addreglaext=db['Reglas'].insert_one(jsondatos)
-			idreglaexterna=addreglaext.inserted_id
-		categoria={
-			"url":urlprin,
-			"idcategoria":request.form["categoria"],
-			"idregla":idreglaexterna
-		}	
+		if(editarregla!=""):
+			if(idreglaexterna!="ninguno"):
+				print(editarregla)
+				#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
+				editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
+				mensajesec="Se modificaron los parametros de la regla con exito"
+			else:
+				#En este caso se creara una nueva regla en base a la regla externa
+				reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
+				reglacat["xpathurl"]=xpathurl
+				reglacat["xpathtitular"]=xpathtitular			
+				reglacat["xpathfecha"]=xpathfecha
+				reglacat["xpathimg"]=xpathimg
+				reglacat["xpathredactor"]=xpathredactor
+				reglacat["xpathdescripcion"]=xpathdescripcion
+				addreglaext=db['Reglas'].insert_one(reglacat)
+				idreglaexterna=addreglaext.inserted_id
+				mensajesec="Se crearon nuevos parametros para esta URL: "+urlcategoria
+		else:
+			if idreglaexterna=="ninguno":
+				#si la id regla externa==ninguno entonces se creara una nueva regla
+				addreglaext=db['Reglas'].insert_one(jsondatos)
+				idreglaexterna=addreglaext.inserted_id
+				mensajesec="Se crearon nuevos parametros para la URL: "+urlcategoria
+			else:
+				#Si la regla existe entonces la id regla sera establecida
+				mensajesec="Se asignaron parametros existentes a esta URL: "+urlcategoria
+		#CONFIGURACION DE LA CATEGORIA
+
 		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
 		if(len(paginanoticia)>0):
 			#en caso de que exista la pagina de noticias añadimos la categoria
+			#verificamos si la urlcategoria existe
 			arraycategorias=paginanoticia[0]["categorias"]
-			arraycategorias.append(categoria)
+			print("Arraycategorias",arraycategorias)
+			categoriasaux=[]
+			añadircat=True
+			for cat in arraycategorias:
+				if cat["url"]==urlcategoria:
+					#en caso de existir la urlcategorica cambiamos la categoria a la nueva regla
+					añadircat=False
+					cat["idregla"]=idreglaexterna
+					mensaje="Se modificó la URL"
+				categoriasaux.append(cat)
+			print("Categoriasaux",categoriasaux)
+			print("///////////")
+			arraycategorias=categoriasaux
+			if añadircat:
+				#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
+				categoria={
+					"url":urlcategoria,
+					"idcategoria":request.form["categoria"],
+					"idregla":idreglaexterna
+				}
+				arraycategorias.append(categoria)
+				mensaje="Se añadio una nueva URL "
 			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
 		else:
-			#en caso de que la url de la pagina no exista
+			#en caso de que la url principal de la pagina no exista
 			paginanoticia={
 				"url":urlprincipal,
 				"portada":[],
 				"categorias":[categoria]
 			}
 			db["paginanoticia"].insert_one(paginanoticia)
-		return render_template("mensaje.html", title="evaluarpag", mensaje="Se añadio las reglas de la portada a la base de datos", mensajesec="A partir de ahora el sistema empezara a monitorear las noticias de portada de la página: " )
+			mensaje="URL Añadida con exito"
+			mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlcategoria
+		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
 
 @app.route("/subirpagina", methods=["POST"])
 def subirpagina():
-	idreglainterna="ninguno"
+	mensaje=""
+	mensajesec=""
 	if request.method=='POST':
-		if "reglaseleccionada" in request.form:
-			idreglainterna=request.form["reglaseleccionada"]
-		tiporeglaexterna=request.form["tiporeglaexterna"]
+		idrext=request.form["reglaex"]
 		urlpaginaexterna=request.form["urlexterna"]
 		reglaex=request.form["datosreglaexterna"]
 		#xpath de las noticias
@@ -597,44 +755,57 @@ def subirpagina():
 		arrurlexterna=urlpaginaexterna.split("/")
 		#print("urlexterna: "+urlpaginaexterna)
 		urlprincipal=arrurlexterna[0]+"//"+arrurlexterna[2]
-		reglacoin=list(db["Reglas"].find({"tiporegla":"noticias","urlprincipal":urlprincipal,"xptitular":xptitularnot,"xpresumen":xpresumennot,"xpimg":xpimgnot,"xpdesimg":xpdesimgnot,"xpredactor":xpredactornot,"xpfecha":xpfechanot,"xpparrafos":xpparrafos,"xphashtags":xphshtag}))
-		if(len(reglacoin)==0):
-			#por ninguno añadimos la nueva regla el nuevo id sera 
-			colregla={
-				"tiporegla":"noticias",
-				"urlprincipal":urlprincipal,
-				"xptitular":xptitularnot,
-				"xpresumen":xpresumennot,
-				"xpimg":xpimgnot,
-				"xpdesimg":xpdesimgnot,
-				"xpredactor":xpredactornot,
-				"xpfecha":xpfechanot,
-				"xpparrafos":xpparrafos,
-				"xphashtags":xphshtag
-			}
-			addregla=db['Reglas'].insert_one(colregla)
-			idreglainterna=addregla.inserted_id
-		else:
-			idreglainterna=reglacoin[0]["_id"]
+
+		#Cargando la regla interna
+		reglaint={
+			"xptitular":xptitularnot,
+			"xpresumen":xpresumennot,
+			"xpimg":xpimgnot,
+			"xpdesimg":xpdesimgnot,
+			"xpredactor":xpredactornot,
+			"xpfecha":xpfechanot,
+			"xpparrafos":xpparrafos,
+			"xphashtags":xphshtag
+		}
+
+
 
 		#print("reglaext",reglaex)
 		#print("//*/*/**/*/*/*/*/*")
-		#añadiendo la regla externa
+		#Poniendo la regla interna dentro de la regla externa
 		reglaexterna=json.loads(reglaex)
-		reglaexterna['idreglainterna']=idreglainterna
-		addreglaext=db['Reglas'].insert_one(reglaexterna)
+		reglaexterna['reglainterna']=reglaint
+		#Añadiendo la regla externa
+		if idrext!="ninguno" and idrext!="":
+			db.Reglas.update_one({'_id': ObjectId(str(idrext))},{"$set":reglaexterna})
+			mensajesec="Se editaron los parametros de recoleccion de la página"
+		else:
+			addreglaext=db['Reglas'].insert_one(reglaexterna)
+			idrext=addreglaext.inserted_id
+			mensajesec="se añadieron nuevos parametros para recolectar noticias de la página "+urlpaginaexterna
 		if(reglaexterna['tiporegla']=="categoria"):
+			#Si la regla es una categoria añadimos la categoria dentro de la URL
 			categoria={
 				"url":urlpaginaexterna,
 				"idcategoria":request.form["categoria"],
-				"idregla":addreglaext.inserted_id
+				"idregla":idrext
 			}
-			
 			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
 			if(len(paginanoticia)>0):
 				#en caso de que exista la pagina de noticias añadimos la categoria
+				#primero verificamos que la url existe, con el fin de modificar o editar laregla
 				arraycategorias=paginanoticia[0]["categorias"]
-				arraycategorias.append(categoria)
+				añadircat=True
+				aux=[]
+				for cat in arraycategorias:
+					if cat["url"]==urlpaginaexterna:
+						cat["idcategoria"]=request.form["categoria"]
+						cat["idregla"]=idrext
+						añadircat=False
+					aux.append(cat)
+				arraycategorias=aux
+				if añadircat:
+					arraycategorias.append(categoria)
 				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
 			else:
 				#en caso de que la url de la pagina no exista
@@ -645,16 +816,26 @@ def subirpagina():
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
 		else:
-			#Añadiendo portada
+			#Si la regla externa es de tipo portada
 			portada={
 				"urlportada":urlpaginaexterna,
-				"idregla":addreglaext.inserted_id
+				"idregla":idrext
 			}
 			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
 			if(len(paginanoticia)>0):
 				#en caso de que exista la pagina de noticias añadimos portada
 				arrayportadas=paginanoticia[0]["portada"]
-				arrayportadas.append(portada)
+				aux=[]
+				añadirport=True
+				for port in arrayportadas:
+					if port["urlportada"]==urlpaginaexterna:
+						port["idregla"]=idrext
+						añadirport=False
+						mensaje="Se modifico la url"
+					aux.append(port)
+				arrayportadas=aux
+				if añadirport:
+					arrayportadas.append(portada)
 				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
 			else:
 				#en caso de que la url de la pagina no exista
@@ -664,9 +845,9 @@ def subirpagina():
 					"categorias":[]
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
+				mensaje="Se añadio la URL"
 
-	mensaje="Se añadio la pagina web con exito "
-	mensajesec=mensajesec="A partir de ahora se empezara recolectar noticias de esta paginaweb "+urlprincipal
+
 	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec=mensajesec )
 
 @app.route("/recibirnot", methods=["POST"])
@@ -685,7 +866,7 @@ def ajaxcategorias():
 	noticias=db.noticia	
 	cat=str(categoria)
 	#print("Categoria: ",cat)
-	Noticiascat=list(noticias.find({"categoriaprin":cat}).sort("fechaasig",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoria":cat}).sort("fechaasig",-1).limit(20))
 
 
 	response={
@@ -717,7 +898,7 @@ def ajaxcargarcategorias():
 	noticias=db.noticia	
 	cat=str(categoria)
 	#print("Categoria: ",cat)
-	Noticiascat=list(noticias.find({"categoriaprin":cat}).skip(omitir).sort("fechaasig",-1).limit(20))
+	Noticiascat=list(noticias.find({"categoria":cat}).skip(omitir).sort("fechaasig",-1).limit(20))
 
 
 	response={
@@ -890,6 +1071,7 @@ def ajaxcambiarcat():
 		'respuesta': "Modificado con exito"
 	}
 	return json.dumps(response)
+
 if __name__ == '__main__':
 	app.run(debug=True)
 	socketio.run(app,debug=True, port=5004)

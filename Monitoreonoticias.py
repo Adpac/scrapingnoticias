@@ -146,7 +146,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     except(Exception):
         print("error al cargar descripcion")
     print("tiporegla",reglaportada["tiporegla"])
-    idreglainterna=reglaportada["idreglainterna"]
+    reglainterna=reglaportada["reglainterna"]
     
     noticia={
         "urlfuente":urlprincipal,
@@ -165,9 +165,8 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     }
     urlimagenint=""
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":urlnoticiaportada})))
-    if idreglainterna!="" and urlnoticiaportada!="" and cantidadnot==0:
+    if reglainterna!="" and urlnoticiaportada!="" and cantidadnot==0:
         r2 = await asession.get(urlnoticiaportada)
-        reglainterna=db["Reglas"].find_one({"_id":ObjectId(str(idreglainterna))})
         titularint=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
         if titularint!="" and noticia["titular"]=="":
             noticia["titular"]=titularint
@@ -251,8 +250,11 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
     except:
         print("no se pudo completar la carga de la pagina")
     """
-
-    listaurls=r.html.xpath(reglascategoria["xpathurl"]+"/@href")
+    listaurls=[]
+    try:
+        listaurls=r.html.xpath(reglascategoria["xpathurl"]+"/@href")
+    except:
+        print("Error en url")
     try:
         listastitulares=r.html.xpath(reglascategoria["xpathtitular"]+"/text()")
         listafechas=r.html.xpath(reglascategoria["xpathfecha"]+"/text()")
@@ -261,7 +263,8 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
         listadescripciones=r.html.xpath(reglascategoria["xpathdescripcion"]+"/text()")
     except:
         print("error al cargar datos externos")
-    idreglainterna=reglascategoria["idreglainterna"]
+    print("url:",urlcategoria)
+    reglainterna=reglascategoria["reglainterna"]
     contador=0
     contrep=0 #contador de las urls que ya se encuentran en la base de datos si son mas de dos pasamos a la siguiente categoria
     for urlnot in listaurls:
@@ -300,9 +303,8 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 resumen=listadescripciones[contador]
             except:
                 print("error redactor categoria")
-            if idreglainterna!="" and idreglainterna!="ninguno":
+            if reglainterna!="" and reglainterna!="ninguno":
                 r2 = await asession.get(urlnot)
-                reglainterna=db["Reglas"].find_one({"_id":ObjectId(str(idreglainterna))})
                 try:
                     titular=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
                 except:

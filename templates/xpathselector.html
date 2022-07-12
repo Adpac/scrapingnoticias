@@ -1,21 +1,26 @@
 {{texto|safe}}
-
+{% set reglainterna={'idregla':""} %}
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <div class="xpathmenu" marcar="nopintar" id="xpathmenu">
-    <form marcar="nopintar" action="{{url_for('validarurlcategoria')}}" method="post" >
+    <form marcar="nopintar"  method="post" id="formreglas" action="{{url_for('validarurlcategoria')}}">
         <input type="hidden" name="urlprincipal" value="{{url}}">
         <input type="hidden" name="categoria" value="{{categoria}}">
-
+        <input type="hidden" name="editarregla" value="" id="reglaedit">
+        <input type="hidden" name="cambiosre" value="false" id="cambiosre">
         <div class="selector" marcar="nopintar"></div> 
         {% if listareglas|length > 0 %}
         <select marcar="nopintar" id="selregla" name="reglaseleccionada">
             <option marcar="nopintar" value="ninguno" xptitu="" xpres="" xpimg="" xpdesimg="" xpred="" xpfecha="" xparr="" xphas="" >Regla sin seleccionar</option>
             {% for regla in listareglas %}
+           
+            
             {% if editar and idregla|string==regla['_id']|string %}
-            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}" selected >
-                Regla {{loop.index}}
+            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}" ri="{{regla['reglainterna']}}" selected >
+                Regla {{loop.index}} 
             </option>
+            {% if reglainterna.update({'idregla':regla['reglainterna']|string}) %}{% endif %}
             {% else %}
-            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}"  >
+            <option marcar="nopintar" value="{{regla['_id']}}"  xpurl="{{regla['xpathurl']}}" xptitu="{{regla['xpathtitular']}}" xpfecha="{{regla['xpathfecha']}}" xpimg="{{regla['xpathimg']}}" xpred="{{regla['xpathredactor']}}"  xpdes="{{regla['xpathdescripcion']}}" ri="{{regla['reglainterna']}}" >
                 Regla {{loop.index}}
             </option>
             {% endif %}
@@ -112,14 +117,18 @@
             </tr>
             <tr marcar="nopintar">
                 <td>
-                <label><input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo ingresar a la Url de la noticia y seleccionar datos </label><br>
+                        {% if reglainterna.idregla =="" %}
+                        <label id="checkform"><input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo ingresar a la Url de la noticia y seleccionar datos </label><br>
+                        {% else %}
+                        <label id="checkform"><input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo modificar las reglas de la noticia al momento de ingresar a la url</label><br>
+                        {% endif %}     
                 </td>
             </tr>
             </tbody>
 
         </table>
-        
-        <input id="inputaceptar" marcar="nopintar" type="submit" name="enviar" value="Aceptar">
+        <button id="inputaceptar" marcar="nopintar" type="button" name="enviar" id="btnsubmit" onclick="validarform()">Aceptar</button>
+  
         <button  marcar="nopintar" id="btncambiarposicion" type="button" onclick="cambiarposicion()">Pasar Abajo</button>
     </form>
     
@@ -133,15 +142,19 @@
         actualizarseleccion()
     }
     //Script para la seleccion de reglas
-    $('#selregla').change(function(){ 
-    var value = $(this).val();
-    var seleccion=$(this).find('option:selected');
-    $("#input1").val(seleccion.attr("xpurl"))
-    $("#input2").val(seleccion.attr("xptitu"))
-    $("#input3").val(seleccion.attr("xpfecha"))
-    $("#input4").val(seleccion.attr("xpimg"))
-    $("#input5").val(seleccion.attr("xpred"))
-    $("#input6").val(seleccion.attr("xpdes"))
+    jQuery('#selregla').change(function(){ 
+    var value = jQuery(this).val();
+    var seleccion=jQuery(this).find('option:selected');
+    jQuery("#input1").val(seleccion.attr("xpurl"))
+    jQuery("#input2").val(seleccion.attr("xptitu"))
+    jQuery("#input3").val(seleccion.attr("xpfecha"))
+    jQuery("#input4").val(seleccion.attr("xpimg"))
+    jQuery("#input5").val(seleccion.attr("xpred"))
+    jQuery("#input6").val(seleccion.attr("xpdes"))
+    if(seleccion.attr("ri")!=""){
+      
+        jQuery("#checkform").html('<input type="checkbox" id="cbox1" name="continuarform" value="continuarform"> Deseo modificar las reglas de la noticia al momento de ingresar a la url')
+    }
     console.log("seleccionando regla....")
     pintarelementos(1);
     pintarelementos(2);
@@ -149,20 +162,19 @@
     pintarelementos(4);
     pintarelementos(5);
     pintarelementos(6);
-    pintarelementos(7);
-    pintarelementos(8);
+
 
 
 });
 function actualizarseleccion(){
-    var value = $('#selregla').val();
-    var seleccion=$('#selregla').find('option:selected');
-    $("#input1").val(seleccion.attr("xpurl"))
-    $("#input2").val(seleccion.attr("xptitu"))
-    $("#input3").val(seleccion.attr("xpfecha"))
-    $("#input4").val(seleccion.attr("xpimg"))
-    $("#input5").val(seleccion.attr("xpred"))
-    $("#input6").val(seleccion.attr("xpdes"))
+    var value = jQuery('#selregla').val();
+    var seleccion=jQuery('#selregla').find('option:selected');
+    jQuery("#input1").val(seleccion.attr("xpurl"))
+    jQuery("#input2").val(seleccion.attr("xptitu"))
+    jQuery("#input3").val(seleccion.attr("xpfecha"))
+    jQuery("#input4").val(seleccion.attr("xpimg"))
+    jQuery("#input5").val(seleccion.attr("xpred"))
+    jQuery("#input6").val(seleccion.attr("xpdes"))
     console.log("seleccionando regla....")
     pintarelementos(1);
     pintarelementos(2);
@@ -170,8 +182,8 @@ function actualizarseleccion(){
     pintarelementos(4);
     pintarelementos(5);
     pintarelementos(6);
-    pintarelementos(7);
-    pintarelementos(8);
+
+    sedetectaroncambios=false
 }
 function actualizar(){
     pintarelementos(1);
@@ -180,8 +192,55 @@ function actualizar(){
     pintarelementos(4);
     pintarelementos(5);
     pintarelementos(6);
-    pintarelementos(7);
-    pintarelementos(8);
+
+}
+function cambioregla(codform){
+    //Retornara verdadero en caso de que se detecten cambios entre la regla seleccionada y los valoresdentro de esta
+    retornar=false;
+    if(codform!="ninguno"){
+        var seleccion=jQuery('#selregla').find('option:selected');
+        if(seleccion.attr("xpurl")!=jQuery("#input1").val() ||seleccion.attr("xptitu")!=jQuery("#input2").val() || seleccion.attr("xpfecha")!=jQuery("#input3").val() ||seleccion.attr("xpimg")!=jQuery("#input4").val() || seleccion.attr("xpred")!=jQuery("#input5").val() || seleccion.attr("xpdes")!=jQuery("#input6").val()){
+            retornar=true;
+        }
+    }
+    return retornar
+}
+function validarform(){
+    var reglasel=document.getElementById("selregla");
+    var form = jQuery("#formreglas")
+    var checkform=document.getElementById("cbox1")
+    console.log("reglasel"+reglasel)
+    if(cambioregla(reglasel.value)){
+        jQuery("#cambiosre").val("true")
+        if(reglasel!=null && !checkform.checked  ){
+        swal({
+            title: "¿Desea modificar la regla actual?",
+            text: "Recuerde que esta regla es utilizada por diferentes enlaces, si selecciona crear nueva regla solo se aplicaran los cambios a esta URL ",
+            buttons: true,
+            buttons: ['Crear nueva regla', 'Editar regla']
+          })
+          .then((modificar) => {
+            
+            if (modificar) {
+                jQuery("#reglaedit").val(reglasel.value)
+                swal("Se modificara la regla");
+                form.submit();
+            } else {
+                jQuery("#reglaedit").val(reglasel.value)
+                jQuery('#selregla').val("ninguno");
+              swal("Se creara una nueva regla");
+              form.submit();
+            }
+          });
+    }else{
+
+        form.submit();
+    }
+    }else{
+        form.submit();
+    }
+
+    
 }
 </script>                       
 

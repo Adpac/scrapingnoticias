@@ -5,9 +5,10 @@ var colorclick="rgba(241, 220, 0, 0.5)";
 var campoinput="";
 var seleccion=0;
 var numerodeinputs=8;
-var seleccionmultiple=[1,2,3,4,5,6]
+var seleccionmultiple=[1,2,3,4,5,6];
+var sedetectaroncambios=false;
 
-  const botones=document.querySelectorAll("[onclick]");
+const botones=document.querySelectorAll("[onclick]");
 for( boton of botones){
     if(boton.getAttribute("marcar")!="nopintar"){
         boton.setAttribute("clickenfuncion",boton.getAttribute("onclick"));
@@ -228,7 +229,7 @@ try {
 
 
 
-
+sedetectaroncambios=true;
 
 }
 //
