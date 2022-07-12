@@ -50,7 +50,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-#tarea=threading.Thread(target=scrapingnoticias).start()
+tarea=threading.Thread(target=scrapingnoticias).start()
 
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
