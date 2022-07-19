@@ -82,7 +82,7 @@ async def cargarpagina(urlpagina):
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
 			else:
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
-	contenidopag=re.sub('<script(.|\n)*?script>', '', contenidopag)
+	#contenidopag=re.sub('<script(.|\n)*?script>', '', contenidopag)
 	print("se cargo la pagina web")
 	try:
 		await asession.close()
