@@ -1,4 +1,6 @@
 //desactivando los botones 
+
+
 var posicion="arriba";
 function cambiarposicion(){
     if(posicion=="arriba"){
@@ -24,6 +26,7 @@ for( enlace of enlaces){
     enlace.setAttribute("onclick","return false");
 }
 //..
+
 var listacolores=["rgba(0,113,188,0.5)","rgba(0,143,76,0.5)","rgba(128,0,128,0.5)","rgba(234,193,2,0.5)","rgba(141,0,54,0.5)","rgba(170,0,0,0.5)","rgba(175,110,55,0.5)","rgba(255,102,0,0.5)","rgba(252,209,198,0.5)","rgba(81,209,246,0.5)","rgba(128,128,128,0.5)","rgba(204,0,0,0.5)","rgba(255,90,54,0.5)","rgba(255,186,0,0.5)","rgba(255,126,0,0.5)","rgba(0,66,37,0.5)","rgba(27,65,37,0.5)","rgba(0,97,169,0.5)","rgba(209,235,247,0.5)","rgba(150,200,162,0.5)","rgba(129,216,208,0.5)","rgba(0,26,87,0.5)","rgba(65,125,193,0.5)","rgba(83,104,149,0.5)","rgba(145,163,176,0.5)","rgba(245,245,220,0.5)","rgba(62,174,177,0.5)","rgba(206,70,118,0.5)","rgba(151,127,115,0.5)","rgba(201,174,93,0.5)","rgba(243,229,171,0.5)","rgba(80,64,77,0.5)","rgba(103,49,71,0.5)","rgba(84,61,63,0.5)","rgba(145,163,176,0.5)","rgba(129,135,139,0.5)","rgba(196,30,58,0.5)","rgba(193,154,107,0.5)","rgba(86,57,112,0.5)","rgba(228,155,15,0.5)","rgba(252,247,94,0.5)","rgba(248,222,126,0.5)","rgba(238,223,160,0.5)","rgba(184,41,40,0.5)","rgba(34,34,34,0.5)","rgba(72,60,50,0.5)","rgba(59,49,33,0.5)","rgba(103,76,71,0.5)","rgba(172,92,181,0.5)","rgba(217,144,88,0.5)","rgba(255,153,102,0.5)","rgba(178,27,28,0.5)","rgba(237,135,45,0.5)","rgba(217,144,88,0.5)","rgba(135,0,116,0.5)","rgba(96,47,107,0.5)","rgba(96,78,151,0.5)","rgba(250,214,165,0.5)","rgba(138,154,91,0.5)","rgba(147,197,146,0.5)","rgba(126,159,46,0.5)","rgba(143,151,121,0.5)","rgba(174,32,41,0.5)","rgba(114,47,55,0.5)"];
 
 var seleccionar=false;
@@ -347,3 +350,9 @@ function optimizarxpath(xpathentrada){
             xpdevolver="/"+xpdevolver
             return xpdevolver
         }
+
+document.body.setAttribute("onbeforeunload","return myFunction()")
+        function myFunction() {
+            alert("sera redireccionado a otra pagina")
+            return "Write something clever here...";
+          }

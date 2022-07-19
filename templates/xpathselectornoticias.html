@@ -1,7 +1,8 @@
 
 
 {{texto|safe}}
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/sweetalert2/6.5.6/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/sweetalert2/6.5.6/sweetalert2.min.js"></script>
 <script src="/static/scripts/selectorxpathnoticias.js" ></script>
 {% if editar!=ninguno %}
 <div hidden id="datosri"  xptitular="{{reglainterna['xptitular']}}"
@@ -149,27 +150,30 @@ function cambioregla(){
     return retornar
 }
 function validarform(){
-    var form = $("#formlista")
+    var form = jQuery("#formlista")
     var cambios="{{cambios}}"
     console.log(cambios)
     if( (cambioregla()  || cambios=="true") && "{{editar}}"!="ninguno" ){
         swal({
             title: "¿Desea modificar la regla actual?",
             text: "Recuerde que esta regla es utilizada por diferentes enlaces, si selecciona \"Crear nueva regla\" solo se aplicaran los cambios a esta URL ",
-            buttons: true,
-            buttons: ['Crear nueva regla', 'Editar regla']
+
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Editar regla',
+            cancelButtonText: `Crear nueva regla`,
           })
-          .then((modificar) => {
-            
-            if (modificar) {
-                $("#reglaex").val(editar)
+          .then(function() {
+            jQuery("#reglaex").val(editar)
                 swal("Se modificara la regla"+editar);
                 form.submit();
-            } else {
-              swal("Se creara una nueva regla");
+          },function(dismiss){
+            if(dismiss == 'cancel') {
+                swal("Se creara una nueva regla");
               form.submit();
-            }
-          });
+            }}
+            
+          );
     }else{
         form.submit();
     }

@@ -11,12 +11,16 @@
 Pagina principal
 {% endblock %}
 {% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
     <div id="register">
         <div class="container">
             <div id="register-row" class="row justify-content-center align-items-center">
                 <div id="register-column" class="col-md-6">
                     <div id="register-box" class="col-md-12">
-                        <form id="register-form" class="form" method="post">
+                        <form id="cambiarpass-form" class="form" method="post" action="{{url_for('cambiarcontraseña')}}" >
+                            <input type="hidden" name="nusuario" id="nusuario" value="{{session['user']}}">
                             <h3 class="text-center text-info">Cambiar contraseña</h3>
                             <div class="form-group">
                                 <label for="inputPassword" class="text-info">Contraseña actual:</label><br>
@@ -32,7 +36,7 @@ Pagina principal
                             </div>
                             
                             <div class="form-group">
-                                <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
+                                <input type="submit" class="btn btn-info btn-md" value="Cambiar contraseña">
                             </div>
 
                         </form>
@@ -44,7 +48,7 @@ Pagina principal
 
     <script>
         var password = document.getElementById("password"), confirm_password = document.getElementById("confirm_password");
-        
+        var passwordac=document.getElementById("passwordactual");
         function validatePassword(){
           console.log("Cambiando contraseña");
           if(password.value != confirm_password.value) {
@@ -53,9 +57,35 @@ Pagina principal
             confirm_password.setCustomValidity('');
           }
         }
-        
-        password.onchange = validatePassword;
-        confirm_password.onkeyup = validatePassword;    
+        function contraseñacorrecta(){
+            
+            var form=jQuery("#cambiarpass-form");
+            jQuery.ajax({
+                url:'/ajaxcoincidencontraseñas',
+                data: {contraseña:passwordac.value,
+                    usuario:"{{session['user']}}"},
+                type: 'POST',
+                success: function(response){
+                    resp=JSON.parse(response)
+                    console.log(resp)
+                    if(resp["respuesta"]=="true"){
+                        passwordac.setCustomValidity("")
+                    }else{
+                        passwordac.setCustomValidity("Contraseña incorrecta")
+                    }
+
+                },
+                error: function(error){
+                    console.log(error)
+                    passwordac.setCustomValidity("Contraseña incorrecta")
+                }
+            })            
+        }
+
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword; 
+    passwordac.onkeyup=contraseñacorrecta;
+
         </script>
 {% endblock %}
 

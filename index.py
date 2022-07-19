@@ -1,6 +1,8 @@
 
 from audioop import add
 from multiprocessing.connection import wait
+from os import read
+from urllib import response
 from flask import Flask, url_for
 from re import sub
 import re
@@ -50,7 +52,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
@@ -66,7 +68,7 @@ async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
 	r = await asession.get(urlpagina,  verify=False)
-
+	await r.html.arender(sleep = 10, timeout=50)
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
 	protocolo=arrayurlpag[0]
@@ -80,6 +82,7 @@ async def cargarpagina(urlpagina):
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+"//"+dominioprin+link)+'"')
 			else:
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
+	contenidopag=re.sub('<script(.|\n)*?script>', '', contenidopag)
 	print("se cargo la pagina web")
 	try:
 		await asession.close()
@@ -733,7 +736,33 @@ def validarurlcategoria():
 			mensaje="URL Añadida con exito"
 			mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlcategoria
 		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
-
+@app.route("/cambiarcontraseña", methods=["POST"])
+def cambiarcontraseña():
+	mensaje=""
+	mensajesec=""
+	contant=request.form["passwordactual"]
+	contnueva=request.form["password"]
+	nusuario=request.form["nusuario"]
+	#buscando al usuario
+	usuario=db.usuario.find_one({"usuario":nusuario})
+	if sha512.verify(str(contant), str(usuario["contraseña"])):
+		contraseñanueva=sha512.hash(contnueva)
+		db.usuario.update_one({"usuario":nusuario},{"$set":{"contraseña":contraseñanueva}})
+		mensaje="Contraseña cambiada con exito"
+	else:
+		mensaje="No se cambio la contraseña"
+		mensajesec="Las contraseñas no coinciden por favor ingrese su contraseña corecta"
+	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+@app.route("/editardatosusuario", methods=["POST"])
+def editardatosusuario():
+	nusuario=request.form["usuarioac"]
+	nusuarionuevo=request.form["usuario"]
+	ci=request.form["ci"]
+	nombres=request.form["nombres"]
+	apellidos=request.form["apellidos"]
+	rol=request.form["tipousuario"]
+	db.usuario.update_one({"usuario":nusuario},{"$set":{"usuario":nusuarionuevo,"ci":ci,"nombres":nombres,"apellidos":apellidos,"rol":rol}})
+	return render_template("mensaje.html", title="evaluarpag", mensaje="Operación exitosa", mensajesec= "Se cambiaron los datos del usuario:"+nusuarionuevo )
 @app.route("/subirpagina", methods=["POST"])
 def subirpagina():
 	mensaje=""
@@ -849,6 +878,10 @@ def subirpagina():
 
 
 	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec=mensajesec )
+@app.route("/gestionarusuarios")
+def gestionarusuarios():
+	listausuarios=list(db.usuario.find({},{"contraseña":0}))
+	return render_template("gestionarusuarios.html", title="gestionar usuarios", listausuarios=listausuarios)
 
 @app.route("/recibirnot", methods=["POST"])
 def recibirnot():
@@ -984,9 +1017,16 @@ def ajaxbuscarnoticiasrelacionadas():
 	dbnoticias=db.noticia
 	url=request.form["urlnoticia"]
 	noticia=dbnoticias.find_one({"urlnoticia":url})
-	textosinsw=eliminarstopwords(noticia["titular"])
-	textosinsw=textosinsw+eliminarstopwords(noticia["parrafos"][0:500])
-	#print(textosinsw)
+	texto=noticia["titular"]+noticia["parrafos"][0:300]
+	texto=str(texto).replace("("," ")
+	texto=str(texto).replace(")"," ")
+	texto=str(texto).replace(",","")
+	texto=str(texto).replace(":","")
+	texto=str(texto).replace("\"","")
+	texto=texto.lower()
+	textosinsw=eliminarstopwords(texto)
+	print(textosinsw)
+	print("/*/*/*/*/*//")
 	Noti =list(dbnoticias.find({"$text": {"$search": textosinsw}, "urlnoticia":{"$ne":url} }, { "score": { "$meta": "textScore" }}).sort([('score', {'$meta': 'textScore'})]).limit(10))
 	response={
 		'status': 200,
@@ -1047,6 +1087,7 @@ def ajaxeliminarurlportada():
 		'respuesta': "eliminado con exito"
 	}
 	return json.dumps(response)
+
 @app.route("/ajaxcambiarcat", methods=["POST"])
 def ajaxcambiarcat():
 	#Este algoritmo elimina una url seleccionada
@@ -1071,9 +1112,47 @@ def ajaxcambiarcat():
 		'respuesta': "Modificado con exito"
 	}
 	return json.dumps(response)
+@app.route("/ajaxvalidarnusuario", methods=["POST"])
+def ajaxvalidarnusuario():
+	respuesta="false"
+	nombreusuario=request.form["nusuario"]
+	usuarios=list(db.usuario.find({"usuario":nombreusuario}))
+	if(len(usuarios)==0):
+		respuesta="true"
+	response={
+		'status':200,
+		'respuesta':respuesta
+	}
+	return json.dumps(response)
+
+@app.route("/ajaxeliminarusuario", methods=["POST"])
+def ajaxeliminarusuario():
+	iduser=request.form["iduser"]
+	db.usuario.delete_one({"_id":ObjectId(iduser)})
+	response={
+		'status':200,
+		'respuesta':"Usuario eliminado"
+	}
+	return response
+@app.route("/ajaxcoincidencontraseñas", methods=["POST"])
+def ajaxcoincidencontraseñas():
+	print("llegue aqui-----------")
+	respuesta="false"
+	contraseña=request.form["contraseña"]
+	nusuario=request.form["usuario"]
+	print("Usuario: ",nusuario)
+	print("**-*-*-*-*-*-")
+	usuario=db.usuario.find_one({"usuario":nusuario})
+	if sha512.verify(str(contraseña), str(usuario['contraseña'])):
+		respuesta="true"
+	response={
+		'status':200,
+		'respuesta':respuesta
+	}
+	return json.dumps(response)
 
 if __name__ == '__main__':
 	app.run(debug=True)
-	socketio.run(app,debug=True, port=5004)
+	socketio.run(app,debug=True, port=5004, async_mode='gevent_uwsgi')
 
 	

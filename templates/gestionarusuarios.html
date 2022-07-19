@@ -1,0 +1,189 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+
+
+
+{% block titulo1 %}
+Gestionar Usuarios
+{% endblock %}
+{% block content %}
+<div style="height: 50px;">
+
+</div>
+<table class="table table-bordered">
+    <thead class="thead-dark">
+      <tr >
+        <th scope="col">#</th>
+        <th scope="col">Usuario</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Apellidos</th>
+        <th scope="col">CI</th>
+        <th scope="col">Rol</th>
+        <th scope="col">Editar</th>
+        <th scope="col">Eliminar</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for usuario in listausuarios %}
+        <tr class="table-light" nusuario="{{usuario['_id']}}">
+            <th scope="row">{{loop.index0 +1}}</th>
+            <td>{{usuario['usuario']}}</td>
+            <td>{{usuario['nombres']}}</td>
+            <td>{{usuario['apellidos']}}</td>
+            <td>{{usuario['ci']}}</td>
+            <td>{{usuario['rol']}}</td>
+            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-usuario="{{usuario['usuario']}}" data-ci="{{usuario['ci']}}" data-nombres="{{usuario['nombres']}}" data-apellidos="{{usuario['apellidos']}}" data-rol="{{usuario['rol']}}" >Editar</button></td>
+            <td><button class="btn btn-primary" onclick="eliminarusuario('{{usuario['_id']}}')">Eliminar</button></td>
+        </tr>
+        {% endfor %}
+
+
+    </tbody>
+  </table>
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Editar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form class="form" action="{{url_for('editardatosusuario')}}" method="post" >
+            <input type="hidden" name="usuarioac", value="" id="usuarioac">
+            <div class="form-group">
+              <label for="username" class="text-info">Usuario:</label><br>
+              <input type="text" name="usuario" id="username" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="username" class="text-info">CI:</label><br>
+            <input type="text" name="ci" id="ci" class="form-control" required>
+        </div>
+          <div class="form-group">
+              <label for="username" class="text-info">Nombres:</label><br>
+              <input type="text" name="nombres" id="nombres" class="form-control" required>
+          </div>
+          <div class="form-group">
+              <label for="username" class="text-info">Apellidos:</label><br>
+              <input type="text" name="apellidos" id="apellidos" class="form-control" required>
+          </div>
+          <div class="form-group" id="divrol">
+            <label for="username" class="text-info">Seleccione un rol:</label><br><select name="tipousuario" id="tipousuario" class="form-select" aria-label="Default select example"></select></label>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <input type="submit" class="btn btn-primary" value="Editar" name="editar">
+          
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+  <div>
+    <a class="btn btn-primary"aria-current="page" href="{{url_for('registro')}}">Registrar Usuarios</a>
+</div>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+  var usuariosel=""
+  $('#exampleModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var usuario = button.data('usuario') // Extract info from data-* attributes
+ 
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+  var modal = $(this)
+  usuariosel=usuario
+  modal.find('.modal-title').text('Editar usuario: ' + usuario)
+  modal.find('.modal-body #username').val(usuario)
+  modal.find('.modal-body #usuarioac').val(usuario)
+  modal.find('.modal-body #ci').val(button.data('ci'))
+  modal.find('.modal-body #nombres').val(button.data('nombres'))
+  modal.find('.modal-body #apellidos').val(button.data('apellidos'))
+  
+  var rol=button.data('rol')
+  if(rol=="admingen"){
+    jQuery("#tipousuario").empty();
+    jQuery("#tipousuario").append('<option value="admingen"  selected>Administrador General</option>')
+
+  }else{
+    jQuery("#tipousuario").empty();
+    jQuery("#tipousuario").append('<option value="usuario">Lector</option><option value="adminsitrador">Administrador</option>')
+    modal.find('.modal-body #tipousuario').val(button.data('rol'))
+  }
+})
+</script>
+<script>
+
+  function eliminarusuario(nusuario){
+      swal({
+            title: "¿Esta seguro de eliminar a este usuario",
+            text: "",
+            showCloseButton: true,
+            buttons: true,
+            dangerMode: true,
+          })
+          .then((willDelete) => {
+            
+            if (willDelete) {
+              jQuery.ajax({
+                url:'/ajaxeliminarusuario',
+                data: {iduser:nusuario},
+                type: 'POST',
+                success: function(response){
+                    resp=JSON.parse(response)
+                    swal("Usuario eliminado");
+                },
+                error: function(error){
+                    swal("Ocurrio un problema en el servidor");
+                    console.log(error)
+                }
+            })  
+              
+              
+            } else {
+              swal("No se elimino al usuario");
+            }
+          });
+    }
+    var nombreusuario=document.getElementById("username")
+    function validarusuario(){
+      console.log("llegue aqui.....");
+      jQuery.ajax({
+                url:'/ajaxvalidarnusuario',
+                data: {nusuario:nombreusuario.value},
+                type: 'POST',
+                success: function(response){
+                    resp=JSON.parse(response)
+                    console.log(resp)
+                    if(resp["respuesta"]=="true"){
+                      console.log("llegue a true")
+                      nombreusuario.setCustomValidity("")
+                    }else{
+                      
+                      if(usuariosel!=nombreusuario.value){
+                        nombreusuario.setCustomValidity("El nombre de usuario ya existe")
+                        console.log("llegue a false")
+                      }
+                      
+                    }
+
+                },
+                error: function(error){
+                    console.log(error)
+                    passwordac.setCustomValidity("Contraseña incorrecta")
+                }
+            })  
+        }
+    nombreusuario.onkeyup=validarusuario
+</script>
+{% endblock %}
