@@ -325,6 +325,8 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 try:
                     if urlimagen=="" or urlimagen==None: 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
+                        if not urlprincipal in urlimagen:
+                                urlimagen=urlprincipal+urlimagen
                 except(Exception):
                     print("error al cargar imagen src")
                     print(Exception)
