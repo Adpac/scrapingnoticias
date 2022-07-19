@@ -52,7 +52,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-#tarea=threading.Thread(target=scrapingnoticias).start()
+tarea=threading.Thread(target=scrapingnoticias).start()
 
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
@@ -68,7 +68,10 @@ async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
 	r = await asession.get(urlpagina,  verify=False)
-	await r.html.arender(sleep = 10, timeout=50)
+	try:
+		await r.html.arender(sleep = 10, timeout=30)
+	except:
+		print("no cargo la pagina F")
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
 	protocolo=arrayurlpag[0]
