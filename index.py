@@ -68,10 +68,7 @@ async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
 
 	r = await asession.get(urlpagina,  verify=False)
-	try:
-		await r.html.arender(timeout=20)
-	except:
-		print("no cargo la pagina F")
+
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
 	protocolo=arrayurlpag[0]
