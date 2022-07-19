@@ -69,7 +69,7 @@ async def cargarpagina(urlpagina):
 
 	r = await asession.get(urlpagina,  verify=False)
 	try:
-		await r.html.arender(sleep = 5, timeout=20)
+		await r.html.arender(timeout=20)
 	except:
 		print("no cargo la pagina F")
 	contenidopag=r.html.html
