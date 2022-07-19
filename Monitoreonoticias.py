@@ -128,12 +128,16 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     try:
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"/@src")[0]
+            if not urlprincipal in imagen:
+                imagen=urlprincipal+imagen
     except(Exception):
         print("error al cargar imagen (src)")
         print(Exception)
     try:
         if imagen=="" or imagen==None: 
             imagen=r.html.xpath(reglaportada["xpathimg"]+"/@href")[0]
+            if not urlprincipal in imagen:
+                imagen=urlprincipal+imagen
     except(Exception):
         print("error al cargar imagen (href)")
         print(Exception)

@@ -27,6 +27,11 @@
             {% endif %}
             {% endfor %}
         </select>
+        {%else%}
+        <select marcar="nopintar" id="selregla" name="reglaseleccionada" hidden>
+            <option marcar="nopintar" value="ninguno" xptitu="" xpres="" xpimg="" xpdesimg="" xpred="" xpfecha="" xparr="" xphas="" >Regla sin seleccionar</option>
+        </select>
+
         {%endif%}
         <table marcar="nopintar" width="100%">
             <tbody marcar="nopintar">
