@@ -51,7 +51,18 @@
     });
     </script> 
 <script>
+  var sonido=false
+ function activarsound(){
+  jQuery("#btnsound").empty()
+  if(sonido){
+    jQuery("#btnsound").append('<i class="fa fa-bell-slash"></i>')
+    sonido=false
+  }else{
+    jQuery("#btnsound").append('<i class="fa fa-bell"></i>')
+    sonido=true
+  }
   
+  }
   ajaxsolicitarNotificaciones('adpac')
   function ajaxsolicitarNotificaciones(usuario){
     $.ajax({
@@ -136,9 +147,13 @@
                     <li class=" nav-item">
                       <a class="nav-link active" aria-current="page" href="{{url_for('gestionarpaginas')}}">Gestionar Páginas</a>
                   </li>
-                    
+                  <li class=" nav-item">
+                    <button class="btn" id="btnsound" onclick="activarsound()"><i class="fa fa-bell-slash"></i></button>
+                  </li>
                       <li class="nav-item dropdown">
+                        
                         <a href="#" class="nav-link dropdown-toggle" id="enotificaciones" data-toggle="dropdown" >Notificaciones </a>
+                
                         <ul class="dropdown-menu notify-drop">
 
                           <div class="drop-content" id="contenidonot" style="float:left">

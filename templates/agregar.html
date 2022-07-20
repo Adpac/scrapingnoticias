@@ -164,28 +164,7 @@ function ajaxagregarcategoria(){
         dselect(select_box_element, {
             search: true
         });
-        function ajaxagregarcategoria(){
-      var nomcategoria=document.getElementById("inputcategoria")
-      //console.log(nomcategoria.value)
-      $.ajax({
-        url:'/ajaxañadircategoria',
-        data: {categoria:nomcategoria.value},
-        type: 'POST',
-        
-        success: function(response){
-            respuesta=JSON.parse(response)
-            //console.log(respuesta)
-            $("select").append('<option value="'+respuesta["id"]+'">'+nomcategoria.value+'</option>')
-            $(".dselect-items").append('<button class="dropdown-item" data-dselect-value="'+respuesta["id"]+'" type="button" onclick="dselectUpdate(this, \'dselect-wrapper\', \'form-select\')">'+nomcategoria.value+'</button>')
-            nomcategoria.value=""
-            alert("Categoria añadida exitosamente")
-        },
-      
-        error: function(error){
-            console.log(error)
-        }
-    });
-  }
+
 
 </script>
 

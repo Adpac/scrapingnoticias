@@ -1,0 +1,152 @@
+{% if session['type']=="usuario" %}
+    {%extends "layoutusuario.html"%}
+{% elif session['type']=="adminsitrador" %}
+    {%extends "layoutadmin.html"%}
+{% elif session['type']=="admingen" %}
+    {%extends "layoutadmingen.html"%}
+{% else %}
+{%extends "layout.html" %}
+{% endif %}
+
+
+
+{% block titulo1 %}
+Gestionar Categoria
+{% endblock %}
+{% block content %}
+<div style="height: 50px;">
+
+</div>
+<div class="input-group rounded">
+  <label  class="label label-primary" for="inputcategoria">Agregar categoria:  &nbsp;&nbsp;</label>
+  <input id="inputcategoria" type="search" class="form-control rounded"  name="Addcat"  />
+  <button onclick="ajaxagregarcategoria()" class="btn btn-primary" >Agregar Categoria</button>
+  
+</div>
+<br>
+<table class="table table-bordered">
+    <thead class="thead-dark">
+      <tr >
+        <th scope="col">#</th>
+        <th scope="col" >Categoria</th>
+        <th scope="col">Editar</th>
+
+      </tr>
+    </thead>
+    <tbody id="listacats" >
+        {% for cat in listacat %}
+        <tr class="table-light" cat="{{cat['_id']}}">
+            <th scope="row">{{loop.index0 +1}}</th>
+            <td id="{{cat['_id']}}">{{cat['cat']}}</td>
+            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-id="{{cat['_id']}}" data-nombrecat="{{cat['cat']}}"  >Cambiar nombre</button></td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Editar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+            <input type="hidden" name="usuarioac", value="" id="usuarioac">
+            <div class="form-group">
+              <label for="catname" class="text-info">Categoria:</label><br>
+              <input type="text" name="catname" id="catname" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal"id="btneditarcat">Editar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+  var catsel=""
+  var numcats="{{listacat|length}}"
+  $('#exampleModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var nombrecat = button.data('nombrecat') // Extract info from data-* attributes
+  var idcat=button.data('id')
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+  var modal = $(this)
+  catsel=nombrecat
+  modal.find('.modal-title').text('Editar categoria: ' + nombrecat)
+  modal.find('.modal-body #catname').val(nombrecat)
+  $("#btneditarcat").attr("onclick","editarcategoria('"+idcat+"','"+nombrecat+"')");
+
+})
+</script>
+<script>
+function editarcategoria(idcategoria, nombrecat){
+  swal({
+            title: "¿Esta seguro de cambiar el nombre de la categoria: "+nombrecat,
+            text: "",
+            showCloseButton: true,
+            buttons: true,
+          })
+          .then((cambiar) => {
+            nombrecatnuevo=jQuery("#catname").val()
+            if (cambiar) {
+              jQuery.ajax({
+                url:'/ajaxeditarcategoria',
+                data: {idcat:idcategoria,
+                       nombrecat:nombrecatnuevo},
+                type: 'POST',
+                success: function(response){
+                    resp=JSON.parse(response)
+                    jQuery("#"+idcategoria).text(nombrecatnuevo)
+                    swal("Nombre de categoria cambiado con exito");
+                },
+                error: function(error){
+                    swal("Ocurrio un problema en el servidor");
+                    console.log(error)
+                }
+            })  
+              
+              
+            } else {
+              swal("No se cambio la categoria");
+            }
+          });
+}
+
+function ajaxagregarcategoria(){
+      var nomcategoria=document.getElementById("inputcategoria")
+      console.log(nomcategoria.value)
+      $.ajax({
+        url:'/ajaxañadircategoria',
+        data: {categoria:nomcategoria.value},
+        type: 'POST',
+        
+        success: function(response){
+            respuesta=JSON.parse(response)
+            console.log(respuesta)
+            $("#listacats").append(
+              '<tr class="table-light" cat="'+respuesta["id"]+'">'+
+            '<th scope="row">'+numcats+'</th>'+
+            '<td id="'+respuesta["id"]+'">'+nomcategoria.value+'</td>'+
+            '<td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-id="'+respuesta["id"]+'" data-nombrecat="'+nomcategoria.value+'"  >Cambiar nombre</button></td></tr>'
+            )
+            nomcategoria.value=""
+            alert("Categoria añadida exitosamente")
+
+        },
+      
+        error: function(error){
+            console.log(error)
+        }
+    });
+  }
+</script>
+{% endblock %}

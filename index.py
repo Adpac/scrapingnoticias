@@ -52,7 +52,7 @@ def scrapingnoticias():
 		except:
 			print("ocurrio un error")
 
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
@@ -189,6 +189,11 @@ def gestionarpaginas():
 	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
 
 	return render_template('gestionarpaginas.html', listapaginanoticias=listapaginanoticias)
+@app.route('/gestionarcategorias')
+def gestionarcategorias():
+	listacat=list(db.Categoria.find({},))
+
+	return render_template('gestionarcategorias.html', listacat=listacat)
 @app.route('/editarpagina',methods=['GET'])
 def editarpagina():
 	url = request.args.get('url')
@@ -1133,8 +1138,18 @@ def ajaxeliminarusuario():
 		'status':200,
 		'respuesta':"Usuario eliminado"
 	}
-	return response
+	return json.dumps(response)
 @app.route("/ajaxcoincidencontraseñas", methods=["POST"])
+@app.route("/ajaxeditarcategoria", methods=["POST"])
+def ajaxeditarcategoria():
+	idcat=request.form["idcat"]
+	nombrecat=request.form["nombrecat"]
+	db["Categoria"].update_one({"_id":ObjectId(idcat)},{"$set": { "cat": nombrecat }})
+	response={
+		'status':200,
+		'respuesta':"Categoria cambiada con exito"
+	}
+	return json.dumps(response)
 def ajaxcoincidencontraseñas():
 	print("llegue aqui-----------")
 	respuesta="false"
