@@ -107,8 +107,11 @@
       $("#contenidonot").prepend('<li><div class="notgen"><div class="notimg"><img src="'+urlimagen+'" class="imgcircular"></div><div class="nottext"><p>'+noti['urlprin']+' Publico:</p><h6> <a href="'+noti['url']+'" target="_blank">'+noti['titular']+' </a></h6><p>'+noti['parrafo'].substring(0,100)+'...</p></div></div></li>')
       barranot=document.getElementById('enotificaciones');
       barranot.classList.add('animate__animated','animate__shakeX');
-      var music = new Audio('/static/sounds/pop 01.wav');
-      music.play();
+      if(sound){
+        var music = new Audio('/static/sounds/pop 01.wav');
+        music.play();
+      }
+
 
       setTimeout(function() {
         barranot.classList.remove('animate__animated','animate__shakeX');}, 5000);

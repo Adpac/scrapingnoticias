@@ -14,6 +14,7 @@ db = client["Noticias"]
 def generarnotificacion( enviar):
         enviar["mensaje"]="nueva noticia"
         data=json.dumps(enviar, indent=4, sort_keys=True, default=str)
+        print(data)
         enviarnotificaciones.enviarmensaje(data)
 def generarfecha(texto):
     retornar=""
