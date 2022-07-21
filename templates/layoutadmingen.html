@@ -105,7 +105,7 @@ var sonido=false
       if(urlimagen == "" || !urlimagen.includes("http")){
         urlimagen="/static/Imagen_no_disponible.png";
       }
-      $("#contenidonot").prepend('<li><div class="notgen"><div class="notimg"><img src="'+urlimagen+'" class="imgcircular"></div><div class="nottext"><p>'+noti['urlprin']+' Publico:</p><h6> <a href="'+noti['url']+'" target="_blank">'+noti['titular']+' </a></h6><p>'+noti['parrafo'].substring(0,100)+'...</p></div></div></li>')
+      $("#contenidonot").prepend('<li><div class="notgen"><div class="notimg"><img src="'+urlimagen+'" class="imgcircular"></div><div class="nottext"><p>'+noti['urlprin']+' Publico:</p><h6> <a href="'+noti['url']+'" target="_blank">'+noti['titular']+' </a></h6><p>'+noti['parrafos'].substring(0,100)+'...</p></div></div></li>')
       barranot=document.getElementById('enotificaciones');
       barranot.classList.add('animate__animated','animate__shakeX');
       if(sound){
