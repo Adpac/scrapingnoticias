@@ -64,7 +64,7 @@ jsonmen={
     "urlimagen": "/image/image_gallery?img_id=5653242",
     "urlnoticia": "https://umsa.bo/web/guest/57/-/asset_publisher/sIpuYXdbB9M8/content/20-07/20142"
 }
-mensaje=json.dumps(jsonmen)
-enviarmensaje(mensaje)
-sio.disconnect()
+#mensaje=json.dumps(jsonmen)
+#enviarmensaje(mensaje)
+#sio.disconnect()
 

@@ -51,6 +51,7 @@
     });
     </script> 
 <script>
+
   
   ajaxsolicitarNotificaciones('adpac')
   function ajaxsolicitarNotificaciones(usuario){
@@ -83,6 +84,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 
 <script>
+var sonido=false
+ function activarsound(){
+  jQuery("#btnsound").empty()
+  if(sonido){
+    jQuery("#btnsound").append('<i class="fa fa-bell-slash"></i>')
+    sonido=false
+  }else{
+    jQuery("#btnsound").append('<i class="fa fa-bell"></i>')
+    sonido=true
+  }}
   const socket=io();
     socket.on('message', function (msg){
       //console.log("mensaje nuevo")
@@ -93,11 +104,15 @@
       if(urlimagen == "" || !urlimagen.includes("http")){
         urlimagen="/static/Imagen_no_disponible.png";
       }
-      $("#contenidonot").prepend('<li><div class="notgen"><div class="notimg"><img src="'+urlimagen+'" class="imgcircular"></div><div class="nottext"><p>'+noti['urlprin']+' Publico:</p><h6> <a href="'+noti['url']+'" target="_blank">'+noti['titular']+' </a></h6><p>'+noti['parrafo'].substring(0,100)+'...</p></div></div></li>')
+      $("#contenidonot").prepend('<li><div class="notgen"><div class="notimg"><img src="'+urlimagen+'" class="imgcircular"></div><div class="nottext"><p>'+noti['urlfuente']+' Publico:</p><h6> <a href="'+noti['urlnoticia']+'" target="_blank">'+noti['titular']+' </a></h6><p>'+noti['parrafos'].substring(0,100)+'...</p></div></div></li>')
       barranot=document.getElementById('enotificaciones');
       barranot.classList.add('animate__animated','animate__shakeX');
-      var music = new Audio('/static/sounds/pop 01.wav');
-      music.play();
+      if(sonido){
+        var music = new Audio('/static/sounds/pop 01.wav');
+        music.play();
+      }
+
+
       setTimeout(function() {
         barranot.classList.remove('animate__animated','animate__shakeX');}, 5000);
     })
@@ -127,14 +142,18 @@
                         </div>
                       </li>
                     <li class=" nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{url_for('agregar')}}">Añadir URLs</a>
+                        <a class="nav-link active" aria-current="page" href="{{url_for('agregar')}}">Añadir Urls</a>
                     </li>
                     <li class=" nav-item">
                       <a class="nav-link active" aria-current="page" href="{{url_for('gestionarpaginas')}}">Gestionar Páginas</a>
                   </li>
-                    
+                  <li class=" nav-item">
+                    <button class="btn" id="btnsound" onclick="activarsound()"><i class="fa fa-bell-slash"></i></button>
+                  </li>
                       <li class="nav-item dropdown">
+                        
                         <a href="#" class="nav-link dropdown-toggle" id="enotificaciones" data-toggle="dropdown" >Notificaciones </a>
+                
                         <ul class="dropdown-menu notify-drop">
 
                           <div class="drop-content" id="contenidonot" style="float:left">

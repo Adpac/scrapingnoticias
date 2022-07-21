@@ -452,5 +452,5 @@ def monitoriartodaslaspaginas():
             #loop = asyncio.new_event_loop()
             #loop.run_until_complete(monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
             monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]).result()
-monitorearpagina("https://umsa.bo")
-#monitoriartodaslaspaginas()
+#monitorearpagina("https://umsa.bo")
+monitoriartodaslaspaginas()
