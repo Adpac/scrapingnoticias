@@ -406,7 +406,7 @@ def añadirnoticia(noticia):
         if cantidadnot!=0:
             print("Se encontro la url en la base de datos")
 def monitorearpagina(urlpagina):
-    colpagina=db["paginanoticia"].find_one({"url":ObjectId(str(urlpagina))})
+    colpagina=db["paginanoticia"].find_one({"url":str(urlpagina)})
     #print(colpagina)
     listareglasportada=colpagina["portada"]
     listareglascategoria=colpagina["categorias"]
@@ -451,5 +451,5 @@ def monitoriartodaslaspaginas():
             #loop = asyncio.new_event_loop()
             #loop.run_until_complete(monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]))
             monitorearcat(urlprincipal,categoria["url"],categoria["idcategoria"],categoria["idregla"]).result()
-#monitorearpagina("https://www.eldiario.net")
-monitoriartodaslaspaginas()
+monitorearpagina("https://umsa.bo")
+#monitoriartodaslaspaginas()

@@ -51,16 +51,7 @@
     });
     </script> 
 <script>
-  var sonido=false
- function activarsound(){
-  jQuery("#btnsound").empty()
-  if(sonido){
-    jQuery("#btnsound").append('<i class="fa fa-bell-slash"></i>')
-    sonido=false
-  }else{
-    jQuery("#btnsound").append('<i class="fa fa-bell"></i>')
-    sonido=true
-  }
+
   
   }
   ajaxsolicitarNotificaciones('adpac')
@@ -94,6 +85,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 
 <script>
+var sonido=false
+ function activarsound(){
+  jQuery("#btnsound").empty()
+  if(sonido){
+    jQuery("#btnsound").append('<i class="fa fa-bell-slash"></i>')
+    sonido=false
+  }else{
+    jQuery("#btnsound").append('<i class="fa fa-bell"></i>')
+    sonido=true
+  }
   const socket=io();
     socket.on('message', function (msg){
       //console.log("mensaje nuevo")
