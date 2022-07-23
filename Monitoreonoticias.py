@@ -13,7 +13,7 @@ client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.
 db = client["Noticias"]
 def generarnotificacion( enviar):
         enviar["mensaje"]="nueva noticia"
-        data=json.dumps(enviar)
+        data=json.dumps(enviar, indent=4, sort_keys=True, default=str)
         print("888888888888888888")
         print(data)
         enviarnotificaciones.enviarmensaje(data)
