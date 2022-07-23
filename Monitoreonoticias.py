@@ -13,7 +13,7 @@ client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.
 db = client["Noticias"]
 def generarnotificacion( enviar):
         enviar["mensaje"]="nueva noticia"
-        data=json.dumps(enviar, indent=4, sort_keys=True, default=str)
+        data=json.dumps(enviar)
         print("888888888888888888")
         print(data)
         enviarnotificaciones.enviarmensaje(data)
@@ -298,6 +298,8 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 print("error fecha categoria")
             try:
                 urlimagen=listaimg[contador]
+                if not urlprincipal in urlimagen:
+                    urlimagen=urlprincipal+urlimagen
             except:
                 print("error imagen categoria")
                 urlimagen=""

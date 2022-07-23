@@ -52,7 +52,7 @@
     </script> 
 <script>
 
-  
+
   ajaxsolicitarNotificaciones('adpac')
   function ajaxsolicitarNotificaciones(usuario){
     $.ajax({
@@ -141,12 +141,21 @@ var sonido=false
                           <a class="dropdown-item" href="{{url_for('cerrarsesion')}}">Cerrar sesion</a>
                         </div>
                       </li>
-                    <li class=" nav-item">
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Opciones de Administrador
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
                         <a class="nav-link active" aria-current="page" href="{{url_for('agregar')}}">Añadir Urls</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="nav-link active" aria-current="page" href="{{url_for('gestionarpaginas')}}">Gestionar Páginas</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="nav-link active" aria-current="page" href="{{url_for('gestionarcategorias')}}">Gestionar Categorias</a>
+                        <div class="dropdown-divider"></div>
+
+                      </div>
                     </li>
-                    <li class=" nav-item">
-                      <a class="nav-link active" aria-current="page" href="{{url_for('gestionarpaginas')}}">Gestionar Páginas</a>
-                  </li>
+ 
                   <li class=" nav-item">
                     <button class="btn" id="btnsound" onclick="activarsound()"><i class="fa fa-bell-slash"></i></button>
                   </li>

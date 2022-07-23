@@ -27,55 +27,55 @@ xphashtags="{{reglainterna['xprhashtags']}}"
         <input type="hidden" name="urlexterna" value="{{urlext}}">
         <input type="hidden" name="categoria" value="{{categoria}}">
         <input type="hidden" name="reglaex" id="reglaex" value="ninguno">
-        <table marcar="nopintar" width="100%">
+        <table marcar="nopintar" id="tablaxp" width="100%">
             <tbody marcar="nopintar">
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Titular de la noticia</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(1)" id="pintartag1" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input1" onkeyup="pintarelemento(1)" name="input1"></td>
-                    <td marcar="nopintar"><div id="datos1" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input1">Titular de la noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(1)" id="pintartag1" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath titular"  marcar="nopintar" id="input1" onkeyup="pintarelemento(1)" name="input1"></td>
+                    <td marcar="nopintar"><div id="datos1"marcar="nopintar" class="datosxpath"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Resumen de la Noticia</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(2)" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input2" onkeyup="pintarelemento(2)" name="input2"></td>
-                    <td marcar="nopintar"><div id="datos2" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input2">Resumen de la Noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(2)" id="pintartag2" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath resumen"  marcar="nopintar" id="input2" onkeyup="pintarelemento(2)" name="input2"></td>
+                    <td marcar="nopintar"><div id="datos2" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Imagen de la noticia</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(3)" id="pintartag3" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input3" onkeyup="pintarelemento(3)" name="input3"></td>
-                    <td marcar="nopintar"><div id="datos3" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar"for="input3">Imagen de la noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(3)" id="pintartag3" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text"autocomplete="off" marcar="nopintar" placeholder="Xpath imagen"  id="input3" onkeyup="pintarelemento(3)" name="input3"></td>
+                    <td marcar="nopintar"><div id="datos3" class="datosxpath" marcar="nopintar"> </div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Descripción de la imagen</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(4)" id="pintartag4" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input4" onkeyup="pintarelemento(4)" name="input4"></td>
-                    <td marcar="nopintar"><div id="datos4" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input4">Descripción de la imagen</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(4)" id="pintartag4" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath descripcion de la imagen"  marcar="nopintar" id="input4" onkeyup="pintarelemento(4)" name="input4"></td>
+                    <td marcar="nopintar"><div id="datos4" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Redactor de la noticia</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(5)" id="pintartag5" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input5" onkeyup="pintarelemento(5)" name="input5"></td>
-                    <td marcar="nopintar"><div id="datos5" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input5">Redactor de la noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(5)" id="pintartag5" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath redactor"  marcar="nopintar" id="input5" onkeyup="pintarelemento(5)" name="input5"></td>
+                    <td marcar="nopintar"><div id="datos5" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Fecha y hora de la noticia</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(6)" id="pintartag6" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input6" onkeyup="pintarelemento(6)" name="input6"></td>
-                    <td marcar="nopintar"><div id="datos6" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input6">Fecha y hora de la noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(6)" id="pintartag6" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath fecha"  marcar="nopintar" id="input6" onkeyup="pintarelemento(6)" name="input6"></td>
+                    <td marcar="nopintar"><div id="datos6" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Parrafos de la noticia</td>
-                    <td marcar="nopintar"><button  type="button" onclick="seleccionarcampo(7)" id="pintartag7" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input7" onkeyup="pintarelemento(7)" name="input7"></td>
-                    <td marcar="nopintar"><div id="datos7" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input7">Parrafos de la noticia</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(7)" id="pintartag7" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" autocomplete="off" placeholder="Xpath parrafos"  marcar="nopintar" id="input7" onkeyup="pintarelemento(7)" name="input7"></td>
+                    <td marcar="nopintar"><div id="datos7" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
                 <tr marcar="nopintar">
-                    <td marcar="nopintar">Hashtags</td>
-                    <td marcar="nopintar"><button type="button" onclick="seleccionarcampo(8)" id="pintartag8" marcar="nopintar">Seleccionar</button></td>
-                    <td marcar="nopintar"> <input type="text" marcar="nopintar" id="input8" onkeyup="pintarelemento(8)" name="input8"></td>
-                    <td marcar="nopintar"><div id="datos8" class="datosxpath"></div></div></td>
+                    <td marcar="nopintar"><label marcar="nopintar" for="input8">Hashtags</label></td>
+                    <td marcar="nopintar"><button class="btnsel" type="button" onclick="seleccionarcampo(8)" id="pintartag8" marcar="nopintar">Seleccionar</button></td>
+                    <td marcar="nopintar"> <input type="text" placeholder="Xpath Hashtags"  marcar="nopintar" id="input8" onkeyup="pintarelemento(8)" name="input8"></td>
+                    <td marcar="nopintar"><div id="datos8" autocomplete="off" class="datosxpath" marcar="nopintar"></div></div></td>
                 </tr>
             </tbody>
 
@@ -90,6 +90,7 @@ xphashtags="{{reglainterna['xprhashtags']}}"
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="/static/scripts/selectorxpathnoticias.js" ></script>
 <script>
+    
     var editar="{{editar}}"
     if(editar!="ninguno"){
         console.log("Regla interna.....................")

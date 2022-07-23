@@ -51,9 +51,37 @@ def scrapingnoticias():
 			Monitoreonoticias.monitoriartodaslaspaginas()
 		except:
 			print("ocurrio un error")
-
 tarea=threading.Thread(target=scrapingnoticias).start()
+def obtenerreglaurlcat(url):
+	regla=""
+	urlarr=url.split("/")
+	urlprin=urlarr[0]+"//"+urlarr[2]
+	print("//////////")
+	print("urlprin", urlprin)
+	pagina=db.paginanoticia.find_one({"url":urlprin})
+	print("pagina: ",pagina)
+	if pagina != None:
+		arrayurls=pagina["categorias"]
+		for urlsec in arrayurls:
+			if urlsec["url"]==url:
+				regla=urlsec["idregla"]
+				break
+	return regla
 
+def obtenerreglaurlport(url):
+	regla=""
+	urlarr=url.split("/")
+	urlprin=urlarr[0]+"//"+urlarr[2]
+	print("//////////")
+	print("urlprin", urlprin)
+	pagina=db.paginanoticia.find_one({"url":urlprin})
+	if pagina != None:
+		arrayurls=pagina["portada"]
+		for urlsec in arrayurls:
+			if urlsec["urlportada"]==url:
+				regla=urlsec["idregla"]
+				break
+	return regla
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
 			"xpathurl":xpathurl,
@@ -83,6 +111,7 @@ async def cargarpagina(urlpagina):
 			else:
 				contenidopag=contenidopag.replace('"'+link+'"','"'+ str(protocolo+link)+'"')
 	#contenidopag=re.sub('<script(.|\n)*?script>', '', contenidopag)
+	#contenidopag=re.sub('<body(.|\n)*?>', '<body onbeforeunload="return myFunction()">', contenidopag)
 	print("se cargo la pagina web")
 	try:
 		await asession.close()
@@ -186,14 +215,18 @@ def about():
 	return render_template('about.html')
 @app.route('/gestionarpaginas')
 def gestionarpaginas():
-	listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
-
-	return render_template('gestionarpaginas.html', listapaginanoticias=listapaginanoticias)
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador") :
+		listapaginanoticias=list(db.paginanoticia.find({},{"url":1,"_id":0}))
+		return render_template('gestionarpaginas.html', listapaginanoticias=listapaginanoticias)
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 @app.route('/gestionarcategorias')
 def gestionarcategorias():
-	listacat=list(db.Categoria.find({},))
-
-	return render_template('gestionarcategorias.html', listacat=listacat)
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador") :
+		listacat=list(db.Categoria.find({},))
+		return render_template('gestionarcategorias.html', listacat=listacat)
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 @app.route('/editarpagina',methods=['GET'])
 def editarpagina():
 	url = request.args.get('url')
@@ -237,13 +270,11 @@ def validariniciarsesion():
 				print("redireccionando...")
 				return redirect(url_for('home'))
 			else:
-				mensaje="contraseña no valida"
-				print(mensaje)
-				return redirect(url_for('iniciarsesion',mensaje= "Contraseña no valida"))
+
+				return redirect(url_for('iniciarsesion',mensaje= "Nombre de usuario no valido y/o contraseña no valida"))
 		else:
-			mensaje="Usuario no valido"
-			print(mensaje)
-			return redirect(url_for('iniciarsesion', mensaje= "Nombre de usuario no valido"))
+
+			return redirect(url_for('iniciarsesion', mensaje= "Nombre de usuario no valido y/o contraseña no valida"))
 
 	
 @app.route('/registro')
@@ -336,6 +367,8 @@ def reglascategoria():
 		#asyncio.set_event_loop(loop)
 		#texto=loop.run_until_complete(cargarpagina(url))
 		#loop.close()
+	
+
 	arrayurlext=url.split("/")
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"categoria"}))
@@ -349,9 +382,15 @@ def reglascategoria():
 	#Entre la parte 1 y la 2 concatenamos css y scripts
 	#entre la parte2 y la 3 concatenamos la cabecera
 	dochtml=css+texto
-	
-	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
-	return response
+	reglaext=obtenerreglaurlcat(url)
+	print("regla externa:,,",reglaext)
+	if reglaext!="":
+		print("llegue aqui.....")
+		response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=True, idregla=reglaext))
+		return response
+	else:
+		response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
+		return response
 	
 @app.route('/editreglascategoria', methods=['GET'])
 def editreglascategoria():
@@ -381,14 +420,10 @@ def editreglascategoria():
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
 	#print(iniciobody.end)
-	parte1=texto[0:iniciohead.end()]
 
-	parte2=texto[iniciohead.end():iniciobody.end()]
-
-	parte3=texto[iniciobody.end():]
 	#Entre la parte 1 y la 2 concatenamos css y scripts
 	#entre la parte2 y la 3 concatenamos la cabecera
-	dochtml=css+parte1+css+parte2+parte3
+	dochtml=css+texto
 	
 	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar, idregla=idregla))
 	return response
@@ -410,7 +445,7 @@ def editreglasportada():
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
 	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"portada"}))
 	#print("Lista reglas: ",listareglas)
-	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpath.css">'
+	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
 
 	iniciobody=re.search("<body.*>",texto)
 	iniciohead=re.search("<head.*>",texto)
@@ -472,8 +507,11 @@ def reglasnoticia():
 @app.route('/agregar')
 #Redireccion para agregar pagina
 def agregar():
-	listacategorias=list(db.Categoria.find())
-	return render_template('agregar.html',title="agregar", listacategorias=listacategorias)
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
+		listacategorias=list(db.Categoria.find())
+		return render_template('agregar.html',title="agregar", listacategorias=listacategorias)
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
 @app.route('/añadirportada', methods=['GET', 'POST'])
 #al momento de agregar la nueva pagina llenaremos un formulario para identificar los patrones de la misma
@@ -501,7 +539,15 @@ def añadirportada():
 		parte2=texto[iniciohead.end():iniciobody.end()]
 		parte3=texto[iniciobody.end():]
 		documento=css+parte1+parte2+parte3
-	return render_template(direccion, title="evaluarpag", url=url, texto=documento)
+	reglaportada=obtenerreglaurlport(url)
+	if reglaportada!="":
+		urlarr=url.split("/")
+		urlprin=urlarr[0]+"//"+urlarr[2]
+		listareglas=list(db["Reglas"].find({"urlprincipal":urlprin, "tiporegla":"portada"}))
+		response=make_response(render_template('addportada.html',title="evaluarpag", debug=True, url=url, texto=documento, listareglas=listareglas, editar=True, idregla=reglaportada))
+		return response
+	else:
+		return render_template(direccion, title="evaluarpag", url=url, texto=documento)
 
 @app.route('/validarportada', methods=['GET', 'POST'])
 def validarportada():
@@ -885,8 +931,11 @@ def subirpagina():
 	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec=mensajesec )
 @app.route("/gestionarusuarios")
 def gestionarusuarios():
-	listausuarios=list(db.usuario.find({},{"contraseña":0}))
-	return render_template("gestionarusuarios.html", title="gestionar usuarios", listausuarios=listausuarios)
+	if session.get('type') !=None and session['type']=="admingen":
+		listausuarios=list(db.usuario.find({},{"contraseña":0}))
+		return render_template("gestionarusuarios.html", title="gestionar usuarios", listausuarios=listausuarios)
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
 @app.route("/recibirnot", methods=["POST"])
 def recibirnot():
@@ -1139,7 +1188,7 @@ def ajaxeliminarusuario():
 		'respuesta':"Usuario eliminado"
 	}
 	return json.dumps(response)
-@app.route("/ajaxcoincidencontraseñas", methods=["POST"])
+
 @app.route("/ajaxeditarcategoria", methods=["POST"])
 def ajaxeditarcategoria():
 	idcat=request.form["idcat"]
@@ -1150,6 +1199,7 @@ def ajaxeditarcategoria():
 		'respuesta':"Categoria cambiada con exito"
 	}
 	return json.dumps(response)
+@app.route("/ajaxcoincidencontraseñas", methods=["POST"])
 def ajaxcoincidencontraseñas():
 	print("llegue aqui-----------")
 	respuesta="false"
