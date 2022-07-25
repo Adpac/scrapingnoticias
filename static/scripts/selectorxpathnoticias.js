@@ -2,6 +2,26 @@
 
 
 var posicion="arriba";
+function xpseleccionatag(xpath){
+    var retornar=""
+    var posfin=xpath.lastIndexOf("/")
+    utlimoel=xpath.substring(posfin)
+    console.log("UE: "+utlimoel)
+    if(utlimoel.includes("@") || utlimoel.includes("text()")){
+        retornar=utlimoel
+    }
+    return retornar
+}
+function retornarultimoelementoxpath(xpath){
+    var retornar=""
+    var posfin=xpath.lastIndexOf("/")
+    utlimoel=xpath.substring(posfin)
+    console.log("UE: "+utlimoel)
+    
+    retornar=utlimoel
+    
+    return retornar
+}
 function cambiarposicion(){
     if(posicion=="arriba"){
         document.getElementById("xpathmenu").setAttribute("class","xpathmenuabajo")
@@ -264,6 +284,11 @@ function optimizarxpath(xpathentrada){
                     }
         
             if(xpathentrada!=""){
+                var tag=xpseleccionatag(xpathentrada)
+                console.log("tag:"+tag)
+                if(tag!=""){
+                    xpathentrada=xpathentrada.replace(tag,"")
+                }
                 listapint=getElementsByXPath2(xpathentrada);
                 textoxpath=""
                 for(var i=0; i<listapint.length; i++){
@@ -271,9 +296,27 @@ function optimizarxpath(xpathentrada){
                     element.style.backgroundColor=listacolores[numinput-1];
                     element.setAttribute("seleccion","seleccion"+numinput);
                     element.style.border="thick solid "+listacolores[numinput-1];
-                    textoxpath=textoxpath+element.innerText+" ";
-                    if(numinput==3){
-                        textoxpath=textoxpath+element.src+" ";
+                    if(tag==""){
+                        textoxpath=textoxpath+element.innerText+" ";
+                        if(numinput==1 && retornarultimoelementoxpath(xpathentrada).includes("/a")){
+                            textoxpath=textoxpath+element.href+" ";
+                        }
+                        if(numinput==3){
+                            textoxpath=textoxpath+element.src+" ";
+                        }
+                    }else{
+                        
+                        if(tag.includes("@")){
+                            textoatr=element.getAttribute(tag.replace("/@",""))
+                            if(textoatr!=null){
+                                textoxpath=textoxpath+textoatr
+                            }
+                        }else{
+                            textoxpath=textoxpath+element.innerText+" ";
+                        }
+                       
+
+                        
                     }
                 }
                 jQuery('#datos'+numinput).empty();

@@ -51,7 +51,7 @@ def scrapingnoticias():
 			Monitoreonoticias.monitoriartodaslaspaginas()
 		except:
 			print("ocurrio un error")
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 def obtenerreglaurlcat(url):
 	regla=""
 	urlarr=url.split("/")
@@ -67,7 +67,13 @@ def obtenerreglaurlcat(url):
 				regla=urlsec["idregla"]
 				break
 	return regla
-
+def atributoenxpath(xpath):
+	retornar=""
+	posfin=str(xpath).rfind("/")
+	ultimoel=xpath[posfin:]
+	if("@" in ultimoel or "text()" in ultimoel):
+		retornar=ultimoel
+	return retornar
 def obtenerreglaurlport(url):
 	regla=""
 	urlarr=url.split("/")
@@ -580,7 +586,11 @@ def validarportada():
 		}
 	if request.form.get("continuarform"):
 		print("obteniendo enlace")
-		lurlnot=consultarxpath(urlportada,str(xpathurl)+"//@href").result()
+		tag=atributoenxpath(xpathurl)
+		if tag=="":
+			lurlnot=consultarxpath(urlportada,str(xpathurl)+"//@href").result()
+		else:
+			lurlnot=consultarxpath(urlportada,str(xpathurl)).result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
 		#loop = asyncio.new_event_loop()
 		#asyncio.set_event_loop(loop)
@@ -700,7 +710,12 @@ def validarurlcategoria():
 		}
 	if request.form.get("continuarform"):
 		#print("obteniendo enlace")
-		lurlnot=consultarxpath(urlcategoria,str(xpathurl)+"//@href").result()
+		tag= atributoenxpath(xpathurl)
+		lurlnot=""
+		if tag=="":
+			lurlnot=consultarxpath(urlcategoria,str(xpathurl)+"//@href").result()
+		else:
+			lurlnot=consultarxpath(urlcategoria,str(xpathurl)).result()
 		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
 		#loop = asyncio.new_event_loop()
 		#asyncio.set_event_loop(loop)

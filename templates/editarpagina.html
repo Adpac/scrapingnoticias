@@ -36,7 +36,7 @@ Editar Pagina: {{paginanoticia['url']}}
         <tr class="table-light" urlport="{{portada['urlportada']}}">
             <th scope="row">{{loop.index0 +1}}</th>
             <td>{{portada['urlportada']}}</td>
-            <td><a class="btn btn-primary" href="{{url_for('editreglasportada')}}?urlportada={{portada['urlportada']}}&idr={{portada['idregla']}}">Editar Regla</a></td>
+            <td><a class="btn btn-primary" href="{{url_for('editreglasportada')}}?urlportada={{portada['urlportada']}}&idr={{portada['idregla']}}">Editar Parametros</a></td>
             <td><button class="btn btn-primary" onclick="eliminarportada('{{portada['urlportada']}}')">Eliminar</button></td>
         </tr>
         {% endfor %}
@@ -49,7 +49,7 @@ Editar Pagina: {{paginanoticia['url']}}
           <th scope="col">#</th>
           <th scope="col">Url Categoria</th>
           <th scope="col">Categoria</th>
-          <th scope="col">Editar Reglas</th>
+          <th scope="col">Editar Parametross</th>
           <th scope="col">Eliminar</th>
         </tr>
       </thead>
@@ -72,7 +72,7 @@ Editar Pagina: {{paginanoticia['url']}}
                     {% endfor%}
                 </select>
               </td>
-              <td><a class="btn btn-primary" href="{{url_for('editreglascategoria')}}?urlcategoria={{urlcategoria['url']}}&categoria={{urlcategoria['idcategoria']}}&idr={{urlcategoria['idregla']}}">Editar Regla</a></td>
+              <td><a class="btn btn-primary" href="{{url_for('editreglascategoria')}}?urlcategoria={{urlcategoria['url']}}&categoria={{urlcategoria['idcategoria']}}&idr={{urlcategoria['idregla']}}">Editar Parametros</a></td>
               <td><button class="btn btn-primary" onclick="eliminarcategoria('{{urlcategoria['url']}}')">Eliminar</button></td>
           </tr>
           {% endfor %}

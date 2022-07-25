@@ -177,7 +177,7 @@ document.body.addEventListener("click",(e)=>{
             }
             document.getElementById("input"+seleccion).value=xpathoptim
             
-            pintarelementos(seleccion);
+            pintarelemento(seleccion);
             seleccionarcampo(seleccion);
         }
     }
@@ -478,7 +478,7 @@ function cambioregla(codform){
             text: "Recuerde que esta regla es utilizada por diferentes enlaces, si selecciona crear nueva regla solo se aplicaran los cambios a esta URL ",
             showCancelButton: true,
             showCloseButton: true,
-            confirmButtonText: 'Editar regla',
+            confirmButtonText: 'Editar Parametros',
             cancelButtonText: `Crear nueva regla`,
         })
         .then(function() {
@@ -508,3 +508,5 @@ function cambioregla(codform){
 }
    
 </script>
+
+

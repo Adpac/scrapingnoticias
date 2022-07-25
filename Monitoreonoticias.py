@@ -11,6 +11,13 @@ import enviarnotificaciones
 from unsync import unsync
 client=MongoClient("mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority")
 db = client["Noticias"]
+def atributoenxpath(xpath):
+	retornar=""
+	posfin=str(xpath).rfind("/")
+	ultimoel=xpath[posfin:]
+	if("@" in ultimoel or "text()" in ultimoel):
+		retornar=ultimoel
+	return retornar
 def generarnotificacion( enviar):
         enviar["mensaje"]="nueva noticia"
         data=json.dumps(enviar, indent=4, sort_keys=True, default=str)
@@ -107,48 +114,53 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     print("reglaportada: ",reglaportada)
     #print("xpathurl: ",reglaportada["xpathurl"])
     try:
-        urlnoticiaportada=r.html.xpath(reglaportada["xpathurl"]+"/@href")[0]
+        if atributoenxpath(reglaportada["xpathurl"])=="":
+            urlnoticiaportada=r.html.xpath(reglaportada["xpathurl"]+"/@href")[0]
+        else:
+            urlnoticiaportada=r.html.xpath(reglaportada["xpathurl"])[0]
         if not("http" in urlnoticiaportada and urlnoticiaportada!=""):
             urlnoticiaportada=urlprincipal+urlnoticiaportada
     except(Exception):
         print("error al cargar url")
     try:
-        titularportada=r.html.xpath(reglaportada["xpathtitular"]+"/text()")[0]
+        if atributoenxpath(reglaportada["xpathtitular"])=="":
+            titularportada=r.html.xpath(reglaportada["xpathtitular"]+"/text()")[0]
+        else:
+            titularportada=r.html.xpath(reglaportada["xpathtitular"])[0]
     except(Exception):
         print("error al cargar titular")
     try:
-        listfecha=r.html.xpath(reglaportada["xpathfecha"]+"/text()")
+        if atributoenxpath(reglaportada["xpathfecha"])=="":
+            listfecha=r.html.xpath(reglaportada["xpathfecha"]+"/text()")
+        else:
+            listfecha=r.html.xpath(reglaportada["xpathfecha"])
         for f in listfecha:
             fecha=fecha+f
     except(Exception):
         print("error al cargar fecha")
     try:
-        imagen=r.html.xpath(reglaportada["xpathimg"]+"/@data-srcset")[0]
-    except(Exception):
-        print("error al cargar imagen (srcset)")
-        print(Exception)
-    try:
-        if imagen=="" or imagen==None: 
+        if atributoenxpath(reglaportada["xpathimg"])=="":
             imagen=r.html.xpath(reglaportada["xpathimg"]+"/@src")[0]
-            if not urlprincipal in imagen:
-                imagen=urlprincipal+imagen
+        else:
+            imagen=r.html.xpath(reglaportada["xpathimg"])[0]
+        if not urlprincipal in imagen:
+            imagen=urlprincipal+imagen
+        
     except(Exception):
         print("error al cargar imagen (src)")
         print(Exception)
     try:
-        if imagen=="" or imagen==None: 
-            imagen=r.html.xpath(reglaportada["xpathimg"]+"/@href")[0]
-            if not urlprincipal in imagen:
-                imagen=urlprincipal+imagen
-    except(Exception):
-        print("error al cargar imagen (href)")
-        print(Exception)
-    try:
-        redactor=r.html.xpath(reglaportada["xpathredactor"]+"/text()")[0]
+        if atributoenxpath(reglaportada["xpathredactor"]):
+            redactor=r.html.xpath(reglaportada["xpathredactor"]+"/text()")[0]
+        else:
+            redactor=r.html.xpath(reglaportada["xpathredactor"])[0]
     except(Exception):
         print("error al cargar redactor")
     try:
-        descripcion=r.html.xpath(reglaportada["xpathdescripcion"]+"/text()")[0]
+        if atributoenxpath(reglaportada["xpathdescripcion"])=="":
+            descripcion=r.html.xpath(reglaportada["xpathdescripcion"]+"/text()")[0]
+        else:
+            descripcion=r.html.xpath(reglaportada["xpathdescripcion"])[0]
     except(Exception):
         print("error al cargar descripcion")
     print("tiporegla",reglaportada["tiporegla"])
@@ -173,61 +185,72 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":urlnoticiaportada})))
     if reglainterna!="" and urlnoticiaportada!="" and cantidadnot==0:
         r2 = await asession.get(urlnoticiaportada)
-        titularint=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
+        titularint=""
+        if(atributoenxpath(reglainterna["xptitular"])==""):
+            titularint=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
+        else:
+            titularint=r2.html.xpath(reglainterna["xptitular"])[0]
         if titularint!="" and noticia["titular"]=="":
             noticia["titular"]=titularint
         try:
-            resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
+            resumen=""
+            if atributoenxpath(reglainterna["xpresumen"])=="":
+                resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
+            else:
+                resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
             if resumen!="":
                 noticia["resumen"]=resumen
         except(Exception):
             print("error al cargar resumen interno")
+
         try:
-            urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@data-srcset")[0]
-        except(Exception):
-            print("error al cargar imagen (data srcset")
-            print(Exception)
-        try:
-            if urlimagenint=="" or urlimagenint==None: 
+            if atributoenxpath(reglainterna["xpimg"])=="": 
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
+            else:
+                urlimagenint=r2.html.xpath(reglainterna["xpimg"])[0]
         except(Exception):
             print("error al cargar imagen (src)")
             print(Exception)
-        try:
-            if urlimagenint=="" or urlimagenint==None: 
-                urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@href")[0]
-        except(Exception):
-            print("error al cargar imagen (href)")
-            print(Exception)
+
         if urlimagenint!="" and noticia["urlimagen"]=="":
             noticia["urlimagen"]=urlimagenint
         try:
-            desimagen=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
+            if atributoenxpath(reglainterna["xpdesimg"])=="":
+                desimagen=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
+            else:
+                desimagen=r2.html.xpath(reglainterna["xpdesimg"])[0]
             noticia["desimagen"]=desimagen
         except(Exception):
             print("error al cargar descripcion img int")
             print(Exception)
         try:
-            redactor=r2.html.xpath(reglainterna["xpredactor"]+"/text()")[0]
+            if atributoenxpath(reglainterna["xpredactor"])=="":
+                redactor=r2.html.xpath(reglainterna["xpredactor"]+"/text()")[0]
+            else:
+                redactor=r2.html.xpath(reglainterna["xpredactor"])[0]
             if redactor!="" and noticia["redactor"]=="":
                 noticia["redactor"]=redactor
         except(Exception):
             print("error al cargar redactor interno")
         try:
             fechaint=""
-            listfechaint=r2.html.xpath(reglainterna["xpfecha"]+"/text()")
+            if atributoenxpath(reglainterna["xpfecha"])=="":
+                listfechaint=r2.html.xpath(reglainterna["xpfecha"]+"/text()")
+            else:
+                listfechaint=r2.html.xpath(reglainterna["xpfecha"])
             for fe in listfechaint:
                 fechaint=fechaint+fe
             if(generarfecha(fechaint)!="Fecha no valida"):
                 noticia["fecha"]=fechaint
         except(Exception):
             print("error al cargar fecha interna")
-        
-        listaparrafos=r2.html.xpath(reglainterna["xpparrafos"]+"/text()")
+        if atributoenxpath(reglainterna["xpparrafos"])=="":
+            listaparrafos=r2.html.xpath(reglainterna["xpparrafos"]+"/text()")
+        else:
+            listaparrafos=r2.html.xpath(reglainterna["xpparrafos"])
         for p in listaparrafos:
             parrafos=parrafos+p
         noticia["parrafos"]=parrafos
-        
         try:
             hashtags=r2.html.xpath(reglainterna["xpresumen"]+"/text()")
             noticia["hashtags"]=hashtags
@@ -257,16 +280,39 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
         print("no se pudo completar la carga de la pagina")
     """
     listaurls=[]
+    listastitulares=[]
+    listafechas=[]
+    listaimg=[]
+    listaredactores=[]
+    listadescripciones=[]
     try:
-        listaurls=r.html.xpath(reglascategoria["xpathurl"]+"/@href")
+        if atributoenxpath(reglascategoria["xpathurl"])=="":
+            listaurls=r.html.xpath(reglascategoria["xpathurl"]+"/@href")
+        else:
+            listaurls=r.html.xpath(reglascategoria["xpathurl"])
     except:
         print("Error en url")
     try:
-        listastitulares=r.html.xpath(reglascategoria["xpathtitular"]+"/text()")
-        listafechas=r.html.xpath(reglascategoria["xpathfecha"]+"/text()")
-        listaimg=r.html.xpath(reglascategoria["xpathimg"]+"/@src")
-        listaredactores=r.html.xpath(reglascategoria["xpathredactor"]+"/text()")
-        listadescripciones=r.html.xpath(reglascategoria["xpathdescripcion"]+"/text()")
+        if atributoenxpath(reglascategoria["xpathtitular"])=="":
+            listastitulares=r.html.xpath(reglascategoria["xpathtitular"]+"/text()")
+        else:
+            listastitulares=r.html.xpath(reglascategoria["xpathtitular"])
+        if atributoenxpath(reglascategoria["xpathfecha"])=="":
+            listafechas=r.html.xpath(reglascategoria["xpathfecha"]+"/text()")
+        else:
+            listafechas=r.html.xpath(reglascategoria["xpathfecha"])
+        if atributoenxpath(reglascategoria["xpathimg"])=="":
+            listaimg=r.html.xpath(reglascategoria["xpathimg"]+"/@src")
+        else:
+            listaimg=r.html.xpath(reglascategoria["xpathimg"])
+        if atributoenxpath(reglascategoria["xpathredactor"])=="":
+            listaredactores=r.html.xpath(reglascategoria["xpathredactor"]+"/text()")
+        else:
+            listaredactores=r.html.xpath(reglascategoria["xpathredactor"])
+        if atributoenxpath(reglascategoria["xpathdescripcion"])=="":
+            listadescripciones=r.html.xpath(reglascategoria["xpathdescripcion"]+"/text()")
+        else:
+            listadescripciones=r.html.xpath(reglascategoria["xpathdescripcion"])
     except:
         print("error al cargar datos externos")
     print("url:",urlcategoria)
@@ -314,54 +360,66 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
             if reglainterna!="" and reglainterna!="ninguno":
                 r2 = await asession.get(urlnot)
                 try:
-                    titular=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
+                    if atributoenxpath(reglainterna["xptitular"])=="":
+                        titular=r2.html.xpath(reglainterna["xptitular"]+"/text()")[0]
+                    else:
+                        titular=r2.html.xpath(reglainterna["xptitular"])[0]
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
+                    if atributoenxpath(reglainterna["xpresumen"])=="":
+                        resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
+                    else:
+                        resumen=r2.html.xpath(reglainterna["xpresumen"]+"/text()")[0]
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@data-srcset")[0]
-                except(Exception):
-                    print("error al cargar imagen srcset")
-                    print(Exception)
-                try:
-                    if urlimagen=="" or urlimagen==None: 
+                    if atributoenxpath(reglainterna["xpimg"]): 
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
-                        if not urlprincipal in urlimagen:
-                                urlimagen=urlprincipal+urlimagen
+                    else:
+                        urlimagen=r2.html.xpath(reglainterna["xpimg"])[0]
+                    if not urlprincipal in urlimagen:
+                        urlimagen=urlprincipal+urlimagen
                 except(Exception):
                     print("error al cargar imagen src")
                     print(Exception)
                 try:
-                    if urlimagen=="" or urlimagen==None: 
-                        urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@href")[0]
-                except:
-                    print("no se pudo cargar imagen href")
-                    print(Exception)
-                try:
-                    desimg=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
+                    if atributoenxpath(reglainterna["xpdesimg"])=="":
+                        desimg=r2.html.xpath(reglainterna["xpdesimg"]+"/text()")[0]
+                    else:
+                        desimg=r2.html.xpath(reglainterna["xpdesimg"])[0]
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    redactor=r2.html.xpath(reglainterna["xpredactor"]+"/text()")[0]
+                    if atributoenxpath(reglainterna["xpredactor"])=="":
+                        redactor=r2.html.xpath(reglainterna["xpredactor"]+"/text()")[0]
+                    else:
+                        redactor=r2.html.xpath(reglainterna["xpredactor"])[0]
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    listafecha=r2.html.xpath(reglainterna["xpfecha"]+"/text()")
+                    if atributoenxpath(reglainterna["xpfecha"])=="":
+                        listafecha=r2.html.xpath(reglainterna["xpfecha"]+"/text()")
+                    else:
+                        listafecha=r2.html.xpath(reglainterna["xpfecha"])
                     for fe in listafecha:
                         fecha=fecha+fe
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    listaparrafos=r2.html.xpath(reglainterna["xpparrafos"]+"/text()")
+                    if atributoenxpath(reglainterna["xpparrafos"])=="":
+                        listaparrafos=r2.html.xpath(reglainterna["xpparrafos"]+"/text()")
+                    else:
+                        listaparrafos=r2.html.xpath(reglainterna["xpparrafos"])
                     for p in listaparrafos:
                         parrafos=parrafos+p
                 except:
                     print("no se pudo cargar el titular")
                 try:
-                    hashtags=r2.html.xpath(reglainterna["xphashtags"]+"/text()")
+                    if atributoenxpath(reglainterna["xphashtags"])=="":
+                        hashtags=r2.html.xpath(reglainterna["xphashtags"]+"/text()")
+                    else:
+                        hashtags=r2.html.xpath(reglainterna["xphashtags"]+"/text()")
                 except:
                     print("no se pudo cargar el titular")
                 r2.close()

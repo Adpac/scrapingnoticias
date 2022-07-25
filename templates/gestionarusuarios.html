@@ -40,7 +40,10 @@ Gestionar Usuarios
             <td>{{usuario['ci']}}</td>
             <td>{{usuario['rol']}}</td>
             <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-usuario="{{usuario['usuario']}}" data-ci="{{usuario['ci']}}" data-nombres="{{usuario['nombres']}}" data-apellidos="{{usuario['apellidos']}}" data-rol="{{usuario['rol']}}" >Editar</button></td>
-            <td><button class="btn btn-primary" onclick="eliminarusuario('{{usuario['_id']}}')">Eliminar</button></td>
+            <td>{%if usuario['rol']!= "admingen"%}
+              <button class="btn btn-primary" onclick="eliminarusuario('{{usuario['_id']}}')">Eliminar</button>
+              {%endif%}
+              </td>
         </tr>
         {% endfor %}
 

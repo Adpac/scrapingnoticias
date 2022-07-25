@@ -177,6 +177,15 @@ function seleccionarcampo(campo){
         }
     }
 }
+function xpseleccionatag(xpath){
+    var retornar=""
+    var posfin=xpath.lastIndexOf("/")
+    utlimoel=xpath.substring(posfin)
+    if(utlimoel.includes("@") || utlimoel.includes("text()")){
+        retornar=utlimoel
+    }
+    return retornar
+}
 function pintarelementos(numinput){
 var entrada=document.getElementById("input"+numinput)
 var xpathentrada=entrada.value;
@@ -194,6 +203,12 @@ try {
     console.log(xpathentrada);
     textoxpath=""
     try{
+        var tag=xpseleccionatag(xpathentrada)
+        console.log("tag:"+tag)
+        if(tag!=""){
+            xpathentrada=xpathentrada.replace(tag,"")
+        }
+        
         listapint=getElementsByXPath(xpathentrada);
         entrada.setCustomValidity("");
         for(var i=0; i<listapint.length; i++){
@@ -201,13 +216,29 @@ try {
             element.style.backgroundColor=listacolores[numinput-1];
             element.setAttribute("seleccion","seleccion"+numinput);
             element.style.border="thick solid "+listacolores[numinput-1];
-            textoxpath=textoxpath+element.innerText+" ";
-            if(numinput==1){
-                textoxpath=textoxpath+element.href+" ";
+            
+            if(tag==""){
+                textoxpath=textoxpath+element.innerText+" ";
+                if(numinput==1){
+                    textoxpath=textoxpath+element.href+" ";
+                }
+                if(numinput==4){
+                    textoxpath=textoxpath+element.src+" ";
+                }
+            }else{
+                
+                if(tag.includes("@")){
+                    textoatr=element.getAttribute(tag.replace("/@",""))
+                    if(textoatr!=null){
+                        textoxpath=textoxpath+textoatr
+                    }
+                }else{
+                    textoxpath=textoxpath+element.innerText+" ";
+                }
+
+                
             }
-            if(numinput==4){
-                textoxpath=textoxpath+element.src+" ";
-            }
+
         }
     }catch(Exception){
         console.log("Error: "+xpathentrada)
