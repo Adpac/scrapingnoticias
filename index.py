@@ -51,7 +51,7 @@ def scrapingnoticias():
 			Monitoreonoticias.monitoriartodaslaspaginas()
 		except:
 			print("ocurrio un error")
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 def obtenerreglaurlcat(url):
 	regla=""
 	urlarr=url.split("/")
