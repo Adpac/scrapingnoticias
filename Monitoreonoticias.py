@@ -15,7 +15,7 @@ def atributoenxpath(xpath):
     retornar=False
     posfin=str(xpath).rfind("/")
     ultimoel=xpath[posfin:]
-    if("@" in ultimoel or "text()" in ultimoel):
+    if("/@" in ultimoel or "/text()" in ultimoel):
         retornar=True
     return retornar
 def generarnotificacion( enviar):
@@ -212,6 +212,8 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
             else:
                 urlimagenint=r2.html.xpath(reglainterna["xpimg"])[0]
+            if not urlprincipal in urlimagenint and not "//" in urlimagenint:
+                urlimagenint=urlprincipal+urlimagenint
         except(Exception):
             print("error al cargar imagen (src)")
             print(Exception)
@@ -289,6 +291,8 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
     listaimg=[]
     listaredactores=[]
     listadescripciones=[]
+    print("xpurl:",reglascategoria["xpathurl"])
+    print(atributoenxpath(reglascategoria["xpathurl"]))
     try:
         if not atributoenxpath(reglascategoria["xpathurl"]):
             listaurls=r.html.xpath(reglascategoria["xpathurl"]+"/@href")
@@ -383,7 +387,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                         urlimagen=r2.html.xpath(reglainterna["xpimg"]+"/@src")[0]
                     else:
                         urlimagen=r2.html.xpath(reglainterna["xpimg"])[0]
-                    if not urlprincipal in urlimagen:
+                    if not urlprincipal in urlimagen and not ("//" in urlimagen):
                         urlimagen=urlprincipal+urlimagen
                 except(Exception):
                     print("error al cargar imagen src")
@@ -462,6 +466,7 @@ def añadirnoticia(noticia):
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":noticia["urlnoticia"]})))
     print(noticia["urlnoticia"])
     print(noticia["titular"])
+    
     noticia["urlimagen"]=str(noticia["urlimagen"]).split(" ")[0]
     print(noticia["fecha"])
     if noticia["urlnoticia"]!="" and noticia["titular"]!="" and noticia["titular"]!="\n" and cantidadnot==0:
