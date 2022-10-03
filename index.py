@@ -47,14 +47,14 @@ def eliminarstopwords(texto):
 
 #Bot de monitoreo
 def scrapingnoticias():
-	import monitoreonoticia
+	import Monitoreonoticias
 	while(True):
 		time.sleep(60)
 		try:
-			monitoreonoticia.monitorearnoticias()
+			Monitoreonoticias.monitoriartodaslaspaginas()
 		except:
 			print("ocurrio un error")
-#tarea=threading.Thread(target=scrapingnoticias).start()
+tarea=threading.Thread(target=scrapingnoticias).start()
 
 #Encuentra los parametros Xpath de una URL tipo categoria
 def obtenerreglaurlcat(url):

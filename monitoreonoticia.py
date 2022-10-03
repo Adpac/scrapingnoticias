@@ -1,5 +1,6 @@
 from multiprocessing.connection import wait
 from ntpath import join
+import time
 from requestshtml import AsyncHTMLSession
 from requestshtml import HTMLSession
 from pymongo import MongoClient
@@ -62,7 +63,6 @@ def atributoenxpath(xpath):
     return retornar
 def recolectarnoticia(url, regla, noticia={}):
     #Este algoritmo se encarga de recolectar noticias mediante reglas o parametros xpath
-
     try:
         session = HTMLSession() 
         pagina = session.get(url)
@@ -177,7 +177,6 @@ def recolectarnoticia(url, regla, noticia={}):
 @unsync
 async def recolectarnoticiasmultiple(url, regla, idcategoria=""):
     #Este algoritmo se encarga de recolectar noticias mediante reglas o parametros xpath
-   
     #contador en caso de que se encuentren noticias repetidas
     listaurls=[]
     listatitulares=[]
@@ -262,6 +261,7 @@ async def recolectarnoticiasmultiple(url, regla, idcategoria=""):
         for urlnot in listaurls:
             print("------------")
             print("url:", urlnot)
+            urlnot=autocompletarurl(urlnot, urlfuente)
             #preguntamos si la url existe en la base de datos
             if not urlnoticiaexiste(urlnot):
                 titular=""
@@ -275,6 +275,7 @@ async def recolectarnoticiasmultiple(url, regla, idcategoria=""):
                     fecha=listafecha[conturls]
                 if len(listaimg)>conturls:
                     urlimagen=listaimg[conturls]
+                    urlimagen=autocompletarurl(urlimagen, urlfuente)
                 if len(listaredactor)>conturls:
                     redactor=listaredactor[conturls]
                 if len(listadescripcion)>conturls:
@@ -302,6 +303,7 @@ async def recolectarnoticiasmultiple(url, regla, idcategoria=""):
                 print("parrafos: ",str(noticia["parrafos"])[0:100],"...")
                 print("urlimagen: ", noticia["urlimagen"])
                 añadirnoticia(noticia)
+                noticia={}
             else:
                 print("La URL se encuentra en la Base de datos")
     except:
@@ -314,7 +316,8 @@ async def recolectarportada(url, regla):
     #contador en caso de que se encuentren noticias repetidas
     
     print("//////////////////////////////")
-    print(url)
+    print("portada: ",url)
+   
     print("cargando...")
     try:
         urlfuente=obtenerdominioprincipal(url)
@@ -348,6 +351,7 @@ async def recolectarportada(url, regla):
                     noticia["urlnoticia"]=pagina.html.xpath(regla["xpathurl"], first=True)
                 else:
                     noticia["urlnoticia"]=pagina.html.xpath(regla["xpathurl"]+"/@href",first=True)
+                noticia["urlnoticia"]=autocompletarurl(noticia["urlnoticia"], urlfuente)
         except:
             print("No se pudo cargar las URLs, existe un problema con el xpath: ",regla.get("xpathurl"))
         #cargando titular de la notica
@@ -375,6 +379,7 @@ async def recolectarportada(url, regla):
                     noticia["urlimagen"]=pagina.html.xpath(regla["xpathimg"], first=True)
                 else:
                     noticia["urlimagen"]=pagina.html.xpath(regla["xpathimg"]+"/@src", first=True)
+                noticia["urlimagen"]=autocompletarurl(noticia["urlimagen"], urlfuente)
         except:
             print("No se pudo cargar el las imagenes, existe un problema con el xpath: ",regla.get("xpathimg"))
         #cargando redactor de la imagen
@@ -403,8 +408,9 @@ async def recolectarportada(url, regla):
         except:
             print("No se pudo cerrar session")
         print("------------")
-        print("url:", noticia["urlnoticia"])
+        print(noticia)
         #preguntamos si la url existe en la base de datos
+
         if not urlnoticiaexiste(noticia["urlnoticia"]):
             if regla.get("reglainterna")!="" or regla.get("reglainterna")!=None:
                 noticia=recolectarnoticia(noticia["urlnoticia"],regla["reglainterna"],noticia)
@@ -429,13 +435,15 @@ def monitorearnoticias():
             urlport=port["urlportada"]
             reglaport=db.Reglas.find_one({"_id":ObjectId(str(port["idregla"]))})
             recolectarportada(urlport,reglaport)
+        time.sleep(5)
+        """
         categorias=paginanoticia["categorias"]
         for cat in categorias:
             urlcat=cat["url"]
             print("url: ",urlcat)
             idcat=cat["idcategoria"]
             reglacat=db.Reglas.find_one({"_id":ObjectId(str(cat["idregla"]))})
-            recolectarnoticiasmultiple(urlcat,reglacat,idcat)
+            recolectarnoticiasmultiple(urlcat,reglacat,idcat)"""
 """
 #prueba monitorear noticia
 urlnot="https://www.la-razon.com/santa-cruz/2022/08/01/rector-de-la-uagrm-propone-suspender-el-paro-civico-de-48-horas-en-santa-cruz/"
@@ -480,4 +488,5 @@ for pag in listapagnot:
     editarultimarevision(pag["url"])
     time.sleep(1)"""
 
-#monitorearnoticias()
+
+monitorearnoticias()

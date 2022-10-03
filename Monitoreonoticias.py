@@ -90,7 +90,6 @@ def generarfecha(texto):
 @unsync
 async def consultarportada(urlprincipal,urlportada, idreglap):
     print("inicio portada..............")
-    print("idregla: ",str(idreglap))
     reglaportada=db["Reglas"].find_one({"_id":ObjectId(str(idreglap))})
     asession = AsyncHTMLSession() 
     print("Url Portada:", urlportada)
@@ -163,7 +162,7 @@ async def consultarportada(urlprincipal,urlportada, idreglap):
         print("error al cargar descripcion")
     print("tiporegla",reglaportada["tiporegla"])
     reglainterna=reglaportada["reglainterna"]
-    
+    print("Url noticia portada: ",urlnoticiaportada)
     noticia={
         "urlfuente":urlprincipal,
         "urlnoticia":urlnoticiaportada,
@@ -326,6 +325,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
     contrep=0 #contador de las urls que ya se encuentran en la base de datos si son mas de dos pasamos a la siguiente categoria
     print("listaurls:",listaurls)
     for urlnot in listaurls:
+        print("Noticia: ",urlnot)
         if not("http" in urlnot and urlnot!=""):
                 urlnot=urlprincipal+urlnot
         cantidadnot=len(list(db["noticia"].find({"urlnoticia":urlnot})))
@@ -446,6 +446,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                 "hashtags":hashtags
                 }
             #print(noticia)
+            
             añadirnoticia(noticia)
             
         else:
@@ -461,9 +462,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
 
 def añadirnoticia(noticia):
     cantidadnot=len(list(db["noticia"].find({"urlnoticia":noticia["urlnoticia"]})))
-    print(noticia["urlnoticia"])
     print(noticia["titular"])
-    
     noticia["urlimagen"]=str(noticia["urlimagen"]).split(" ")[0]
     print(noticia["fecha"])
     if noticia["urlnoticia"]!="" and noticia["titular"]!="" and noticia["titular"]!="\n" and cantidadnot==0:
