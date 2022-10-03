@@ -54,7 +54,7 @@ def scrapingnoticias():
 			monitoreonoticia.monitorearnoticias()
 		except:
 			print("ocurrio un error")
-tarea=threading.Thread(target=scrapingnoticias).start()
+#tarea=threading.Thread(target=scrapingnoticias).start()
 
 #Encuentra los parametros Xpath de una URL tipo categoria
 def obtenerreglaurlcat(url):
