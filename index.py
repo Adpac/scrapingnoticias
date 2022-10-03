@@ -667,7 +667,8 @@ def validarportada():
 				#en caso de que la url principal de la pagina no exista
 				paginanoticia={
 					"url":urlprincipal,
-					"portada":[portada]
+					"portada":[portada],
+					"ultimarevision":datetime.now()- datetime.timedelta(days = 1)
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
 				mensaje="URL Añadida con exito"
@@ -797,7 +798,9 @@ def validarurlcategoria():
 				paginanoticia={
 					"url":urlprincipal,
 					"portada":[],
-					"categorias":[categoria]
+					"categorias":[categoria],
+					"ultimarevision":datetime.now()- datetime.timedelta(days = 1)
+
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
 				mensaje="URL Añadida con exito"
@@ -919,7 +922,8 @@ def subirpagina():
 				paginanoticia={
 					"url":urlprincipal,
 					"portada":[],
-					"categorias":[categoria]
+					"categorias":[categoria],
+					"ultimarevision":datetime.now()- datetime.timedelta(days = 1)
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
 		else:
@@ -949,7 +953,8 @@ def subirpagina():
 				paginanoticia={
 					"url":urlprincipal,
 					"portada":[portada],
-					"categorias":[]
+					"categorias":[],
+					"ultimarevision":datetime.now()- datetime.timedelta(days = 1)
 				}
 				db["paginanoticia"].insert_one(paginanoticia)
 				mensaje="Se añadio la URL"

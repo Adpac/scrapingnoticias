@@ -25,8 +25,8 @@ def generarnotificacion( enviar):
 def añadirnoticia(noticia):
     if not urlnoticiaexiste(noticia["urlnoticia"]):
         if noticia["urlnoticia"]!="" and noticia["titular"]!="" and noticia["titular"]!="\n":
-            #db["noticia"].insert_one(noticia)
-            #generarnotificacion(noticia)
+            db["noticia"].insert_one(noticia)
+            generarnotificacion(noticia)
             print("Noticia añadida")
         else:
             print("Ocurrio un problema al momento de añadir la noticia")
