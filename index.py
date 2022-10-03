@@ -47,11 +47,11 @@ def eliminarstopwords(texto):
 
 #Bot de monitoreo
 def scrapingnoticias():
-	import Monitoreonoticia
+	import monitoreonoticia
 	while(True):
 		time.sleep(60)
 		try:
-			Monitoreonoticias.monitorearnoticias()
+			monitoreonoticia.monitorearnoticias()
 		except:
 			print("ocurrio un error")
 tarea=threading.Thread(target=scrapingnoticias).start()
