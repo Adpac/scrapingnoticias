@@ -1,5 +1,4 @@
 
-from email.mime import image
 from requestshtml import AsyncHTMLSession
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -21,8 +20,6 @@ def atributoenxpath(xpath):
 def generarnotificacion( enviar):
         enviar["mensaje"]="nueva noticia"
         data=json.dumps(enviar, indent=4, sort_keys=True, default=str)
-        print("888888888888888888")
-        print(data)
         enviarnotificaciones.enviarmensaje(data)
 def generarfecha(texto):
     retornar=""
@@ -428,7 +425,7 @@ async def monitorearcat(urlprincipal,urlcategoria,categoria ,idreglascategoria):
                     if not atributoenxpath(reglainterna["xphashtags"]):
                         hashtags=r2.html.xpath(reglainterna["xphashtags"]+"/text()")
                     else:
-                        hashtags=r2.html.xpath(reglainterna["xphashtags"]+"/text()")
+                        hashtags=r2.html.xpath(reglainterna["xphashtags"])
                 except:
                     print("no se pudo cargar el titular")
                 r2.close()

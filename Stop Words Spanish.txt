@@ -1,3 +1,4 @@
+Palabra
 a
 actualmente
 adelante
@@ -341,7 +342,6 @@ ninguno
 ningunos
 ningún
 no
-none
 nos
 nosotras
 nosotros
@@ -433,7 +433,6 @@ seas
 segunda
 segundo
 según
-segun
 seis
 ser
 seremos

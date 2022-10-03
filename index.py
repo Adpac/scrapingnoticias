@@ -28,30 +28,35 @@ from requestshtml import HTMLSession
 from unsync import unsync
 from bson.objectid import ObjectId
 app = Flask(__name__)
-conectionurl="mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
+#Conexion a la base de datos
 app.config['CORS_HEADERS'] = 'application/json'
 app.config["MONGO_URI"] = "mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.secret_key = 'esto-es-una-clave-muy-secreta'
 mongodb_client = PyMongo(app)
 db = mongodb_client.db
-salt="nevermore"
+#Inicializando SocketIO
 socketio=SocketIO(app)
+#Cargando stop words
 swsp = pd.read_fwf('Stop Words Spanish.txt', header=None)
 stopwordsspanish=swsp[0].to_numpy()
 listasw=list(stopwordsspanish)
  
+#Elimina stop words dentro de un texto
 def eliminarstopwords(texto):
     return ' '.join([word for word in texto.split(' ') if word not in listasw])
 
+#Bot de monitoreo
 def scrapingnoticias():
-	import Monitoreonoticias
+	import Monitoreonoticia
 	while(True):
 		time.sleep(60)
 		try:
-			Monitoreonoticias.monitoriartodaslaspaginas()
+			Monitoreonoticias.monitorearnoticias()
 		except:
 			print("ocurrio un error")
 tarea=threading.Thread(target=scrapingnoticias).start()
+
+#Encuentra los parametros Xpath de una URL tipo categoria
 def obtenerreglaurlcat(url):
 	regla=""
 	urlarr=url.split("/")
@@ -67,6 +72,7 @@ def obtenerreglaurlcat(url):
 				regla=urlsec["idregla"]
 				break
 	return regla
+#Verifica si un Xpath posee un atributo como ser text(), @src, entre otros
 def atributoenxpath(xpath):
 	retornar=""
 	posfin=str(xpath).rfind("/")
@@ -74,6 +80,7 @@ def atributoenxpath(xpath):
 	if("@" in ultimoel or "text()" in ultimoel):
 		retornar=ultimoel
 	return retornar
+#Obtiene los parametros XPath de una URL tipo portada
 def obtenerreglaurlport(url):
 	regla=""
 	urlarr=url.split("/")
@@ -88,6 +95,8 @@ def obtenerreglaurlport(url):
 				regla=urlsec["idregla"]
 				break
 	return regla
+
+#edita los datos de una regla
 def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xpathredactor, xpathdescripcion):
 	db.Reglas.update_one({'_id': ObjectId(str(idregla))},{"$set":{
 			"xpathurl":xpathurl,
@@ -97,12 +106,12 @@ def editarreglaexterna(idregla, xpathurl, xpathtitular, xpathfecha, xpathimg, xp
 			"xpathredactor":xpathredactor,
 			"xpathdescripcion":xpathdescripcion
 			}})
+
+#Carga un sitio web incluyendo los scripts
 @unsync
 async def cargarpagina(urlpagina):
 	asession = AsyncHTMLSession() 
-
 	r = await asession.get(urlpagina,  verify=False)
-
 	contenidopag=r.html.html
 	arrayurlpag=urlpagina.split("/")
 	protocolo=arrayurlpag[0]
@@ -126,7 +135,7 @@ async def cargarpagina(urlpagina):
 		print("no se pudo cerrar session")
 	print("retornando")
 	return contenidopag
-
+#carga un sitio web de manera rapida
 @unsync
 async def cargarpaginarapida(urlpagina):
     asession = AsyncHTMLSession()
@@ -145,6 +154,7 @@ async def cargarpaginarapida(urlpagina):
 	#print("-----------")
 	#print(contenidopag)
     return contenidopag
+#Carga una pagina y devuelve un valor en base a un Xpath de entrada
 @unsync
 async def consultarxpath(urlpagina,xpath):
 	asession = AsyncHTMLSession() 
@@ -153,6 +163,7 @@ async def consultarxpath(urlpagina,xpath):
 	#print(respuesta)
 	await asession.close()
 	return respuesta
+#dada una lista de Urls, elimina enlaces no validos
 def limpiarenlaces(listaenlace, urlprincipal):
 	arrayurlpag=urlprincipal.split("/")
 	urlp=arrayurlpag[0]+"//"+arrayurlpag[2]
@@ -166,10 +177,8 @@ def limpiarenlaces(listaenlace, urlprincipal):
 			else:
 				listaaux.append(enlace)
 	return listaaux
-@app.route('/users',methods=['POST'])
-def create_user():
-	return{'message':'received'}
 
+#Ruta Home
 @app.route('/')
 def home():
 	print(__name__)
@@ -197,16 +206,19 @@ def home():
 
 	return render_template('home.html',Noticia=Noti, portada=portada,listacategorias=listacategorias, Noticiascat=Noticiascat, listapaginanoticias=listapaginanoticias, noticiaspagina=noticiaspagina)
 
+#Ruta cerrar sesion
 @app.route('/cerrarsesion')
 def cerrarsesion():
 	session.clear()
 	return redirect(url_for('home'))
 
+#Enviar notificaciones al usuario mediante SocketIO
 @socketio.on('message')
 def enviarnotificacion(msg):
 	print("mensaje: "+ msg)
 	send(msg,broadcast=True)
 
+#El usuario recibe las ultimas notificaciones
 @app.route("/ajaxsolicitarnoti", methods=['POST'])
 def ajaxsolicitarnoti():
 	user=request.form['user']
@@ -216,9 +228,11 @@ def ajaxsolicitarnoti():
 	respuesta=dumps(Noti)
 	return respuesta
 	
+#ruta Abotut
 @app.route('/about')
 def about():
 	return render_template('about.html')
+#ruta gestionar paginas
 @app.route('/gestionarpaginas')
 def gestionarpaginas():
 	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador") :
@@ -226,6 +240,7 @@ def gestionarpaginas():
 		return render_template('gestionarpaginas.html', listapaginanoticias=listapaginanoticias)
 	else:
 		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+#ruta gestionar categorias
 @app.route('/gestionarcategorias')
 def gestionarcategorias():
 	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador") :
@@ -233,6 +248,7 @@ def gestionarcategorias():
 		return render_template('gestionarcategorias.html', listacat=listacat)
 	else:
 		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+#ruta editar pagina
 @app.route('/editarpagina',methods=['GET'])
 def editarpagina():
 	url = request.args.get('url')
@@ -240,6 +256,7 @@ def editarpagina():
 	print(paginanoticia)
 	listacategorias=list(db.Categoria.find({}))
 	return render_template('editarpagina.html', paginanoticia=paginanoticia, listacategorias=listacategorias)
+#ruta buscar noticia
 @app.route('/buscarnoticia', methods=['POST'])
 def buscarnoticia():
 	if request.method=="POST":
@@ -249,6 +266,7 @@ def buscarnoticia():
 		Noti =list(dbnoticias.find({"$text": {"$search": consulta}}, { "score": { "$meta": "textScore" }}).sort([('score', {'$meta': 'textScore'})] ).limit(20))
 	
 	return render_template('busqueda.html', consulta=consulta, Noticia=Noti)
+#ruta inicio de sesion
 @app.route('/iniciarsesion')
 def iniciarsesion():
 	if 'mensaje' in request.args:
@@ -257,6 +275,7 @@ def iniciarsesion():
 		return render_template('iniciosesion.html', mensaje=mensaje)
 	else:
 		return render_template('iniciosesion.html')
+#ruta validar inicio de sesion, verifica si la sesion es correcta y el tipo de usuario
 @app.route('/validariniciarsesion', methods=['POST'])	
 def validariniciarsesion():
 	if request.method=="POST":
@@ -282,24 +301,17 @@ def validariniciarsesion():
 
 			return redirect(url_for('iniciarsesion', mensaje= "Nombre de usuario no valido y/o contraseña no valida"))
 
-	
-@app.route('/registro')
-def registro():
-	#Verificamos si hay un mensaje
-	if 'mensaje' in request.args:
-		mensaje=request.args["mensaje"]
-		print("Mensaje:", mensaje)
-		return render_template('registro.html', mensaje=mensaje)
-	else:
-		return render_template('registro.html')
-
+#ruta editar datos de usuario
 @app.route('/editarusuario')
 def editarusuario():
 	if session.get("user")!=None:
 		rol=session.get("type")
 		print(rol)
-	return render_template('Editarusuario.html')
-	
+		return render_template('Editarusuario.html')
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+
+#ruta registrar usuario	
 @app.route('/registrarusuario', methods=['POST'])
 def registrarusuario ():
 	#Se registra al usuario en la base de datos
@@ -327,35 +339,9 @@ def registrarusuario ():
 				return redirect(url_for('registro', mensaje="El nombre de usuario ya se encuentra en la base de datos"))
 		else:	
 			return redirect(url_for('registro',mensaje= "El numero de carnet ya se encuentra en la base de datos"))
-"""
-@app.route('/formpart2', methods=['POST'])
-def formpart2():
-	xpathtitular=""
-	xpathcabecera=""
-	urlprincipal=""
-	listacategorias=list(db.Categoria.find())
-	if request.method=="POST":
-		xpathcabecera=request.form["inputcabecera"]
-		xpathtitular=request.form["inputtitular"]
-		urlprincipal=request.form["urlprincipal"]
-	print("urlp",urlprincipal)
-	#listaenlaces=scr.obtenerenlaces(urlprincipal,xpathcabecera)
-	loop = asyncio.new_event_loop()
-	listaenlaces= loop.run_until_complete(consultarxpath(urlprincipal,str(xpathcabecera)+"//@href"))
-	listaenlaces=limpiarenlaces(listaenlaces,urlprincipal)
-	print("-----------listaenlaces---------")
-	print(listaenlaces)
-
-	response=make_response(render_template('formpart2.html', xpathcabecera=xpathcabecera, xpathtitular=xpathtitular, urlprincipal=urlprincipal, lista=listaenlaces, listacategorias=listacategorias))
-	print(urlprincipal)
-	response.set_cookie('Urlprincipal',urlprincipal)
-	response.set_cookie('Xpathtitular',xpathtitular)
-	response.set_cookie('Xpathcabecera',xpathcabecera)
-	return response
-
-"""
 
 
+#ruta reglas categoria, Aqui se seleccionan los parametros Xpath para una nueva URL tipo categoria
 @app.route('/reglascategoria', methods=['GET','POST'])
 def reglascategoria():
 	#https://www.la-razon.com/nacional/
@@ -373,7 +359,6 @@ def reglascategoria():
 		#asyncio.set_event_loop(loop)
 		#texto=loop.run_until_complete(cargarpagina(url))
 		#loop.close()
-	
 
 	arrayurlext=url.split("/")
 	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
@@ -397,7 +382,8 @@ def reglascategoria():
 	else:
 		response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar))
 		return response
-	
+
+#ruta editar reglas categoria, Aqui se editan los parametros Xpath para una URL tipo categoria	existente
 @app.route('/editreglascategoria', methods=['GET'])
 def editreglascategoria():
 	#https://www.la-razon.com/nacional/
@@ -433,6 +419,7 @@ def editreglascategoria():
 	
 	response=make_response(render_template('xpathselector.html', debug=True, url=url, texto=dochtml, categoria=categoria, listareglas=listareglas, editar=editar, idregla=idregla))
 	return response
+#ruta editreglas portada aqui se editan los parametros de una nueva URL tipo portada
 @app.route('/editreglasportada', methods=['GET'])
 def editreglasportada():
 	url="https://www.paginasiete.bo/nacional/"
@@ -467,51 +454,54 @@ def editreglasportada():
 
 	response=make_response(render_template('addportada.html',title="evaluarpag", debug=True, url=url, texto=dochtml, listareglas=listareglas, editar=editar, idregla=idregla))
 	return response
+#Ruta reglas noticia, aqui se seleccionan los parametros Xpath dentro de una noticia
 @app.route('/reglasnoticia')
 def reglasnoticia():
-	print("llegue a reglas noticia")
-	tipo=request.args["tipo"]
-	jsondatos=request.args["datosregla"]
-	idreglaexterna=request.args["idreglaexterna"]
-	cambios=request.args["cambios"]
-	reglaex=[]
-	reglainterna=[]
-	if(idreglaexterna!="ninguno"):
-		print(idreglaexterna)
-		reglaex=db.Reglas.find_one({"_id":ObjectId(str(idreglaexterna))})
-		reglainterna=reglaex["reglainterna"]
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
+		print("llegue a reglas noticia")
+		tipo=request.args["tipo"]
+		jsondatos=request.args["datosregla"]
+		idreglaexterna=request.args["idreglaexterna"]
+		cambios=request.args["cambios"]
+		reglaex=[]
+		reglainterna=[]
+		if(idreglaexterna!="ninguno"):
+			print(idreglaexterna)
+			reglaex=db.Reglas.find_one({"_id":ObjectId(str(idreglaexterna))})
+			reglainterna=reglaex["reglainterna"]
+			
+		categoria=""
+		urlext=request.args["urlext"]
+		url=request.args["urlnoticia"]
+		texto=cargarpagina(url).result()
+		#texto=asyncio.run(cargarpagina(url))
+		#loop = asyncio.new_event_loop()
+		#asyncio.set_event_loop(loop)
+		#texto=loop.run_until_complete(cargarpagina(url))
+		#loop.close()
+		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
+		iniciobody=re.search("<body.*>",texto)
+		iniciohead=re.search("<head.*>",texto)
+		#print(iniciobody.end)
+		arrayurlext=urlext.split("/")
+		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+
+		listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"noticias"}))
+
+		#Entre la parte 1 y la 2 concatenamos css y scripts
+		#entre la parte2 y la 3 concatenamos la cabecera
+		dochtml=css+texto
+		if(tipo=="categoria"):
+			categoria=request.args["categoria"]
 		
-	categoria=""
-	urlext=request.args["urlext"]
-	url=request.args["urlnoticia"]
-	texto=cargarpagina(url).result()
-	#texto=asyncio.run(cargarpagina(url))
-	#loop = asyncio.new_event_loop()
-	#asyncio.set_event_loop(loop)
-	#texto=loop.run_until_complete(cargarpagina(url))
-	#loop.close()
-	css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
-	iniciobody=re.search("<body.*>",texto)
-	iniciohead=re.search("<head.*>",texto)
-	#print(iniciobody.end)
-	arrayurlext=urlext.split("/")
-	urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+		response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml, tipo=tipo, jsonp1=jsondatos, urlext=urlext, listareglas=listareglas, categoria=categoria, editar=idreglaexterna, reglainterna=reglainterna, cambios=cambios))
+		return response
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
-	listareglas=list(db["Reglas"].find({"urlprincipal":urlprincipal, "tiporegla":"noticias"}))
-
-	#Entre la parte 1 y la 2 concatenamos css y scripts
-	#entre la parte2 y la 3 concatenamos la cabecera
-	dochtml=css+texto
-	if(tipo=="categoria"):
-		categoria=request.args["categoria"]
-	
-	response=make_response(render_template('xpathselectornoticias.html', debug=True, url=url, texto=dochtml, tipo=tipo, jsonp1=jsondatos, urlext=urlext, listareglas=listareglas, categoria=categoria, editar=idreglaexterna, reglainterna=reglainterna, cambios=cambios))
-	return response
-	
-
-
+#Agrega
 @app.route('/agregar')
-#Redireccion para agregar pagina
+#Redireccion para agregar nuevas URLs de noticia
 def agregar():
 	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
 		listacategorias=list(db.Categoria.find())
@@ -519,306 +509,326 @@ def agregar():
 	else:
 		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
+#ruta editreglas portada aqui se crean los parametros de una nueva URL tipo portada
 @app.route('/añadirportada', methods=['GET', 'POST'])
 #al momento de agregar la nueva pagina llenaremos un formulario para identificar los patrones de la misma
 def añadirportada():
-	direccion="addportada.html"
-	documento=""
-	
-	if request.method=='POST':
-		url=request.form['urlpaginanoticia']
-		print(url)
-		texto=cargarpagina(url).result()
-		#texto=asyncio.run(cargarpagina(url))
-		#loop = asyncio.new_event_loop()
-		#syncio.set_event_loop(loop)
-		#texto= loop.run_until_complete(cargarpagina(url))
-		#loop.close()
-		print("dochtml......")
-		#print(texto)
-		print(".........................")
-		css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
-		iniciobody=re.search("<body.*>",texto)
-		iniciohead=re.search("<head.*>",texto)
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
+		direccion="addportada.html"
+		documento=""
+		
+		if request.method=='POST':
+			url=request.form['urlpaginanoticia']
+			print(url)
+			texto=cargarpagina(url).result()
+			#texto=asyncio.run(cargarpagina(url))
+			#loop = asyncio.new_event_loop()
+			#syncio.set_event_loop(loop)
+			#texto= loop.run_until_complete(cargarpagina(url))
+			#loop.close()
+			print("dochtml......")
+			#print(texto)
+			print(".........................")
+			css='<link rel="stylesheet" type="text/css" media="screen" href="/static/css/cssxpathnoticias.css">'
+			iniciobody=re.search("<body.*>",texto)
+			iniciohead=re.search("<head.*>",texto)
 
-		parte1=texto[0:iniciohead.end()]
-		parte2=texto[iniciohead.end():iniciobody.end()]
-		parte3=texto[iniciobody.end():]
-		documento=css+parte1+parte2+parte3
-	reglaportada=obtenerreglaurlport(url)
-	if reglaportada!="":
-		urlarr=url.split("/")
-		urlprin=urlarr[0]+"//"+urlarr[2]
-		listareglas=list(db["Reglas"].find({"urlprincipal":urlprin, "tiporegla":"portada"}))
-		response=make_response(render_template('addportada.html',title="evaluarpag", debug=True, url=url, texto=documento, listareglas=listareglas, editar=True, idregla=reglaportada))
-		return response
+			parte1=texto[0:iniciohead.end()]
+			parte2=texto[iniciohead.end():iniciobody.end()]
+			parte3=texto[iniciobody.end():]
+			documento=css+parte1+parte2+parte3
+		reglaportada=obtenerreglaurlport(url)
+		if reglaportada!="":
+			urlarr=url.split("/")
+			urlprin=urlarr[0]+"//"+urlarr[2]
+			listareglas=list(db["Reglas"].find({"urlprincipal":urlprin, "tiporegla":"portada"}))
+			response=make_response(render_template('addportada.html',title="evaluarpag", debug=True, url=url, texto=documento, listareglas=listareglas, editar=True, idregla=reglaportada))
+			return response
+		else:
+			return render_template(direccion, title="evaluarpag", url=url, texto=documento)
 	else:
-		return render_template(direccion, title="evaluarpag", url=url, texto=documento)
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
+#ruta validar portada, aqui se validan los parametros XPath de una URL tipo portada
 @app.route('/validarportada', methods=['GET', 'POST'])
 def validarportada():
-	idreglaexterna="ninguno"
-	if request.method=='POST':
-		seregistrocambios=request.form["cambiosre"]
-		print("src",seregistrocambios)
-		idreglaexterna=request.form["reglaseleccionada"]
-		editarregla=request.form["editarregla"]
-		xpathurl=request.form["inputurl"]
-		xpathtitular=request.form["inputtitular"]
-		xpathfecha=request.form["inputfecha"]
-		xpathimg=request.form["inputimg"]
-		xpathredactor=request.form["inputredactor"]
-		xpathdescripcion=request.form["inputdescripcion"]
-		urlportada=request.form["urlprincipal"]
-		arrayurlext=urlportada.split("/")
-		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
-		jsondatos={
-			"urlprincipal":urlprincipal,
-			"urlportada":urlportada,
-			"tiporegla":"portada",
-			"xpathurl":xpathurl,
-			"xpathtitular":xpathtitular,
-			"xpathfecha":xpathfecha,
-			"xpathimg":xpathimg,
-			"xpathredactor":xpathredactor,
-			"xpathdescripcion":xpathdescripcion,
-			"reglainterna":""
-		}
-	if request.form.get("continuarform"):
-		print("obteniendo enlace")
-		tag=atributoenxpath(xpathurl)
-		if tag=="":
-			lurlnot=consultarxpath(urlportada,str(xpathurl)+"//@href").result()
-		else:
-			lurlnot=consultarxpath(urlportada,str(xpathurl)).result()
-		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		#loop = asyncio.new_event_loop()
-		#asyncio.set_event_loop(loop)
-		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		#loop.close()
-		print("xpath url", xpathurl)
-		print("Url noticia",lurlnot)
-		urlnoticia=lurlnot[0]
-		if not("http" in urlnoticia):
-			urlnoticia=urlprincipal+urlnoticia
-		print("redireccionando a reglas noticia")
-		print(urlnoticia)
-		return redirect(url_for('reglasnoticia', tipo="portada",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlportada, idreglaexterna=idreglaexterna,cambios=seregistrocambios ))
-	else:
-		mensaje=""
-		mensajesec=""
-		#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
-		print("idreglaexterna", idreglaexterna)
-		if(editarregla!=""):
-			if(idreglaexterna!="ninguno"):
-				print(editarregla)
-				#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
-				editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
-				mensajesec="Se modificaron los parametros de la regla con exito"
-			else:
-				#En este caso se creara una nueva regla en base a la regla externa
-				reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
-				reglacat["xpathurl"]=xpathurl
-				reglacat["xpathtitular"]=xpathtitular			
-				reglacat["xpathfecha"]=xpathfecha
-				reglacat["xpathimg"]=xpathimg
-				reglacat["xpathredactor"]=xpathredactor
-				reglacat["xpathdescripcion"]=xpathdescripcion
-				addreglaext=db['Reglas'].insert_one(reglacat)
-				idreglaexterna=addreglaext.inserted_id
-				print("llegue a este caso")
-				mensajesec="Se crearon nuevos parametros para esta URL: "+urlportada
-		else:
-			if idreglaexterna=="ninguno":
-				#si la id regla externa==ninguno entonces se creara una nueva regla
-				addreglaext=db['Reglas'].insert_one(jsondatos)
-				idreglaexterna=addreglaext.inserted_id
-				mensajesec="Se crearon nuevos parametros para la URL: "+urlportada
-			else:
-				#Si la regla existe entonces la id regla sera establecida
-				mensajesec="Se asignaron parametros existentes a esta URL: "+urlportada
-		#CONFIGURACION DE LA portada
-
-		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
-		if(len(paginanoticia)>0):
-			#en caso de que exista la pagina de noticias añadimos la portada
-			#verificamos si la urlportada existe
-			arrayportadas=paginanoticia[0]["portada"]
-			print("Arrayportadas",arrayportadas)
-			portadasaux=[]
-			añadircat=True
-			for port in arrayportadas:
-				if port["urlportada"]==urlportada:
-					#en caso de existir la urlcategorica cambiamos la portada a la nueva regla
-					añadircat=False
-					port["idregla"]=idreglaexterna
-					mensaje="Se modificó la URL"
-				portadasaux.append(port)
-			print("portadasaux",portadasaux)
-			print("///////////")
-			arrayportadas=portadasaux
-			if añadircat:
-				#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
-				portada={
-					"url":urlportada,
-					"idportada":request.form["portada"],
-					"idregla":idreglaexterna
-				}
-				arrayportadas.append(portada)
-				mensaje="Se añadio una nueva URL "
-			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
-		else:
-			#en caso de que la url principal de la pagina no exista
-			paginanoticia={
-				"url":urlprincipal,
-				"portada":[portada]
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
+		idreglaexterna="ninguno"
+		if request.method=='POST':
+			seregistrocambios=request.form["cambiosre"]
+			print("src",seregistrocambios)
+			idreglaexterna=request.form["reglaseleccionada"]
+			editarregla=request.form["editarregla"]
+			xpathurl=request.form["inputurl"]
+			xpathtitular=request.form["inputtitular"]
+			xpathfecha=request.form["inputfecha"]
+			xpathimg=request.form["inputimg"]
+			xpathredactor=request.form["inputredactor"]
+			xpathdescripcion=request.form["inputdescripcion"]
+			urlportada=request.form["urlprincipal"]
+			arrayurlext=urlportada.split("/")
+			urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+			jsondatos={
+				"urlprincipal":urlprincipal,
+				"urlportada":urlportada,
+				"tiporegla":"portada",
+				"xpathurl":xpathurl,
+				"xpathtitular":xpathtitular,
+				"xpathfecha":xpathfecha,
+				"xpathimg":xpathimg,
+				"xpathredactor":xpathredactor,
+				"xpathdescripcion":xpathdescripcion,
+				"reglainterna":""
 			}
-			db["paginanoticia"].insert_one(paginanoticia)
-			mensaje="URL Añadida con exito"
-			mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlportada
-		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+		if request.form.get("continuarform"):
+			print("obteniendo enlace")
+			tag=atributoenxpath(xpathurl)
+			if tag=="":
+				lurlnot=consultarxpath(urlportada,str(xpathurl)+"//@href").result()
+			else:
+				lurlnot=consultarxpath(urlportada,str(xpathurl)).result()
+			#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+			#loop = asyncio.new_event_loop()
+			#asyncio.set_event_loop(loop)
+			#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+			#loop.close()
+			print("xpath url", xpathurl)
+			print("Url noticia",lurlnot)
+			urlnoticia=lurlnot[0]
+			if not("http" in urlnoticia):
+				urlnoticia=urlprincipal+urlnoticia
+			print("redireccionando a reglas noticia")
+			print(urlnoticia)
+			return redirect(url_for('reglasnoticia', tipo="portada",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlportada, idreglaexterna=idreglaexterna,cambios=seregistrocambios ))
+		else:
+			mensaje=""
+			mensajesec=""
+			#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
+			print("idreglaexterna", idreglaexterna)
+			if(editarregla!=""):
+				if(idreglaexterna!="ninguno"):
+					print(editarregla)
+					#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
+					editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
+					mensajesec="Se modificaron los parametros de la regla con exito"
+				else:
+					#En este caso se creara una nueva regla en base a la regla externa
+					reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
+					reglacat["xpathurl"]=xpathurl
+					reglacat["xpathtitular"]=xpathtitular			
+					reglacat["xpathfecha"]=xpathfecha
+					reglacat["xpathimg"]=xpathimg
+					reglacat["xpathredactor"]=xpathredactor
+					reglacat["xpathdescripcion"]=xpathdescripcion
+					addreglaext=db['Reglas'].insert_one(reglacat)
+					idreglaexterna=addreglaext.inserted_id
+					print("llegue a este caso")
+					mensajesec="Se crearon nuevos parametros para esta URL: "+urlportada
+			else:
+				if idreglaexterna=="ninguno":
+					#si la id regla externa==ninguno entonces se creara una nueva regla
+					addreglaext=db['Reglas'].insert_one(jsondatos)
+					idreglaexterna=addreglaext.inserted_id
+					mensajesec="Se crearon nuevos parametros para la URL: "+urlportada
+				else:
+					#Si la regla existe entonces la id regla sera establecida
+					mensajesec="Se asignaron parametros existentes a esta URL: "+urlportada
+			#CONFIGURACION DE LA portada
+
+			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+			if(len(paginanoticia)>0):
+				#en caso de que exista la pagina de noticias añadimos la portada
+				#verificamos si la urlportada existe
+				arrayportadas=paginanoticia[0]["portada"]
+				print("Arrayportadas",arrayportadas)
+				portadasaux=[]
+				añadircat=True
+				for port in arrayportadas:
+					if port["urlportada"]==urlportada:
+						#en caso de existir la urlcategorica cambiamos la portada a la nueva regla
+						añadircat=False
+						port["idregla"]=idreglaexterna
+						mensaje="Se modificó la URL"
+					portadasaux.append(port)
+				print("portadasaux",portadasaux)
+				print("///////////")
+				arrayportadas=portadasaux
+				if añadircat:
+					#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
+					portada={
+						"url":urlportada,
+						"idportada":request.form["portada"],
+						"idregla":idreglaexterna
+					}
+					arrayportadas.append(portada)
+					mensaje="Se añadio una nueva URL "
+				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "portada": arrayportadas }})
+			else:
+				#en caso de que la url principal de la pagina no exista
+				paginanoticia={
+					"url":urlprincipal,
+					"portada":[portada]
+				}
+				db["paginanoticia"].insert_one(paginanoticia)
+				mensaje="URL Añadida con exito"
+				mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlportada
+			return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+
+#ruta validar url categoria, aqui se validan los parametros xpath de una URL tipo categoria
 @app.route('/validarurlcategoria', methods=['GET', 'POST'])
 def validarurlcategoria():
-	idreglaexterna="ninguno"
-	if request.method=='POST':
-		editarregla=request.form["editarregla"]
-		if "reglaseleccionada" in request.form:
-			seregistrocambios=request.form["cambiosre"]
-			idreglaexterna=request.form["reglaseleccionada"]
-		categoria=request.form["categoria"]
-		xpathurl=request.form["inputurl"]
-		xpathtitular=request.form["inputtitular"]
-		xpathfecha=request.form["inputfecha"]
-		xpathimg=request.form["inputimg"]
-		xpathredactor=request.form["inputredactor"]
-		xpathdescripcion=request.form["inputdescripcion"]
-		urlcategoria=request.form["urlprincipal"]
-		print("urlprin", urlcategoria)
-		arrayurlext=urlcategoria.split("/")
-		urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
-		jsondatos={
-			"urlprincipal":urlprincipal,
-			"urlcategoria":urlcategoria,
-			"tiporegla":"categoria",
-			"xpathurl":xpathurl,
-			"xpathtitular":xpathtitular,
-			"xpathfecha":xpathfecha,
-			"xpathimg":xpathimg,
-			"xpathredactor":xpathredactor,
-			"xpathdescripcion":xpathdescripcion,
-			"reglainterna":""
-		}
-	if request.form.get("continuarform"):
-		#print("obteniendo enlace")
-		tag= atributoenxpath(xpathurl)
-		lurlnot=""
-		if tag=="":
-			lurlnot=consultarxpath(urlcategoria,str(xpathurl)+"//@href").result()
-		else:
-			lurlnot=consultarxpath(urlcategoria,str(xpathurl)).result()
-		#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		#loop = asyncio.new_event_loop()
-		#asyncio.set_event_loop(loop)
-		#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
-		#loop.close()
-		urlnoticia=lurlnot[0]
-		print("redireccionando a reglas noticia")
-		
-		if not("http" in urlnoticia):
-			urlnoticia=urlprincipal+urlnoticia
-		#print(urlnoticia)
-		#print("urlp: ",urlprincipal)
-		return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlcategoria, categoria=categoria, idreglaexterna=idreglaexterna, cambios=seregistrocambios))
-	else:
-		mensaje=""
-		mensajesec=""
-		#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
-		print("idreglaexterna", idreglaexterna)
-		if(editarregla!=""):
-			if(idreglaexterna!="ninguno"):
-				print(editarregla)
-				#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
-				editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
-				mensajesec="Se modificaron los parametros de la regla con exito"
-			else:
-				#En este caso se creara una nueva regla en base a la regla externa
-				reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
-				reglacat["xpathurl"]=xpathurl
-				reglacat["xpathtitular"]=xpathtitular			
-				reglacat["xpathfecha"]=xpathfecha
-				reglacat["xpathimg"]=xpathimg
-				reglacat["xpathredactor"]=xpathredactor
-				reglacat["xpathdescripcion"]=xpathdescripcion
-				addreglaext=db['Reglas'].insert_one(reglacat)
-				idreglaexterna=addreglaext.inserted_id
-				mensajesec="Se crearon nuevos parametros para esta URL: "+urlcategoria
-		else:
-			if idreglaexterna=="ninguno":
-				#si la id regla externa==ninguno entonces se creara una nueva regla
-				addreglaext=db['Reglas'].insert_one(jsondatos)
-				idreglaexterna=addreglaext.inserted_id
-				mensajesec="Se crearon nuevos parametros para la URL: "+urlcategoria
-			else:
-				#Si la regla existe entonces la id regla sera establecida
-				mensajesec="Se asignaron parametros existentes a esta URL: "+urlcategoria
-		#CONFIGURACION DE LA CATEGORIA
-
-		paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
-		if(len(paginanoticia)>0):
-			#en caso de que exista la pagina de noticias añadimos la categoria
-			#verificamos si la urlcategoria existe
-			arraycategorias=paginanoticia[0]["categorias"]
-			print("Arraycategorias",arraycategorias)
-			categoriasaux=[]
-			añadircat=True
-			for cat in arraycategorias:
-				if cat["url"]==urlcategoria:
-					#en caso de existir la urlcategorica cambiamos la categoria a la nueva regla
-					añadircat=False
-					cat["idregla"]=idreglaexterna
-					mensaje="Se modificó la URL"
-				categoriasaux.append(cat)
-			print("Categoriasaux",categoriasaux)
-			print("///////////")
-			arraycategorias=categoriasaux
-			if añadircat:
-				#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
-				categoria={
-					"url":urlcategoria,
-					"idcategoria":request.form["categoria"],
-					"idregla":idreglaexterna
-				}
-				arraycategorias.append(categoria)
-				mensaje="Se añadio una nueva URL "
-			db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
-		else:
-			#en caso de que la url principal de la pagina no exista
-			paginanoticia={
-				"url":urlprincipal,
-				"portada":[],
-				"categorias":[categoria]
+	if session.get('type') !=None and (session['type']=="admingen" or session['type']=="administrador"):
+		idreglaexterna="ninguno"
+		if request.method=='POST':
+			editarregla=request.form["editarregla"]
+			if "reglaseleccionada" in request.form:
+				seregistrocambios=request.form["cambiosre"]
+				idreglaexterna=request.form["reglaseleccionada"]
+			categoria=request.form["categoria"]
+			xpathurl=request.form["inputurl"]
+			xpathtitular=request.form["inputtitular"]
+			xpathfecha=request.form["inputfecha"]
+			xpathimg=request.form["inputimg"]
+			xpathredactor=request.form["inputredactor"]
+			xpathdescripcion=request.form["inputdescripcion"]
+			urlcategoria=request.form["urlprincipal"]
+			print("urlprin", urlcategoria)
+			arrayurlext=urlcategoria.split("/")
+			urlprincipal=arrayurlext[0]+"//"+arrayurlext[2]
+			jsondatos={
+				"urlprincipal":urlprincipal,
+				"urlcategoria":urlcategoria,
+				"tiporegla":"categoria",
+				"xpathurl":xpathurl,
+				"xpathtitular":xpathtitular,
+				"xpathfecha":xpathfecha,
+				"xpathimg":xpathimg,
+				"xpathredactor":xpathredactor,
+				"xpathdescripcion":xpathdescripcion,
+				"reglainterna":""
 			}
-			db["paginanoticia"].insert_one(paginanoticia)
-			mensaje="URL Añadida con exito"
-			mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlcategoria
-		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+		if request.form.get("continuarform"):
+			#print("obteniendo enlace")
+			tag= atributoenxpath(xpathurl)
+			lurlnot=""
+			if tag=="":
+				lurlnot=consultarxpath(urlcategoria,str(xpathurl)+"//@href").result()
+			else:
+				lurlnot=consultarxpath(urlcategoria,str(xpathurl)).result()
+			#lurlnot=asyncio.run(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+			#loop = asyncio.new_event_loop()
+			#asyncio.set_event_loop(loop)
+			#lurlnot= loop.run_until_complete(consultarxpath(urlprin,str(xpathurl)+"//@href"))
+			#loop.close()
+			urlnoticia=lurlnot[0]
+			print("redireccionando a reglas noticia")
+			
+			if not("http" in urlnoticia):
+				urlnoticia=urlprincipal+urlnoticia
+			#print(urlnoticia)
+			#print("urlp: ",urlprincipal)
+			return redirect(url_for('reglasnoticia', tipo="categoria",datosregla=json.dumps(jsondatos), urlnoticia=urlnoticia, urlext=urlcategoria, categoria=categoria, idreglaexterna=idreglaexterna, cambios=seregistrocambios))
+		else:
+			mensaje=""
+			mensajesec=""
+			#CONFIGURACION DE LAS REGLAS O PARAMETROS..........
+			print("idreglaexterna", idreglaexterna)
+			if(editarregla!=""):
+				if(idreglaexterna!="ninguno"):
+					print(editarregla)
+					#En este caso modificamos una regla ya existente, editarregla tiene por valor la id de la regla
+					editarreglaexterna(editarregla,xpathurl,xpathtitular,xpathfecha,xpathimg,xpathredactor,xpathdescripcion)
+					mensajesec="Se modificaron los parametros de la regla con exito"
+				else:
+					#En este caso se creara una nueva regla en base a la regla externa
+					reglacat=db.Reglas.find_one({"_id":ObjectId(str(editarregla))},{"_id": 0})
+					reglacat["xpathurl"]=xpathurl
+					reglacat["xpathtitular"]=xpathtitular			
+					reglacat["xpathfecha"]=xpathfecha
+					reglacat["xpathimg"]=xpathimg
+					reglacat["xpathredactor"]=xpathredactor
+					reglacat["xpathdescripcion"]=xpathdescripcion
+					addreglaext=db['Reglas'].insert_one(reglacat)
+					idreglaexterna=addreglaext.inserted_id
+					mensajesec="Se crearon nuevos parametros para esta URL: "+urlcategoria
+			else:
+				if idreglaexterna=="ninguno":
+					#si la id regla externa==ninguno entonces se creara una nueva regla
+					addreglaext=db['Reglas'].insert_one(jsondatos)
+					idreglaexterna=addreglaext.inserted_id
+					mensajesec="Se crearon nuevos parametros para la URL: "+urlcategoria
+				else:
+					#Si la regla existe entonces la id regla sera establecida
+					mensajesec="Se asignaron parametros existentes a esta URL: "+urlcategoria
+			#CONFIGURACION DE LA CATEGORIA
+
+			paginanoticia=list(db["paginanoticia"].find({"url":urlprincipal}))
+			if(len(paginanoticia)>0):
+				#en caso de que exista la pagina de noticias añadimos la categoria
+				#verificamos si la urlcategoria existe
+				arraycategorias=paginanoticia[0]["categorias"]
+				print("Arraycategorias",arraycategorias)
+				categoriasaux=[]
+				añadircat=True
+				for cat in arraycategorias:
+					if cat["url"]==urlcategoria:
+						#en caso de existir la urlcategorica cambiamos la categoria a la nueva regla
+						añadircat=False
+						cat["idregla"]=idreglaexterna
+						mensaje="Se modificó la URL"
+					categoriasaux.append(cat)
+				print("Categoriasaux",categoriasaux)
+				print("///////////")
+				arraycategorias=categoriasaux
+				if añadircat:
+					#en caso de que no se haya encontrado una url categorica entonces se añadira la misma
+					categoria={
+						"url":urlcategoria,
+						"idcategoria":request.form["categoria"],
+						"idregla":idreglaexterna
+					}
+					arraycategorias.append(categoria)
+					mensaje="Se añadio una nueva URL "
+				db["paginanoticia"].update_one({"url":urlprincipal},{"$set": { "categorias": arraycategorias }})
+			else:
+				#en caso de que la url principal de la pagina no exista
+				paginanoticia={
+					"url":urlprincipal,
+					"portada":[],
+					"categorias":[categoria]
+				}
+				db["paginanoticia"].insert_one(paginanoticia)
+				mensaje="URL Añadida con exito"
+				mensajesec="El sistema empezara a recolectar noticias de: "+urlprincipal+"\nSe recopilaran datos de la URL"+urlcategoria
+			return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+	else:
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+
+#Ruta cambiar contraseña, permite al usuario cambiar su contraseña 
 @app.route("/cambiarcontraseña", methods=["POST"])
 def cambiarcontraseña():
-	mensaje=""
-	mensajesec=""
-	contant=request.form["passwordactual"]
-	contnueva=request.form["password"]
-	nusuario=request.form["nusuario"]
-	#buscando al usuario
-	usuario=db.usuario.find_one({"usuario":nusuario})
-	if sha512.verify(str(contant), str(usuario["contraseña"])):
-		contraseñanueva=sha512.hash(contnueva)
-		db.usuario.update_one({"usuario":nusuario},{"$set":{"contraseña":contraseñanueva}})
-		mensaje="Contraseña cambiada con exito"
+	if session.get('type') !=None:
+		mensaje=""
+		mensajesec=""
+		contant=request.form["passwordactual"]
+		contnueva=request.form["password"]
+		nusuario=request.form["nusuario"]
+		#buscando al usuario
+		usuario=db.usuario.find_one({"usuario":nusuario})
+		if sha512.verify(str(contant), str(usuario["contraseña"])):
+			contraseñanueva=sha512.hash(contnueva)
+			db.usuario.update_one({"usuario":nusuario},{"$set":{"contraseña":contraseñanueva}})
+			mensaje="Contraseña cambiada con exito"
+		else:
+			mensaje="No se cambio la contraseña"
+			mensajesec="Las contraseñas no coinciden por favor ingrese su contraseña corecta"
+		return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
 	else:
-		mensaje="No se cambio la contraseña"
-		mensajesec="Las contraseñas no coinciden por favor ingrese su contraseña corecta"
-	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec= mensajesec )
+		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
+
+#ruta editar datos de usuario
 @app.route("/editardatosusuario", methods=["POST"])
 def editardatosusuario():
 	nusuario=request.form["usuarioac"]
@@ -829,6 +839,8 @@ def editardatosusuario():
 	rol=request.form["tipousuario"]
 	db.usuario.update_one({"usuario":nusuario},{"$set":{"usuario":nusuarionuevo,"ci":ci,"nombres":nombres,"apellidos":apellidos,"rol":rol}})
 	return render_template("mensaje.html", title="evaluarpag", mensaje="Operación exitosa", mensajesec= "Se cambiaron los datos del usuario:"+nusuarionuevo )
+
+#Ruta subir pagina, añade una nueva pagina a la base de datos, incluyendo URL, y Reglas o parametros XPath
 @app.route("/subirpagina", methods=["POST"])
 def subirpagina():
 	mensaje=""
@@ -944,6 +956,7 @@ def subirpagina():
 
 
 	return render_template("mensaje.html", title="evaluarpag", mensaje=mensaje, mensajesec=mensajesec )
+#Ruta gestionar usuarios
 @app.route("/gestionarusuarios")
 def gestionarusuarios():
 	if session.get('type') !=None and session['type']=="admingen":
@@ -952,6 +965,7 @@ def gestionarusuarios():
 	else:
 		return render_template("mensaje.html", title="evaluarpag", mensaje="Acceso no autorizado", mensajesec="Usted no tiene autorización para ingresar a esta URL" )
 
+#ruta recibir noticia esto es una prueba...
 @app.route("/recibirnot", methods=["POST"])
 def recibirnot():
 	print("solicitud nueva")
@@ -962,6 +976,7 @@ def recibirnot():
 	response={'status':200}
 	return(response)
 
+#ruta ajax categorias, envia noticias de una categoria en formato Json
 @app.route("/ajaxcategorias", methods=["POST"])
 def ajaxcategorias():
 	categoria=request.form['categoria']
@@ -969,14 +984,14 @@ def ajaxcategorias():
 	cat=str(categoria)
 	#print("Categoria: ",cat)
 	Noticiascat=list(noticias.find({"categoria":cat}).sort("fechaasig",-1).limit(20))
-
-
 	response={
 		'status': 200,
 		'Noticias':dumps(Noticiascat),
 		'id': 1
 	}
 	return json.dumps(response)
+
+#ruta ajax fuente, envia noticias segun su fuente en formato json
 @app.route("/ajaxfuente", methods=["POST"])
 def ajaxfuente():
 	
@@ -992,6 +1007,8 @@ def ajaxfuente():
 		'id': 1
 	}
 	return json.dumps(response)
+
+#Ajax cargar categorias, carga nuevas categorias
 @app.route("/ajaxcargarcategorias", methods=["POST"])
 def ajaxcargarcategorias():
 	categoria=request.form['categoria']
@@ -1010,6 +1027,7 @@ def ajaxcargarcategorias():
 	}
 	return json.dumps(response)
 
+#ruta ajax cargar noticia fuente, carga mas noticias segun una fuente
 @app.route("/ajaxcargarnotfuente", methods=["POST"])
 def ajaxcargarnotfuente():
 	urlfuente=request.form['urlfuente']
@@ -1027,6 +1045,8 @@ def ajaxcargarnotfuente():
 		'id': 1
 	}
 	return json.dumps(response)
+
+#Carga mas noticias del apartado principal
 @app.route("/ajaxcargarmasnoticias", methods=["POST"])
 def ajaxcargarmasnoticias():
 	numpagina=request.form["numpagina"]
@@ -1039,6 +1059,7 @@ def ajaxcargarmasnoticias():
 		'id': 1
 	}
 	return json.dumps(response)
+#carga mas resultados de busqueda
 @app.route("/ajaxcargarmasbusquedas", methods=["POST"])
 def ajaxcargarmasbusquedas():
 	numpagina=request.form["numpagina"]
@@ -1052,24 +1073,7 @@ def ajaxcargarmasbusquedas():
 		'id': 1
 	}
 	return json.dumps(response)
-@app.route("/ajaxcargarmastemas", methods=["POST"])
-def ajaxcargarmastemas():
-	numpagina=request.form["numpagina"]
-	omitir=20*int(numpagina)
-	coltemas=db.temasdenoticias
-	noticias=db.noticia	
-	numtemas=list(coltemas.find({}).sort("fechamod",-1).skip(omitir).limit(20))
-	listatemas=[]
-	for tema in numtemas:
-		numtema=tema["numtema"]
-		noticiastema=list(noticias.find({"numerotema":numtema}).sort("field",-1))
-		listatemas.append(noticiastema)
-	response={
-		'status': 200,
-		'listatemas':dumps(listatemas),
-		'id': 1
-	}
-	return json.dumps(response)
+#Añade una nueva categoria
 @app.route("/ajaxañadircategoria", methods=["POST"])
 def ajaxañadircategoria():
 	categoria=request.form["categoria"]
@@ -1081,6 +1085,7 @@ def ajaxañadircategoria():
 		'id':str(insertar.inserted_id)
 	}
 	return json.dumps(response)
+#Busca las noticias relacionadas con respecto a una noticia
 @app.route("/ajaxbuscarnoticiasrelacionadas", methods=["POST"])
 def ajaxbuscarnoticiasrelacionadas():
 	dbnoticias=db.noticia
@@ -1103,6 +1108,7 @@ def ajaxbuscarnoticiasrelacionadas():
 		'id': 1
 	}
 	return json.dumps(response)
+#elimina por completo un sitio web añadido a la base de datos
 @app.route("/ajaxeliminarpagina", methods=["POST"])
 def ajaxeliminarpagina():
 	urlpagina=request.form["urlpagina"]
@@ -1114,6 +1120,8 @@ def ajaxeliminarpagina():
 		'respuesta': "eliminado con exito"
 	}
 	return json.dumps(response)
+
+#Elimina solo una URL tipo categoria de un sitio web
 @app.route("/ajaxeliminarurlcat", methods=["POST"])
 def ajaxeliminarurlcat():
 	#Este algoritmo elimina una url seleccionada
@@ -1135,6 +1143,7 @@ def ajaxeliminarurlcat():
 		'respuesta': "eliminado con exito"
 	}
 	return json.dumps(response)
+#Elimina solo una URL tipo portada de un sitio web
 @app.route("/ajaxeliminarurlportada", methods=["POST"])
 def ajaxeliminarurlportada():
 	#Este algoritmo elimina una url seleccionada
@@ -1157,10 +1166,10 @@ def ajaxeliminarurlportada():
 	}
 	return json.dumps(response)
 
+#Cambia de la la categoria de una URL tipo categoria
 @app.route("/ajaxcambiarcat", methods=["POST"])
 def ajaxcambiarcat():
-	#Este algoritmo elimina una url seleccionada
-	#nota ejecutar un algortimo que elimine las reglas en caso de que la regla de la categoria sea la unica
+
 	urlpagina=request.form["urlpagina"]
 	urlcategoria=request.form["urlcat"]
 	idcatnueva=request.form["categoria"]
@@ -1181,6 +1190,7 @@ def ajaxcambiarcat():
 		'respuesta': "Modificado con exito"
 	}
 	return json.dumps(response)
+#Verifica si un nombre de usuario se encuentra disponible
 @app.route("/ajaxvalidarnusuario", methods=["POST"])
 def ajaxvalidarnusuario():
 	respuesta="false"
@@ -1193,7 +1203,7 @@ def ajaxvalidarnusuario():
 		'respuesta':respuesta
 	}
 	return json.dumps(response)
-
+#Elimina a un usuario
 @app.route("/ajaxeliminarusuario", methods=["POST"])
 def ajaxeliminarusuario():
 	iduser=request.form["iduser"]
@@ -1203,7 +1213,7 @@ def ajaxeliminarusuario():
 		'respuesta':"Usuario eliminado"
 	}
 	return json.dumps(response)
-
+#Edita el nombre de una categoria
 @app.route("/ajaxeditarcategoria", methods=["POST"])
 def ajaxeditarcategoria():
 	idcat=request.form["idcat"]
@@ -1214,6 +1224,7 @@ def ajaxeditarcategoria():
 		'respuesta':"Categoria cambiada con exito"
 	}
 	return json.dumps(response)
+#verifica se la casilla contraseña y verificar contraseña coinciden
 @app.route("/ajaxcoincidencontraseñas", methods=["POST"])
 def ajaxcoincidencontraseñas():
 	print("llegue aqui-----------")
