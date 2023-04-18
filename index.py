@@ -30,7 +30,7 @@ from bson.objectid import ObjectId
 app = Flask(__name__)
 #Conexion a la base de datos
 app.config['CORS_HEADERS'] = 'application/json'
-app.config["MONGO_URI"] = "mongodb+srv://adpac:r6mNZbEixXJUQoq0@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
+app.config["MONGO_URI"] = "mongodb+srv://user:password@noticias.zdgga.mongodb.net/Noticias?retryWrites=true&w=majority"
 app.secret_key = 'esto-es-una-clave-muy-secreta'
 mongodb_client = PyMongo(app)
 db = mongodb_client.db
